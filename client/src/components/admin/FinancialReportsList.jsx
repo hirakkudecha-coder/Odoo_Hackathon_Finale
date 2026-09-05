@@ -3,7 +3,7 @@ import {
   FileText, 
   TrendingUp, 
   Clock, 
-  DollarSign, 
+  IndianRupee, 
   ChevronRight,
   Receipt,
   Download
@@ -40,7 +40,7 @@ export const FinancialReportsList = ({ onSelectReport }) => {
       id: 'agedReceivables',
       title: 'Aged Receivables',
       desc: 'See pending customer payments',
-      icon: DollarSign,
+      icon: IndianRupee,
       iconColor: 'text-[#1F6E43]',
       iconBg: 'bg-[#E5F7ED]',
     },

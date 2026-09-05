@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   Calendar,
   UserCheck,
-  DollarSign
+  IndianRupee
 } from 'lucide-react';
 import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
@@ -258,7 +258,7 @@ export const BudgetsTable = () => {
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider">Total Planned Budget</span>
             <div className="w-8 h-8 rounded-full bg-[#D6F0E0] text-[#1F6E43] flex items-center justify-center">
-              <DollarSign className="w-4 h-4" />
+              <IndianRupee className="w-4 h-4" />
             </div>
           </div>
           <p className="font-serif font-bold text-2xl text-[#141A17] mt-2">

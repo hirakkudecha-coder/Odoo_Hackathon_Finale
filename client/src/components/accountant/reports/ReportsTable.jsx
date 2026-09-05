@@ -7,7 +7,8 @@ import {
   ArrowUpRight,
   TrendingUp,
   PieChart,
-  DollarSign,
+  IndianRupee,
+  FileSpreadsheet,
   Printer,
   Filter,
   ChevronLeft,
@@ -121,7 +122,7 @@ export const ReportsTable = () => {
       period: `As of ${endDate}`,
       lastGenerated: 'Live Synchronized',
       badge: 'bg-[#EBF3FE] text-[#2563EB]',
-      icon: DollarSign,
+      icon: IndianRupee,
       status: 'Audited',
     },
     {
@@ -334,7 +335,7 @@ export const ReportsTable = () => {
                 : 'bg-white text-[#5B6963] border border-[#E8E1D5] hover:bg-[#F2ECE4]'
             }`}
           >
-            <DollarSign className="w-3.5 h-3.5" />
+            <IndianRupee className="w-3.5 h-3.5" />
             <span>Balance Sheet</span>
           </button>
 

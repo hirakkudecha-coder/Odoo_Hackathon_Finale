@@ -10,7 +10,7 @@ import {
   Shield, 
   User, 
   ArrowUpRight, 
-  DollarSign, 
+  IndianRupee, 
   Receipt, 
   ShoppingBag,
   ExternalLink,
@@ -322,7 +322,7 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
                 : 'bg-white text-[#5B6963] border border-[#E8E1D5] hover:bg-[#F2ECE4]'
             }`}
           >
-            <DollarSign className="w-4 h-4" />
+            <IndianRupee className="w-4 h-4" />
             <span>Vendor Bills ({bills.length})</span>
           </button>
 

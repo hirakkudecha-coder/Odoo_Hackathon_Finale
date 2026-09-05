@@ -1,8 +1,17 @@
 const Budget = require('../models/Budget');
+const AnalyticAccount = require('../models/AnalyticAccount');
 
 // Create budget
 const createBudget = async (req, res, next) => {
   try {
+    if (!req.body.analyticAccount) {
+      return res.status(400).json({ success: false, message: 'analyticAccount reference is required.' });
+    }
+    const analytic = await AnalyticAccount.findById(req.body.analyticAccount);
+    if (!analytic) {
+      return res.status(404).json({ success: false, message: 'Invalid analyticAccount reference: Analytic account not found.' });
+    }
+
     const budget = await Budget.create(req.body);
     const populated = await Budget.findById(budget._id).populate('analyticAccount', 'name code type');
     res.status(201).json({

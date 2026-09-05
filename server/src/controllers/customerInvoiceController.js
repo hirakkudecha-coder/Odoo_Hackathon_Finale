@@ -122,6 +122,10 @@ const postCustomerInvoice = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Customer Invoice is already posted or processed.' });
     }
 
+    if (!invoice.totalAmount || invoice.totalAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Customer Invoice totalAmount must be greater than zero to post.' });
+    }
+
     // Find Sales Journal
     const salesJournal = await Journal.findOne({ type: 'Sales' });
     if (!salesJournal) {

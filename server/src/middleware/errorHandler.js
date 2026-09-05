@@ -7,8 +7,29 @@ const notFoundHandler = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  
+  let statusCode = res.statusCode;
+
+  if (statusCode === 200 || !statusCode) {
+    if (
+      err.name === 'ValidationError' ||
+      err.name === 'CastError' ||
+      err.code === 11000 ||
+      (err.message && (
+        err.message.includes('validation failed') ||
+        err.message.includes('Double-entry') ||
+        err.message.includes('Unbalanced Journal Entry') ||
+        err.message.includes('greater than zero') ||
+        err.message.includes('already exists')
+      ))
+    ) {
+      statusCode = 400;
+    } else if (err.message && err.message.includes('not found')) {
+      statusCode = 404;
+    } else {
+      statusCode = 500;
+    }
+  }
+
   const response = {
     success: false,
     message: err.message || 'Internal Server Error',
@@ -22,3 +43,4 @@ module.exports = {
   notFoundHandler,
   errorHandler
 };
+

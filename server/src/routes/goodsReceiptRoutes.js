@@ -15,10 +15,10 @@ router.use(authenticate);
 // Admin can create; Admin + Accountant can view
 router.route('/')
   .post(authorize('admin'), createGoodsReceipt)
-  .get(getGoodsReceipts);
+  .get(authorize('admin', 'accountant'), getGoodsReceipts);
 
 router.route('/:id')
-  .get(getGoodsReceiptById)
+  .get(authorize('admin', 'accountant'), getGoodsReceiptById)
   .put(authorize('admin'), updateGoodsReceipt)
   .delete(authorize('admin'), deleteGoodsReceipt);
 

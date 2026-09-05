@@ -122,6 +122,10 @@ const postVendorBill = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Vendor Bill is already posted or processed.' });
     }
 
+    if (!bill.totalAmount || bill.totalAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Vendor Bill totalAmount must be greater than zero to post.' });
+    }
+
     // Find Purchase Journal
     const purchaseJournal = await Journal.findOne({ type: 'Purchase' });
     if (!purchaseJournal) {

@@ -45,8 +45,28 @@ const createGoodsReceipt = async (req, res, next) => {
         });
       }
 
-      item.totalPrice = Math.round(item.quantity * item.unitPrice * 100) / 100;
+      const expectedItemTotal = Math.round(item.quantity * item.unitPrice * 100) / 100;
+      if (item.totalPrice !== undefined && item.totalPrice !== null) {
+        if (Math.abs(Number(item.totalPrice) - expectedItemTotal) > 0.01) {
+          return res.status(400).json({
+            success: false,
+            message: `Total Price validation failed: Line item totalPrice (${item.totalPrice}) does not match quantity * unitPrice (${expectedItemTotal}).`
+          });
+        }
+      }
+
+      item.totalPrice = expectedItemTotal;
       calculatedTotal += item.totalPrice;
+    }
+
+    calculatedTotal = Math.round(calculatedTotal * 100) / 100;
+    if (req.body.totalAmount !== undefined && req.body.totalAmount !== null) {
+      if (Math.abs(Number(req.body.totalAmount) - calculatedTotal) > 0.01) {
+        return res.status(400).json({
+          success: false,
+          message: `Total Price validation failed: totalAmount (${req.body.totalAmount}) does not match sum of item total prices (${calculatedTotal}).`
+        });
+      }
     }
 
     const receipt = await GoodsReceipt.create({
@@ -55,7 +75,7 @@ const createGoodsReceipt = async (req, res, next) => {
       vendor,
       receiptDate: new Date(receiptDate),
       items,
-      totalAmount: Math.round(calculatedTotal * 100) / 100,
+      totalAmount: calculatedTotal,
       notes: notes || '',
       status: 'draft',
       receivedBy: req.user?._id
@@ -184,8 +204,11 @@ const confirmGoodsReceipt = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Goods Receipt not found' });
     }
 
-    if (receipt.status === 'received') {
-      return res.status(400).json({ success: false, message: 'Goods Receipt is already confirmed/received.' });
+    if (receipt.status === 'received' || receipt.status === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        message: `Goods Receipt cannot be confirmed because it is already in '${receipt.status}' status.`
+      });
     }
 
     receipt.status = 'received';

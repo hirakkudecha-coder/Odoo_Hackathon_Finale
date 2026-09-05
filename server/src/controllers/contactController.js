@@ -3,6 +3,12 @@ const Contact = require('../models/Contact');
 // Create contact
 const createContact = async (req, res, next) => {
   try {
+    if (!req.body.name || !req.body.type) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation failed: name and type are required for contact creation.'
+      });
+    }
     const contact = await Contact.create(req.body);
     res.status(201).json({
       success: true,

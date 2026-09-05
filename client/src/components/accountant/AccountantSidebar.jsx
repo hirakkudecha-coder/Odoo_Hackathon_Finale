@@ -103,14 +103,14 @@ export const AccountantSidebar = ({
 
         {/* Bottom Decorative Section with Luxury Chair & Typography */}
         <div className="p-4 pt-0">
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-t from-[#0D1A14] via-[#14261D]/80 to-transparent border border-[#2D4A3E]/30 shadow-inner group">
+          <div className="relative rounded-2xl overflow-hidden bg-linear-to-t from-[#0D1A14] via-[#14261D]/80 to-transparent border border-[#2D4A3E]/30 shadow-inner group">
             <div className="h-36 w-full relative overflow-hidden flex items-end justify-center">
               <img 
                 src={loungeChairImg} 
                 alt="Luxury Furniture" 
                 className="w-full h-full object-cover object-center opacity-70 group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0F1E16] via-[#0F1E16]/60 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-[#0F1E16] via-[#0F1E16]/60 to-transparent" />
               
               <div className="absolute bottom-3 left-3 right-3 text-center">
                 <p className="font-serif italic text-xs text-[#FAF8F5] font-medium leading-relaxed drop-shadow-sm">

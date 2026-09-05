@@ -169,7 +169,7 @@ export const AccountantBottomWidgets = () => {
                     : 'border-[#2D4A3E]/30 bg-white hover:border-[#2D4A3E]'
                 }`}
               >
-                {task.completed && <Check className="w-3 h-3 stroke-[3]" />}
+                {task.completed && <Check className="w-3 h-3 stroke-3" />}
               </div>
               <span className={`text-xs font-medium transition-all ${
                 task.completed ? 'line-through text-[#8E9B95]' : 'text-[#141A17]'

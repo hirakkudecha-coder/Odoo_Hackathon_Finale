@@ -139,7 +139,7 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
 
         {/* LEFT BRAND VISUAL PANEL */}
         <div className="w-full md:w-[42%] p-3.5 sm:p-4 shrink-0 flex flex-col">
-          <div className="relative w-full h-full min-h-[460px] md:min-h-[560px] bg-[#1E332A] text-[#FAF8F5] overflow-hidden rounded-3xl flex flex-col justify-between p-6 lg:p-7 select-none shadow-xl">
+          <div className="relative w-full h-full min-h-115 md:min-h-140 bg-[#1E332A] text-[#FAF8F5] overflow-hidden rounded-3xl flex flex-col justify-between p-6 lg:p-7 select-none shadow-xl">
             {/* Background Furniture Image */}
             <div className="absolute inset-0 z-0 overflow-hidden">
               <img
@@ -147,7 +147,7 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
                 alt="Urban Furniture Architecture"
                 className="w-full h-full object-cover object-center scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-b from-[#14231C]/90 via-[#1E332A]/75 to-[#14231C]/95 mix-blend-multiply" />
+              <div className="absolute inset-0 bg-linear-to-b from-[#14231C]/90 via-[#1E332A]/75 to-[#14231C]/95 mix-blend-multiply" />
               <div className="absolute inset-0 bg-radial-at-t from-[#2D4A3E]/60 via-transparent to-[#101A15]/90" />
             </div>
 

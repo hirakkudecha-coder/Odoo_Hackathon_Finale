@@ -8,7 +8,7 @@ export const SocialLoginButton = ({ provider = 'google', onClick, disabled = fal
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex-1 flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9F7F4] active:bg-[#F0EBE3] border border-[#DDD5C9] rounded-xl text-xs font-medium text-[#2E3833] transition-all duration-200 shadow-2xs hover:shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+      className="flex-1 flex items-center justify-center gap-2.5 py-2.5 px-4 bg-white hover:bg-[#F9F7F4] active:bg-[#F0EBE3] border border-[#DDD5C9] rounded-xl text-xs font-medium text-[#2E3833] transition-all duration-200 shadow-2xs hover:shadow-xs enabled:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
     >
       {isGoogle ? (
         <>

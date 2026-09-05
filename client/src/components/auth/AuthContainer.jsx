@@ -18,7 +18,7 @@ export const AuthContainer = ({
   };
 
   return (
-    <div className="relative w-full max-w-4xl bg-[#FAF8F5] rounded-3xl border border-[#E6DFD4] shadow-2xl overflow-hidden flex flex-col md:flex-row md:min-h-[460px] transition-none">
+    <div className="relative w-full max-w-4xl bg-[#FAF8F5] rounded-3xl border border-[#E6DFD4] shadow-2xl overflow-hidden flex flex-col md:flex-row md:min-h-115 transition-none">
       {/* Close Button if rendered inside a modal */}
       {isModal && onClose && (
         <button

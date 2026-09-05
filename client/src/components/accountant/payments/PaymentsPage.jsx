@@ -37,7 +37,7 @@ export const PaymentsPage = ({ onNavigateTab }) => {
         </div>
 
         <div className="w-full lg:w-auto flex justify-start lg:justify-end">
-          <div className="rounded-2xl border border-[#E8E1D5] bg-white/90 overflow-hidden shadow-2xs w-full sm:w-[380px] md:w-[420px] lg:w-[440px] shrink-0">
+          <div className="rounded-2xl border border-[#E8E1D5] bg-white/90 overflow-hidden shadow-2xs w-full sm:w-95 md:w-105 lg:w-110 shrink-0">
             <img 
               src={purchaseBanner} 
               alt="Accurate payments build trust" 

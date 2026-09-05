@@ -41,7 +41,7 @@ export const TopCustomersList = () => {
               <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${c.color} shadow-2xs`}>
                 {c.initial}
               </div>
-              <span className="text-xs font-semibold text-[#141A17] truncate max-w-[120px] xl:max-w-[140px]">
+              <span className="text-xs font-semibold text-[#141A17] truncate max-w-30 xl:max-w-35">
                 {c.name}
               </span>
             </div>

@@ -39,7 +39,7 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser,
             <input
               type="text"
               placeholder="Search invoices, bills, contacts, products..."
-              className="w-full pl-10 pr-14 py-2 bg-white/80 hover:bg-white focus:bg-white text-xs text-[#141A17] placeholder-[#758A80] rounded-xl border border-[#2D4A3E]/15 focus:outline-hidden focus:border-[#2D4A3E] focus:ring-1 focus:ring-[#2D4A3E] transition-all shadow-2xs"
+              className="w-full pl-10 pr-14 py-2 bg-white/80 hover:bg-white focus:bg-white text-xs text-[#141A17] placeholder:text-[#758A80] rounded-xl border border-[#2D4A3E]/15 focus:outline-hidden focus:border-[#2D4A3E] focus:ring-1 focus:ring-[#2D4A3E] transition-all shadow-2xs"
             />
             <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
               <span className="px-1.5 py-0.5 text-[10px] font-semibold text-[#758A80] bg-[#F2ECE4] rounded border border-[#2D4A3E]/15">

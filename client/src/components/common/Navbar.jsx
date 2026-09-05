@@ -191,7 +191,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
 
           {/* Mobile / Tablet Navigation Drawer */}
           {mobileMenuOpen && (
-            <div className="xl:hidden mt-3 pt-3 border-t border-[#2D4A3E]/15 pb-4 flex flex-col gap-1.5 animate-fadeIn bg-[#FAF8F5] rounded-2xl p-4 shadow-xl border border-[#2D4A3E]/10">
+            <div className="xl:hidden mt-3 pt-3 pb-4 flex flex-col gap-1.5 animate-fadeIn bg-[#FAF8F5] rounded-2xl p-4 shadow-xl border border-[#2D4A3E]/10">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#66706B] px-2 mb-1">
                 Navigation Sequence
               </span>

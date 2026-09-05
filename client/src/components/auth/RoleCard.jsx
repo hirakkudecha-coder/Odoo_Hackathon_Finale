@@ -67,7 +67,7 @@ export const RoleCard = ({ role, isSelected, onSelect }) => {
 
       {isSelected && (
         <div className="absolute top-2.5 right-2.5 w-4 h-4 rounded-full bg-white/20 flex items-center justify-center text-white">
-          <Check className="w-2.5 h-2.5 stroke-[3]" />
+          <Check className="w-2.5 h-2.5 stroke-3" />
         </div>
       )}
     </button>

@@ -21,7 +21,7 @@ export const PrimaryButton = ({
         rounded-xl text-xs sm:text-[13px] font-semibold uppercase tracking-wider text-[#FAF8F5]
         bg-[#2D4A3E] hover:bg-[#1E332A] active:bg-[#14231C]
         border border-[#1E332A]/20 shadow-md hover:shadow-lg
-        transition-all duration-200 cursor-pointer select-none
+        transition-all duration-200 enabled:cursor-pointer select-none
         disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-[#2D4A3E]
         ${fullWidth ? 'w-full' : ''}
         ${className}

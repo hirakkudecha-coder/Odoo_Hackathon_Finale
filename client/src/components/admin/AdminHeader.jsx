@@ -88,7 +88,7 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
           <input
             type="text"
             placeholder="Search anything (e.g. invoice, product, contact...)"
-            className="w-full bg-white border border-[#E4DCD0] rounded-xl pl-10 pr-16 py-2 text-xs text-[#141A17] placeholder-[#8A9791] focus:outline-hidden focus:border-[#2D4A3E] focus:ring-1 focus:ring-[#2D4A3E] shadow-2xs transition-all"
+            className="w-full bg-white border border-[#E4DCD0] rounded-xl pl-10 pr-16 py-2 text-xs text-[#141A17] placeholder:text-[#8A9791] focus:outline-hidden focus:border-[#2D4A3E] focus:ring-1 focus:ring-[#2D4A3E] shadow-2xs transition-all"
           />
           <div className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded bg-[#F0EAE1] text-[10px] font-mono text-[#5F6B65] border border-[#DDD4C7] hidden sm:block">
             Ctrl K

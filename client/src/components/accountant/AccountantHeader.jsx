@@ -14,7 +14,18 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser,
 
   const activeUser = currentUser || storedUser;
   const userName = activeUser?.name || 'Aarav Mehta';
-  const userRole = activeUser?.fullRole || (activeUser?.role === 'accountant' ? 'Invoicing User / Accountant' : activeUser?.role || 'Invoicing User / Accountant');
+  const userRole = activeUser?.role || 'Head Accountant';
+  const [showNotifications, setShowNotifications] = React.useState(false);
+
+  const [notifications, setNotifications] = React.useState([
+    { id: 1, title: 'Invoice INV-2025-001 Settled', time: '10m ago', unread: true },
+    { id: 2, title: 'Vendor Bill BILL-0021 Due Tomorrow', time: '1h ago', unread: true },
+    { id: 3, title: 'Q2 GST 3B Reconciliation Ready', time: '3h ago', unread: false },
+  ]);
+
+  const handleMarkAllRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
 
   return (
     <header className="sticky top-0 z-30 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#2D4A3E]/10 px-4 sm:px-6 lg:px-8 py-3.5 transition-all">
@@ -53,14 +64,48 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser,
         <div className="flex items-center gap-4 shrink-0">
           
           {/* Notification Icon with Red Dot */}
-          <button 
-            type="button"
-            className="relative p-2 text-[#2D4A3E] hover:bg-[#EAE4DC]/70 rounded-full transition-colors cursor-pointer"
-            aria-label="Notifications"
-          >
-            <Bell className="w-4.5 h-4.5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D9534F] rounded-full ring-2 ring-[#FAF8F5]" />
-          </button>
+          <div className="relative">
+            <button 
+              type="button"
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className="relative p-2 text-[#2D4A3E] hover:bg-[#EAE4DC]/70 rounded-full transition-colors cursor-pointer"
+              aria-label="Notifications"
+              title="Notifications"
+            >
+              <Bell className="w-4.5 h-4.5" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#D9534F] rounded-full ring-2 ring-[#FAF8F5]" />
+            </button>
+
+            {/* Notification Dropdown Popover */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-[#E8E1D5] shadow-xl p-3 z-50 text-left">
+                <div className="flex items-center justify-between pb-2 mb-2 border-b border-[#F0EAE1]">
+                  <span className="text-xs font-bold text-[#141A17] font-serif">Notifications</span>
+                  <button
+                    type="button"
+                    onClick={handleMarkAllRead}
+                    className="text-[10px] text-[#1C3A2F] font-semibold cursor-pointer hover:underline"
+                  >
+                    Mark all read
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {notifications.map((n) => (
+                    <div 
+                      key={n.id} 
+                      onClick={() => setNotifications((prev) => prev.map((item) => item.id === n.id ? { ...item, unread: false } : item))}
+                      className={`p-2 rounded-xl text-xs transition-colors cursor-pointer ${n.unread ? 'bg-[#FAF7F2] font-semibold text-[#141A17]' : 'text-[#5B6963] hover:bg-[#FAF8F5]'}`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <span className="truncate">{n.title}</span>
+                        <span className="text-[9.5px] text-[#8A9B93] shrink-0">{n.time}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Vertical Divider */}
           <div className="h-7 w-px bg-[#2D4A3E]/15" />

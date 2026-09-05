@@ -1,7 +1,20 @@
+<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
 
 export const RecentBillsTable = ({ onViewAll }) => {
   const rawBills = [
+=======
+import React, { useState } from 'react';
+import { DocumentPdfModal } from './DocumentPdfModal';
+import { createPurchaseOrderPdfData, downloadDirectPdf } from '../../utils/pdfGenerator';
+import { FileText, Printer } from 'lucide-react';
+
+export const RecentBillsTable = () => {
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+
+  const bills = [
+>>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
     { id: 'BILL-0021', vendor: 'Azure Furniture', date: '02 Sep 2025', amount: '₹ 18,000', status: 'Pending' },
     { id: 'BILL-0020', vendor: 'Woodland Supplies', date: '30 Aug 2025', amount: '₹ 33,200', status: 'Paid' },
     { id: 'BILL-0019', vendor: 'Royal Hardware', date: '28 Aug 2025', amount: '₹ 12,500', status: 'Due' },
@@ -9,6 +22,7 @@ export const RecentBillsTable = ({ onViewAll }) => {
     { id: 'BILL-0017', vendor: 'Prime Metals', date: '24 Aug 2025', amount: '₹ 19,600', status: 'Pending' },
   ];
 
+<<<<<<< HEAD
   const [bills, setBills] = useState(rawBills);
 
   useEffect(() => {
@@ -47,6 +61,30 @@ export const RecentBillsTable = ({ onViewAll }) => {
     fetchBills();
     return () => { isMounted = false; };
   }, []);
+=======
+  const handleOpenBillPdf = (bill) => {
+    const pdfData = createPurchaseOrderPdfData({
+      poNo: bill.id,
+      supplier: bill.vendor,
+      date: bill.date,
+      totalAmount: bill.amount,
+      status: bill.status,
+    });
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadBillPdfDirect = (bill) => {
+    const pdfData = createPurchaseOrderPdfData({
+      poNo: bill.id,
+      supplier: bill.vendor,
+      date: bill.date,
+      totalAmount: bill.amount,
+      status: bill.status,
+    });
+    downloadDirectPdf(pdfData);
+  };
+>>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -86,9 +124,11 @@ export const RecentBillsTable = ({ onViewAll }) => {
         </h3>
         <button 
           type="button"
-          className="text-xs font-semibold text-[#2D4A3E] hover:text-[#182F25] hover:underline cursor-pointer"
+          onClick={() => handleOpenBillPdf(bills[0])}
+          className="text-xs font-semibold text-[#2D4A3E] hover:text-[#182F25] hover:underline cursor-pointer inline-flex items-center gap-1"
+          title="View latest vendor bill PDF"
         >
-          View All
+          <span>View Bill PDF</span>
         </button>
       </div>
 
@@ -97,18 +137,25 @@ export const RecentBillsTable = ({ onViewAll }) => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-[#2D4A3E]/8 text-[11px] font-semibold text-[#7A8A82]">
-              <th className="py-2.5 px-2 font-medium">Bill</th>
+              <th className="py-2.5 px-2 font-medium">Bill #</th>
               <th className="py-2.5 px-2 font-medium">Vendor</th>
               <th className="py-2.5 px-2 font-medium">Date</th>
               <th className="py-2.5 px-2 font-medium">Amount</th>
-              <th className="py-2.5 px-2 font-medium text-right">Status</th>
+              <th className="py-2.5 px-2 font-medium text-right">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#2D4A3E]/5 text-xs text-[#141A17]">
             {bills.map((bill) => (
-              <tr key={bill.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
-                <td className="py-2.5 px-2 font-semibold text-[#2D4A3E]">
-                  {bill.id}
+              <tr 
+                key={bill.id} 
+                onClick={() => handleOpenBillPdf(bill)}
+                className="hover:bg-[#FAF8F5] transition-colors cursor-pointer group"
+              >
+                <td className="py-2.5 px-2 font-semibold text-[#2D4A3E] font-mono">
+                  <span className="group-hover:underline inline-flex items-center gap-1">
+                    {bill.id}
+                    <FileText className="w-3 h-3 text-[#7A8A82] group-hover:text-[#2D4A3E]" />
+                  </span>
                 </td>
                 <td className="py-2.5 px-2 font-medium text-[#141A17]">
                   {bill.vendor}
@@ -120,13 +167,33 @@ export const RecentBillsTable = ({ onViewAll }) => {
                   {bill.amount}
                 </td>
                 <td className="py-2.5 px-2 text-right">
-                  {getStatusBadge(bill.status)}
+                  <div className="flex items-center justify-end gap-2">
+                    {getStatusBadge(bill.status)}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDownloadBillPdfDirect(bill);
+                      }}
+                      className="p-1 rounded-md text-[#7A8A82] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors"
+                      title="Download Bill PDF directly"
+                    >
+                      <Printer className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
 
     </div>
   );

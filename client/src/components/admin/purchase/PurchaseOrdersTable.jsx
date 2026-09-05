@@ -8,14 +8,36 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  ChevronDown,
+  ArrowUpDown,
+  FileText
 } from 'lucide-react';
+import { generatePurchaseOrderPDF, exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const PurchaseOrdersTable = ({ onCreatePO }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('Purchase Orders'); // 'Purchase Orders' | 'Purchase Bills' | 'Suppliers' | 'Payments'
+  const [statusFilter, setStatusFilter] = useState('All Status');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['#', 'PO #', 'SUPPLIER', 'DATE', 'ITEMS', 'TOTAL AMOUNT', 'STATUS'];
+    const rows = filteredOrders.map((o, idx) => [
+      String(idx + 1),
+      o.poNo,
+      o.supplier,
+      o.date,
+      o.items,
+      o.totalAmount,
+      o.status
+    ]);
+    exportTableToPDF('PURCHASE ORDERS PROCUREMENT REGISTER', headers, rows);
+  };
+
+  const handleDownloadPO = (order) => {
+    generatePurchaseOrderPDF(order);
+  };
 
   const rawOrders = [
     {
@@ -124,6 +146,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     },
   ];
 
+<<<<<<< HEAD
   const [apiOrders, setApiOrders] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -203,6 +226,25 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       order.status.toLowerCase().includes(q)
     );
   }, [displayedOrders, searchQuery]);
+=======
+  // Filter purchase orders
+  const filteredOrders = useMemo(() => {
+    return rawOrders.filter((order) => {
+      if (statusFilter !== 'All Status' && order.status !== statusFilter) return false;
+      if (activeTab === 'Suppliers' && !['HomeWorks Supplies', 'Sheetal Living', 'DesignCraft'].includes(order.supplier)) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          order.poNo.toLowerCase().includes(q) ||
+          order.supplier.toLowerCase().includes(q) ||
+          order.date.toLowerCase().includes(q) ||
+          order.status.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [searchQuery, statusFilter, activeTab]);
+>>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {
@@ -286,14 +328,30 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
         {/* Right Action Dropdowns: Filter & Export */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
-            <Filter className="w-3.5 h-3.5 text-[#7A8881]" />
-            <span>Filter</span>
-          </button>
+          {/* Status Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none bg-white border border-[#E4DCD0] rounded-xl px-3.5 py-1.5 pr-8 text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs focus:outline-hidden"
+            >
+              <option>All Status</option>
+              <option>Received</option>
+              <option>Ordered</option>
+              <option>Partially Received</option>
+              <option>Pending</option>
+              <option>Cancelled</option>
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
+          </div>
 
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+          <button 
+            onClick={handleExportPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+            title="Export Purchase Orders Register PDF"
+          >
             <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
@@ -398,12 +456,25 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
                     {/* Actions Button */}
                     <td className="py-3.5 px-4 text-right">
-                      <button 
-                        className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                        title="More Options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadPO(o);
+                          }}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE3D6] hover:text-[#141A17] active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          title={`Download PO for ${o.poNo}`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-semibold hidden md:inline">PDF</span>
+                        </button>
+                        <button 
+                          className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
+                          title="More Options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

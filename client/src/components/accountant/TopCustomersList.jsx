@@ -70,9 +70,17 @@ export const TopCustomersList = () => {
           Top Customers <span className="text-xs font-normal text-[#66706B]">(By Invoice Value)</span>
         </h3>
 
-        <div className="flex items-center gap-1 px-2.5 py-1 text-[11px] font-medium text-[#2D4A3E] bg-[#FAF8F5] border border-[#2D4A3E]/15 rounded-lg cursor-pointer">
-          <span>{selectedRange}</span>
-          <ChevronDown className="w-3 h-3 text-[#566B62]" />
+        <div className="relative">
+          <select
+            value={selectedRange}
+            onChange={(e) => setSelectedRange(e.target.value)}
+            className="appearance-none pl-2.5 pr-6 py-1 text-[11px] font-medium text-[#2D4A3E] bg-[#FAF8F5] border border-[#2D4A3E]/15 rounded-lg cursor-pointer focus:outline-hidden focus:border-[#2D4A3E]"
+          >
+            <option value="This Month">This Month</option>
+            <option value="This Quarter">This Quarter</option>
+            <option value="This Year">This Year</option>
+          </select>
+          <ChevronDown className="w-3 h-3 text-[#566B62] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
       </div>
 

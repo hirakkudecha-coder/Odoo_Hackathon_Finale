@@ -24,6 +24,14 @@ export const PurchasePage = ({ onNavigateTab }) => {
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
+    if (onNavigateTab) {
+      if (tabId === 'contacts') onNavigateTab('contacts');
+      else if (tabId === 'products') onNavigateTab('products');
+      else if (tabId === 'purchases') onNavigateTab('purchases');
+      else if (tabId === 'chartOfAccounts') onNavigateTab('accounting');
+      else if (tabId === 'journals') onNavigateTab('journalEntries');
+      else if (tabId === 'analyticAccounts') onNavigateTab('accounting');
+    }
   };
 
   return (
@@ -78,23 +86,7 @@ export const PurchasePage = ({ onNavigateTab }) => {
       </div>
 
       {/* Active View: Purchase Orders Table */}
-      {activeTab === 'purchases' && (
-        <PurchaseOrdersTable />
-      )}
-
-      {activeTab !== 'purchases' && (
-        <div className="bg-white rounded-3xl p-12 border border-[#E8E1D5] shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#F5F1EA] text-[#2D4A3E] flex items-center justify-center mx-auto border border-[#E4DCD0]">
-            <ShoppingBag className="w-7 h-7" />
-          </div>
-          <h3 className="font-serif font-bold text-lg text-[#141A17]">
-            {navigationTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <p className="text-xs text-[#6B7A74] max-w-sm mx-auto">
-            Procurement records and automated vendor ledger synchronizations are active.
-          </p>
-        </div>
-      )}
+      <PurchaseOrdersTable />
 
     </div>
   );

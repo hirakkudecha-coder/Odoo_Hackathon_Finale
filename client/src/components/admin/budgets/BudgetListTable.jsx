@@ -6,15 +6,33 @@ import {
   ChevronDown, 
   MoreVertical, 
   ChevronLeft, 
-  ChevronRight,
-  Calendar,
-  ArrowUpDown
+  ChevronRight, 
+  Calendar, 
+  ArrowUpDown,
+  Download,
+  FileText
 } from 'lucide-react';
+import { exportTableToPDF, generateFinancialReportPDF } from '../../../utils/pdfGenerator';
 
 export const BudgetListTable = ({ onCreateBudget }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedYear, setSelectedYear] = useState('Select Year');
   const [selectedIds, setSelectedIds] = useState([]);
+
+  const handleExportPDF = () => {
+    const headers = ['Department', 'Budget (₹)', 'Actual Spend (₹)', 'Variance (₹)', 'Utilization (%)', 'Status'];
+    const rows = filteredBudgets.map(b => [b.department, `₹ ${b.budgetAmount}`, `₹ ${b.actualAmount}`, `₹ ${b.variance}`, `${b.utilization}%`, b.status]);
+    exportTableToPDF('Budget Variance Summary', headers, rows);
+  };
+
+  const handleDownloadDepartmentBudget = (b) => {
+    const rows = [
+      [`${b.department} - Allocated Budget`, `₹ ${b.budgetAmount}.00`, '—', '100%'],
+      [`${b.department} - Actual Expenditure`, `₹ ${b.actualAmount}.00`, '—', `${b.utilization}%`],
+      [`${b.department} - Remaining Variance`, `₹ ${b.variance}.00`, '—', `${100 - b.utilization}%`],
+    ];
+    generateFinancialReportPDF(`${b.department} Budget Statement`, rows, 'Fiscal Year 2026');
+  };
 
   const rawBudgets = [
     {
@@ -191,12 +209,28 @@ export const BudgetListTable = ({ onCreateBudget }) => {
 
           {/* Select Year Dropdown */}
           <div className="relative">
-            <button className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-[#7A8881]" />
-              <span>Select Year</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#7A8881]" />
-            </button>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="appearance-none bg-white border border-[#E4DCD0] rounded-xl pl-8 pr-8 py-2 text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs focus:outline-hidden"
+            >
+              <option value="Select Year">Fiscal Year 2026</option>
+              <option value="2025">Fiscal Year 2025</option>
+              <option value="2024">Fiscal Year 2024</option>
+              <option value="All Years">All Fiscal Years</option>
+            </select>
+            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
           </div>
+
+          <button 
+            onClick={handleExportPDF}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs shrink-0"
+            title="Export Budget Variance PDF"
+          >
+            <Download className="w-3.5 h-3.5 text-[#7A8881]" />
+            <span>Export PDF</span>
+          </button>
 
           <button
             onClick={onCreateBudget}
@@ -325,12 +359,25 @@ export const BudgetListTable = ({ onCreateBudget }) => {
 
                     {/* Actions Button */}
                     <td className="py-3.5 px-4 text-right">
-                      <button 
-                        className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                        title="More Options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadDepartmentBudget(b);
+                          }}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE3D6] hover:text-[#141A17] active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          title={`Download ${b.department} Budget Statement PDF`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-semibold hidden md:inline">PDF</span>
+                        </button>
+                        <button 
+                          className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
+                          title="More Options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

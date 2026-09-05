@@ -7,9 +7,10 @@ import {
   Download, 
   MoreVertical, 
   ChevronLeft, 
-  ChevronRight,
-  ArrowUpDown
+  ChevronRight, 
+  ArrowUpDown 
 } from 'lucide-react';
+import { exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const ChartOfAccountsTable = ({ onAddAccount }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -18,6 +19,20 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
   const [statusFilter, setStatusFilter] = useState('Active Accounts');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['#', 'CODE', 'ACCOUNT NAME', 'TYPE', 'ACCOUNT GROUP', 'BALANCE', 'STATUS'];
+    const rows = filteredAccounts.map((a, idx) => [
+      String(idx + 1),
+      a.code,
+      a.accountName,
+      a.type,
+      a.accountGroup,
+      `₹ ${a.balance}`,
+      a.status
+    ]);
+    exportTableToPDF('CHART OF ACCOUNTS GENERAL LEDGER', headers, rows);
+  };
 
   const rawAccounts = [
     {
@@ -297,10 +312,13 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
         </div>
 
         {/* Export Button */}
-        <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+        <button 
+          onClick={handleExportPDF}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+          title="Export Chart of Accounts PDF"
+        >
           <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-          <span>Export</span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#7A8881]" />
+          <span>Export PDF</span>
         </button>
       </div>
 

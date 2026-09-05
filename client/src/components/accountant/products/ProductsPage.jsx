@@ -22,6 +22,18 @@ export const ProductsPage = ({ onNavigateTab }) => {
     { id: 'analyticAccounts', label: 'Analytic Accounts', icon: PieChart },
   ];
 
+  const handleTabClick = (tabId) => {
+    setActiveTab(tabId);
+    if (onNavigateTab) {
+      if (tabId === 'contacts') onNavigateTab('contacts');
+      else if (tabId === 'products') onNavigateTab('products');
+      else if (tabId === 'sales') onNavigateTab('sales');
+      else if (tabId === 'payments') onNavigateTab('payments');
+      else if (tabId === 'journals') onNavigateTab('journalEntries');
+      else if (tabId === 'analyticAccounts') onNavigateTab('accounting');
+    }
+  };
+
   return (
     <div className="space-y-6 text-left">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-5">
@@ -52,7 +64,7 @@ export const ProductsPage = ({ onNavigateTab }) => {
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-semibold transition-all duration-200 cursor-pointer shrink-0 shadow-2xs ${
                 isActive
                   ? 'bg-[#1C3A2F] text-[#FAF8F5] shadow-xs'

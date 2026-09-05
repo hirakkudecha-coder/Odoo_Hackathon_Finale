@@ -16,6 +16,7 @@ import { PurchasePage } from './purchase/PurchasePage';
 import { SalesPage } from './sales/SalesPage';
 import { PaymentsPage } from './payments/PaymentsPage';
 import { AccountingPage } from './accounting/AccountingPage';
+import { BudgetsPage } from './budgets/BudgetsPage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -75,6 +76,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
             <PaymentsPage onNavigateTab={handleSelectMenu} onRecordPayment={onOpenCreateUser} />
           ) : activeMenu === 'accounting' ? (
             <AccountingPage onNavigateTab={handleSelectMenu} onAddAccount={onOpenCreateUser} />
+          ) : activeMenu === 'budgets' ? (
+            <BudgetsPage onNavigateTab={handleSelectMenu} onCreateBudget={onOpenCreateUser} />
           ) : (
             <>
               {/* Greeting & Motivational Banner */}

@@ -17,11 +17,11 @@ export const GreetingBanner = () => {
 
       {/* Right: Provided Quote & Design Studio Banner Graphic */}
       <div className="w-full lg:w-auto flex justify-start lg:justify-end">
-        <div className="rounded-2xl border border-[#E8E1D5] bg-white overflow-hidden shadow-2xs hover:shadow-md transition-shadow duration-300 max-w-lg xl:max-w-xl w-full">
+        <div className="rounded-2xl border border-[#E8E1D5] bg-white/90 overflow-hidden shadow-2xs hover:shadow-xs transition-all duration-300 w-full sm:w-[380px] md:w-[420px] lg:w-[440px] shrink-0">
           <img 
             src={quoteBannerGraphic} 
             alt="Good design is good business - Thomas J. Watson" 
-            className="w-full h-auto max-h-28 sm:max-h-32 object-contain sm:object-cover object-center"
+            className="w-full h-22 sm:h-24 md:h-26 object-cover object-center block"
           />
         </div>
       </div>

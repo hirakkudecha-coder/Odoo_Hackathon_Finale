@@ -51,6 +51,7 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
         <AdminHeader 
           onNavigateHome={onNavigateHome} 
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          sidebarOpen={sidebarOpen}
         />
 
         {/* Dashboard Main Scrollable Body */}

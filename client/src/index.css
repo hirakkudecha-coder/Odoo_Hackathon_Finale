@@ -14,6 +14,22 @@
     overflow-x: hidden;
   }
 
+  /* Custom Smooth Luxury Scrollbars */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #FAF8F5;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #DDD4C7;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A1B3AB;
+  }
+
   h1, h2, h3, .font-serif-title {
     font-family: var(--font-serif);
   }

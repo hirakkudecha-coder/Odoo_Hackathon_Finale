@@ -68,7 +68,27 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      const newUser = {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+        },
+        body: JSON.stringify({
+          name: fullName.trim(),
+          email: email.trim(),
+          password: password,
+          role: selectedRole
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to create user in database.');
+      }
+
+      const createdUser = data.user || {
         name: fullName.trim(),
         username: userId.trim(),
         email: email.trim(),
@@ -77,21 +97,21 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
         createdAt: new Date().toISOString(),
       };
 
-      // Store in local users list for admin testing
+      // Also persist to local users list for instant admin UI reflections
       const existingUsers = JSON.parse(localStorage.getItem('uf_team_users') || '[]');
-      existingUsers.push(newUser);
+      existingUsers.push(createdUser);
       localStorage.setItem('uf_team_users', JSON.stringify(existingUsers));
 
-      setSuccessMessage(`User "${fullName}" created successfully with ${selectedRole === 'admin' ? 'Admin' : selectedRole === 'accountant' ? 'Accountant' : 'Contact'} privileges!`);
+      setSuccessMessage(`User "${fullName}" successfully registered in database with ${selectedRole === 'admin' ? 'Admin' : selectedRole === 'accountant' ? 'Accountant' : 'Contact'} role!`);
       
       setTimeout(() => {
         setLoading(false);
-        if (onSuccess) onSuccess(newUser);
+        if (onSuccess) onSuccess(createdUser);
         if (onClose) onClose();
       }, 1200);
 
     } catch (err) {
-      setErrorMessage('Failed to create user. Please try again.');
+      setErrorMessage(err.message || 'Failed to create user. Please try again.');
       setLoading(false);
     }
   };

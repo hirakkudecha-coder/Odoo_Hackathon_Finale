@@ -1,11 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const BudgetSnapshotCard = () => {
   const [fyFilter, setFyFilter] = useState('FY 2026');
+  const [budgetData, setBudgetData] = useState({
+    totalPlanned: 200000,
+    totalActual: 142000,
+    utilizationPercent: 71,
+    variance: 58000
+  });
 
-  // Gauge calculation: 71% of circumference 2 * PI * 40 = 251.32
-  const percentage = 71;
+  useEffect(() => {
+    const fetchBudget = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/reports/budget', { headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.report) {
+            const planned = data.report.totalPlanned ?? 200000;
+            const actual = data.report.totalActual ?? 142000;
+            const util = planned > 0 ? Math.min(Math.round((actual / planned) * 100), 100) : 71;
+            const variance = data.report.totalVariance ?? (planned - actual);
+
+            setBudgetData({
+              totalPlanned: planned || 200000,
+              totalActual: actual || 142000,
+              utilizationPercent: util || 71,
+              variance: variance
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback to defaults
+      }
+    };
+
+    fetchBudget();
+  }, []);
+
+  const formatCurrency = (val) => {
+    return `₹ ${Number(val || 0).toLocaleString('en-IN')}`;
+  };
+
+  // Gauge calculation
+  const percentage = Math.min(Math.max(budgetData.utilizationPercent, 0), 100);
   const radius = 38;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (percentage / 100) * circumference;
@@ -56,7 +96,7 @@ export const BudgetSnapshotCard = () => {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <span className="font-serif font-bold text-lg text-[#141A17] leading-none">
-              71%
+              {percentage}%
             </span>
           </div>
         </div>
@@ -64,20 +104,20 @@ export const BudgetSnapshotCard = () => {
         {/* Spend Figures */}
         <div className="flex flex-col justify-center space-y-1.5 text-left">
           <div className="font-serif font-bold text-xl text-[#141A17] leading-none">
-            ₹ 1,42,000
+            {formatCurrency(budgetData.totalActual)}
           </div>
           <div className="text-[11px] text-[#718079] font-medium">
-            of ₹ 2,00,000
+            of {formatCurrency(budgetData.totalPlanned)}
           </div>
 
           <div className="space-y-1 pt-1 text-[10px]">
             <div className="flex items-center gap-1.5 text-[#55635D]">
               <span className="w-2 h-2 rounded-full bg-[#244637]"></span>
-              <span>Actual Spend: <strong className="text-[#141A17]">₹ 1,42,000</strong></span>
+              <span>Actual Spend: <strong className="text-[#141A17]">{formatCurrency(budgetData.totalActual)}</strong></span>
             </div>
             <div className="flex items-center gap-1.5 text-[#55635D]">
               <span className="w-2 h-2 rounded-full bg-[#DDD5C7]"></span>
-              <span>Planned Budget: <strong className="text-[#141A17]">₹ 2,00,000</strong></span>
+              <span>Planned Budget: <strong className="text-[#141A17]">{formatCurrency(budgetData.totalPlanned)}</strong></span>
             </div>
           </div>
         </div>

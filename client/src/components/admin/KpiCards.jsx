@@ -1,11 +1,72 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Package, ArrowDownLeft, ArrowUpRight, Wallet } from 'lucide-react';
 
 export const KpiCards = () => {
+  const [metrics, setMetrics] = useState({
+    totalSales: 245000,
+    totalPurchases: 132500,
+    receivables: 52000,
+    payables: 31500,
+    loading: false
+  });
+
+  useEffect(() => {
+    const fetchKpiData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        const [plRes, bsRes] = await Promise.all([
+          fetch('/api/reports/profit-loss', { headers }).catch(() => null),
+          fetch('/api/reports/balance-sheet', { headers }).catch(() => null)
+        ]);
+
+        let sales = 245000;
+        let purchases = 132500;
+        let recv = 52000;
+        let pay = 31500;
+
+        if (plRes && plRes.ok) {
+          const plData = await plRes.json();
+          if (plData.report) {
+            sales = plData.report.income?.total ?? sales;
+            purchases = plData.report.expenses?.purchasesExpense ?? purchases;
+          }
+        }
+
+        if (bsRes && bsRes.ok) {
+          const bsData = await bsRes.json();
+          if (bsData.report) {
+            const debtors = bsData.report.assets?.accounts?.find(a => a.name?.toLowerCase().includes('debtor') || a.code === '1003');
+            if (debtors) recv = debtors.balance;
+            const creditors = bsData.report.liabilities?.accounts?.find(a => a.name?.toLowerCase().includes('creditor') || a.code === '2001');
+            if (creditors) pay = creditors.balance;
+          }
+        }
+
+        setMetrics({
+          totalSales: sales,
+          totalPurchases: purchases,
+          receivables: recv,
+          payables: pay,
+          loading: false
+        });
+      } catch (err) {
+        // Fallback to initial values gracefully
+      }
+    };
+
+    fetchKpiData();
+  }, []);
+
+  const formatCurrency = (val) => {
+    return `₹ ${Number(val || 0).toLocaleString('en-IN')}`;
+  };
+
   const cards = [
     {
       title: 'Total Sales',
-      value: '₹ 2,45,000',
+      value: formatCurrency(metrics.totalSales),
       change: '12%',
       isPositive: true,
       icon: ShoppingCart,
@@ -16,7 +77,7 @@ export const KpiCards = () => {
     },
     {
       title: 'Total Purchases',
-      value: '₹ 1,32,500',
+      value: formatCurrency(metrics.totalPurchases),
       change: '8%',
       isPositive: true,
       icon: Package,
@@ -27,7 +88,7 @@ export const KpiCards = () => {
     },
     {
       title: 'Receivables',
-      value: '₹ 52,000',
+      value: formatCurrency(metrics.receivables),
       change: '4%',
       isPositive: false,
       icon: ArrowDownLeft,
@@ -38,7 +99,7 @@ export const KpiCards = () => {
     },
     {
       title: 'Payables',
-      value: '₹ 31,500',
+      value: formatCurrency(metrics.payables),
       change: '6%',
       isPositive: true,
       icon: Wallet,

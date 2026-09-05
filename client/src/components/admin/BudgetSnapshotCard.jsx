@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ChevronDown, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const BudgetSnapshotCard = () => {
-  const [fyFilter, setFyFilter] = useState('FY 2025');
+  const [fyFilter, setFyFilter] = useState('FY 2026');
 
   // Gauge calculation: 71% of circumference 2 * PI * 40 = 251.32
   const percentage = 71;

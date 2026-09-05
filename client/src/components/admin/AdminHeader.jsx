@@ -3,6 +3,14 @@ import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu } from 'l
 import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen }) => {
+  // Dynamically format current date (e.g. Sat, 05 Sep 2026)
+  const formattedDate = new Date().toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+
   return (
     <header className="bg-[#FAF8F5] border-b border-[#E8E1D5] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4 select-none sticky top-0 z-30 shadow-2xs shrink-0">
       
@@ -69,7 +77,7 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen }) =>
           <div className="text-left">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#2D4A3E] uppercase tracking-wider">
               <Calendar className="w-3 h-3 text-[#E86034]" />
-              <span>Tue, 02 Sep 2025</span>
+              <span>{formattedDate}</span>
             </div>
             <p className="text-[9.5px] text-[#6A7872] leading-tight">
               Make today productive for a better tomorrow.

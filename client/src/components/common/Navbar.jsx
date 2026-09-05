@@ -164,31 +164,21 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
 
               {/* Mobile / Tablet Menu Button (Shown below XL) */}
               <div className="flex xl:hidden items-center gap-2 ml-2">
-                <button
-                  onClick={() => {
-                    if (onOpenDashboard) {
-                      onOpenDashboard();
-                    } else if (onOpenAuth) {
-                      onOpenAuth('signup');
-                    }
-                  }}
-                  className="text-[11px] font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] px-3 py-1.5 rounded-full sm:hidden"
-                >
-                  {onOpenDashboard ? 'Dashboard' : 'Get Started'}
-                </button>
-                <button
-                  onClick={() => {
-                    if (onOpenAccountant) {
-                      onOpenAccountant();
-                    } else {
-                      window.history.pushState(null, '', '/accountant');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="text-[11px] font-bold uppercase tracking-wider bg-[#C86D3B] text-[#FAF8F5] px-2.5 py-1.5 rounded-full sm:hidden"
-                >
-                  Accountant
-                </button>
+                {currentUser ? (
+                  <button
+                    onClick={() => onOpenDashboard && onOpenDashboard()}
+                    className="text-[11px] font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] px-3 py-1.5 rounded-full sm:hidden"
+                  >
+                    Dashboard
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onOpenAuth && onOpenAuth('login')}
+                    className="text-[11px] font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] px-3 py-1.5 rounded-full sm:hidden"
+                  >
+                    Sign In
+                  </button>
+                )}
                 <button
                   onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                   className="p-2 text-[#1A1F1D] hover:text-[#2D4A3E] hover:bg-[#EAE4DC]/60 rounded-lg transition-colors border border-[#2D4A3E]/15 cursor-pointer"

@@ -86,9 +86,21 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
         id: `user-${Date.now()}`,
         name: name.trim(),
         email: email.trim(),
+        password: password,
         role: role || 'admin',
         fullRole: (role || 'admin') === 'admin' ? 'Admin / Business Owner' : 'Invoicing User / Accountant'
       };
+
+      try {
+        const existingUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+        const updatedUsers = [
+          ...existingUsers.filter(u => u.email.toLowerCase() !== registeredUser.email.toLowerCase()),
+          registeredUser
+        ];
+        localStorage.setItem('registered_users', JSON.stringify(updatedUsers));
+      } catch (e) {
+        // Continue
+      }
 
       const authToken = token || `reg_token_${Date.now()}`;
       localStorage.setItem('token', authToken);

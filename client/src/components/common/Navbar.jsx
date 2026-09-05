@@ -59,141 +59,124 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-300">
-
       {/* Main Header Container with Distinct Elevation & Frame */}
       <div className={`transition-all duration-300 ${
         scrolled 
-          ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2.5' 
-          : 'bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(20,30,25,0.06)] border-b border-[#2D4A3E]/12 py-3'
+          ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2 sm:py-2.5' 
+          : 'bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(20,30,25,0.06)] border-b border-[#2D4A3E]/12 py-2.5 sm:py-3'
       }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between gap-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4">
             
-            {/* Custom Brand Logo Component (Architectural Arch + Typography in SVG/CSS) */}
-            <a 
-              href="#" 
-              onClick={(e) => {
-                e.preventDefault();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              className="group shrink-0"
-            >
-              <BrandLogo />
-            </a>
-
-            {/* Desktop Navigation Links — In Exact Chronological Order */}
-            <nav className="hidden xl:flex items-center bg-[#F2ECE4]/75 p-1.5 rounded-full border border-[#2D4A3E]/12 shadow-inner">
-              {navLinks.map((link) => {
-                const isActive = activeSection === link.id;
-                return (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`text-xs font-semibold uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs' 
-                        : 'text-[#3D4542] hover:text-[#141A17] hover:bg-white/60'
-                    }`}
-                  >
-                    {link.name}
-                  </a>
-                );
-              })}
-            </nav>
-
-            {/* Medium screen Nav (without container pill) */}
-            <nav className="hidden md:flex xl:hidden items-center space-x-4 text-xs font-semibold uppercase tracking-wider text-[#3D4542]">
-              {navLinks.map((link) => {
-                const isActive = activeSection === link.id;
-                return (
-                  <a
-                    key={link.name}
-                    href={link.href}
-                    onClick={(e) => handleNavClick(e, link.href)}
-                    className={`transition-colors py-1 px-2 rounded-md ${
-                      isActive 
-                        ? 'text-[#2D4A3E] bg-[#EAE3D6] font-bold' 
-                        : 'hover:text-[#2D4A3E]'
-                    }`}
-                  >
-                    {link.name}
-                  </a>
-                );
-              })}
-            </nav>
-
-            {/* Right Action Items */}
-            <div className="hidden md:flex items-center gap-3 shrink-0">
-              
-              {/* Quick Catalogue Pill with Counter */}
+            {/* Left Column: Brand Logo */}
+            <div className="flex items-center justify-start min-w-0">
               <a 
-                href="#catalogue"
-                onClick={(e) => handleNavClick(e, '#catalogue')}
-                className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:text-[#1A1F1D] px-3 py-1.5 rounded-full bg-[#EAE4DC]/80 hover:bg-[#E2DACF] border border-[#2D4A3E]/15 transition-all duration-200"
-              >
-                <span>Catalogue</span>
-                <span className="w-5 h-5 rounded-full bg-[#2D4A3E] text-[#FAF8F5] flex items-center justify-center text-[10px] font-bold">
-                  8
-                </span>
-              </a>
-
-              {/* Create User Button */}
-              {onOpenCreateUser && (
-                <button
-                  onClick={() => onOpenCreateUser()}
-                  className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 py-2 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Create User</span>
-                </button>
-              )}
-
-              {/* Login Button */}
-              <button
-                onClick={() => onOpenAuth && onOpenAuth('login')}
-                className="text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3.5 py-2 transition-colors cursor-pointer"
-              >
-                Sign In
-              </button>
-
-              {/* Primary CTA Button */}
-              <button
-                onClick={() => {
-                  if (onOpenDashboard) {
-                    onOpenDashboard();
-                  } else if (onOpenAuth) {
-                    onOpenAuth('signup');
-                  }
+                href="#" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="flex items-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 py-2.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
+                className="group shrink-0 flex items-center"
               >
-                <span>Dashboard ↗</span>
-              </button>
+                <BrandLogo />
+              </a>
             </div>
 
-            {/* Mobile Menu Button */}
-            <div className="flex md:hidden items-center gap-2">
-              <button
-                onClick={() => onOpenAuth && onOpenAuth('signup')}
-                className="text-[11px] font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] px-3 py-1.5 rounded-full"
-              >
-                Get Started
-              </button>
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 text-[#1A1F1D] hover:text-[#2D4A3E] hover:bg-[#EAE4DC]/60 rounded-lg transition-colors border border-[#2D4A3E]/15"
-                aria-label="Toggle Navigation"
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
+            {/* Center Column: Desktop Navigation Links (Dead Center on XL+) */}
+            <div className="hidden xl:flex items-center justify-center justify-self-center shrink-0">
+              <nav className="flex items-center justify-center bg-[#F2ECE4]/75 p-1 rounded-full border border-[#2D4A3E]/12 shadow-inner">
+                {navLinks.map((link) => {
+                  const isActive = activeSection === link.id;
+                  return (
+                    <a
+                      key={link.name}
+                      href={link.href}
+                      onClick={(e) => handleNavClick(e, link.href)}
+                      className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+                        isActive 
+                          ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs' 
+                          : 'text-[#3D4542] hover:text-[#141A17] hover:bg-white/60'
+                      }`}
+                    >
+                      {link.name}
+                    </a>
+                  );
+                })}
+              </nav>
+            </div>
+
+            {/* Right Column: Action Items */}
+            <div className="flex items-center justify-end justify-self-end min-w-0">
+              <div className="hidden sm:flex items-center justify-end gap-2.5 shrink-0">
+                {/* Create User Button */}
+                {onOpenCreateUser && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenCreateUser()}
+                    className="h-9 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Create User</span>
+                  </button>
+                )}
+
+                {/* Login Button */}
+                <button
+                  type="button"
+                  onClick={() => onOpenAuth && onOpenAuth('login')}
+                  className="h-9 flex items-center justify-center text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                >
+                  Sign In
+                </button>
+
+                {/* Primary CTA - Forest Green Pill Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onOpenDashboard) {
+                      onOpenDashboard();
+                    } else if (onOpenAuth) {
+                      onOpenAuth('signup');
+                    }
+                  }}
+                  className="h-9 flex items-center justify-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group whitespace-nowrap"
+                >
+                  <span>{onOpenDashboard ? 'Dashboard ↗' : 'Get Started'}</span>
+                  {!onOpenDashboard && (
+                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  )}
+                </button>
+              </div>
+
+              {/* Mobile / Tablet Menu Button (Shown below XL) */}
+              <div className="flex xl:hidden items-center gap-2 ml-2">
+                <button
+                  onClick={() => {
+                    if (onOpenDashboard) {
+                      onOpenDashboard();
+                    } else if (onOpenAuth) {
+                      onOpenAuth('signup');
+                    }
+                  }}
+                  className="text-[11px] font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] px-3 py-1.5 rounded-full sm:hidden"
+                >
+                  {onOpenDashboard ? 'Dashboard' : 'Get Started'}
+                </button>
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 text-[#1A1F1D] hover:text-[#2D4A3E] hover:bg-[#EAE4DC]/60 rounded-lg transition-colors border border-[#2D4A3E]/15 cursor-pointer"
+                  aria-label="Toggle Navigation"
+                >
+                  {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
           </div>
 
-          {/* Mobile Navigation Drawer */}
+          {/* Mobile / Tablet Navigation Drawer */}
           {mobileMenuOpen && (
-            <div className="md:hidden mt-3 pt-3 border-t border-[#2D4A3E]/15 pb-4 flex flex-col gap-1.5 animate-fadeIn bg-[#FAF8F5] rounded-2xl p-4 shadow-xl border border-[#2D4A3E]/10">
+            <div className="xl:hidden mt-3 pt-3 border-t border-[#2D4A3E]/15 pb-4 flex flex-col gap-1.5 animate-fadeIn bg-[#FAF8F5] rounded-2xl p-4 shadow-xl border border-[#2D4A3E]/10">
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#66706B] px-2 mb-1">
                 Navigation Sequence
               </span>
@@ -254,7 +237,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
                   }}
                   className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-xs"
                 >
-                  <span>Open Admin Workspace</span>
+                  <span>{onOpenDashboard ? 'Open Admin Workspace' : 'Get Started'}</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
               </div>

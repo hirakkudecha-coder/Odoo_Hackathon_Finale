@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
 import livingRoomHero from '../../assets/living_room_hero.png';
 import oliveChairImg from '../../assets/images/olive_chair.png';
 import blueSofaImg from '../../assets/images/blue_sofa.png';
@@ -61,19 +62,9 @@ export const BrandPanel = () => {
         </svg>
       </div>
 
-      {/* Top Brand Header */}
-      <div className="relative z-10 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-2xl bg-[#FAF8F5] text-[#1E332A] flex items-center justify-center font-serif font-extrabold text-base shadow-md border border-[#EAE3D8]/40">
-          UF
-        </div>
-        <div>
-          <h2 className="font-serif-luxury font-bold text-base text-[#FAF8F5] tracking-tight leading-tight">
-            Urban Furniture
-          </h2>
-          <p className="text-[9.5px] font-semibold uppercase tracking-[0.2em] text-[#D0DAD4]">
-            ACCOUNTING SYSTEM
-          </p>
-        </div>
+      {/* Top Brand Header - Recreated Vector Brand Logo */}
+      <div className="relative z-10 flex items-center">
+        <BrandLogo light={true} align="left" size="default" />
       </div>
 
       {/* Middle Hero Visual Editorial Headline & Copy */}
@@ -141,3 +132,5 @@ export const BrandPanel = () => {
     </div>
   );
 };
+
+export default BrandPanel;

@@ -39,6 +39,11 @@ const contactSchema = new mongoose.Schema(
       type: String,
       enum: ['active', 'archived'],
       default: 'active'
+    },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     }
   },
   {

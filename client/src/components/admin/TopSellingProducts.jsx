@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import creamLoungeChair from '../../assets/images/cream_lounge_chair.png';
 import oakCredenza from '../../assets/images/oak_credenza.png';
@@ -6,46 +6,49 @@ import charcoalChair from '../../assets/images/charcoal_chair.png';
 import cyanArmchair from '../../assets/images/cyan_armchair.png';
 import yellowOttoman from '../../assets/images/yellow_ottoman.png';
 
+const STATIC_IMAGES = [charcoalChair, oakCredenza, creamLoungeChair, cyanArmchair, yellowOttoman];
+
+const STATIC_FALLBACK = [
+  { rank: 1, name: 'Ergonomic Office Chair', units: '32 units', revenue: '₹ 96,000', image: charcoalChair },
+  { rank: 2, name: 'Wooden Dining Table', units: '18 units', revenue: '₹ 90,000', image: oakCredenza },
+  { rank: 3, name: 'Bookshelf Classic', units: '15 units', revenue: '₹ 67,500', image: creamLoungeChair },
+  { rank: 4, name: 'Modern Sofa', units: '8 units', revenue: '₹ 64,000', image: cyanArmchair },
+  { rank: 5, name: 'Study Table', units: '12 units', revenue: '₹ 48,000', image: yellowOttoman },
+];
+
 export const TopSellingProducts = () => {
   const [filter, setFilter] = useState('This Month');
+  const [products, setProducts] = useState(STATIC_FALLBACK);
 
-  const products = [
-    {
-      rank: 1,
-      name: 'Ergonomic Office Chair',
-      units: '32 units',
-      revenue: '₹ 96,000',
-      image: charcoalChair,
-    },
-    {
-      rank: 2,
-      name: 'Wooden Dining Table',
-      units: '18 units',
-      revenue: '₹ 90,000',
-      image: oakCredenza,
-    },
-    {
-      rank: 3,
-      name: 'Bookshelf Classic',
-      units: '15 units',
-      revenue: '₹ 67,500',
-      image: creamLoungeChair,
-    },
-    {
-      rank: 4,
-      name: 'Modern Sofa',
-      units: '8 units',
-      revenue: '₹ 64,000',
-      image: cyanArmchair,
-    },
-    {
-      rank: 5,
-      name: 'Study Table',
-      units: '12 units',
-      revenue: '₹ 48,000',
-      image: yellowOttoman,
-    },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/products', { headers });
+        if (res.ok) {
+          const data = await res.json();
+          const items = data.products || data.data || [];
+          if (items.length > 0) {
+            const mapped = items.slice(0, 5).map((p, idx) => ({
+              rank: idx + 1,
+              name: p.name || `Product ${idx + 1}`,
+              units: `—`,
+              revenue: `₹ ${Number(p.salesPrice || 0).toLocaleString('en-IN')}`,
+              image: STATIC_IMAGES[idx % STATIC_IMAGES.length],
+            }));
+            setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        // Fallback to static
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">

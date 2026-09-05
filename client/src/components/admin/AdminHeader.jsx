@@ -1,15 +1,55 @@
-import React from 'react';
-import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu, Wifi, WifiOff } from 'lucide-react';
 import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen }) => {
-  // Dynamically format current date (e.g. Sat, 05 Sep 2026)
   const formattedDate = new Date().toLocaleDateString('en-GB', {
     weekday: 'short',
     day: '2-digit',
     month: 'short',
     year: 'numeric'
   });
+
+  const [heartbeat, setHeartbeat] = useState({ status: 'checking', dbConnected: false, uptime: '' });
+  const [user, setUser] = useState({ name: 'Admin User', role: 'Admin' });
+
+  useEffect(() => {
+    // Load logged-in user info from localStorage
+    const stored = localStorage.getItem('user');
+    if (stored) {
+      try {
+        const u = JSON.parse(stored);
+        setUser({ name: u.name || 'Admin User', role: u.role || 'Admin' });
+      } catch (_) {}
+    }
+
+    // Fetch server heartbeat
+    const fetchHeartbeat = async () => {
+      try {
+        const res = await fetch('/api/health/heartbeat');
+        if (res.ok) {
+          const data = await res.json();
+          const hb = data.heartbeat || {};
+          const upSec = hb.uptimeSeconds || 0;
+          const h = Math.floor(upSec / 3600);
+          const m = Math.floor((upSec % 3600) / 60);
+          setHeartbeat({
+            status: hb.status === 'ALIVE' ? 'online' : 'offline',
+            dbConnected: hb.database?.connected ?? false,
+            uptime: `${h}h ${m}m`
+          });
+        } else {
+          setHeartbeat({ status: 'offline', dbConnected: false, uptime: '—' });
+        }
+      } catch (_) {
+        setHeartbeat({ status: 'offline', dbConnected: false, uptime: '—' });
+      }
+    };
+
+    fetchHeartbeat();
+    const interval = setInterval(fetchHeartbeat, 30000); // poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="bg-[#FAF8F5] border-b border-[#E8E1D5] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4 select-none sticky top-0 z-30 shadow-2xs shrink-0">

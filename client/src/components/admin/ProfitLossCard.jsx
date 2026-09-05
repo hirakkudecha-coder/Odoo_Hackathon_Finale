@@ -1,8 +1,53 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, TrendingUp } from 'lucide-react';
 
 export const ProfitLossCard = () => {
   const [timeframe, setTimeframe] = useState('This Year');
+  const [plData, setPlData] = useState({
+    salesIncome: 245000,
+    purchaseCosts: 132500,
+    operatingExpenses: 31000,
+    netProfit: 81500,
+    isProfitable: true,
+    marginImprovement: 14
+  });
+
+  useEffect(() => {
+    const fetchPL = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const res = await fetch('/api/reports/profit-loss', { headers });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.report) {
+            const income = data.report.income?.total ?? 245000;
+            const purchases = data.report.expenses?.purchasesExpense ?? 132500;
+            const otherExp = data.report.expenses?.otherExpenses ?? 31000;
+            const net = data.report.summary?.netProfit ?? (income - purchases - otherExp);
+            const profitable = data.report.summary?.isProfitable ?? (net >= 0);
+
+            setPlData({
+              salesIncome: income,
+              purchaseCosts: purchases,
+              operatingExpenses: otherExp,
+              netProfit: net,
+              isProfitable: profitable,
+              marginImprovement: income > 0 ? Math.round((net / income) * 100) : 14
+            });
+          }
+        }
+      } catch (err) {
+        // Fallback to default
+      }
+    };
+
+    fetchPL();
+  }, []);
+
+  const formatCurrency = (val) => {
+    return `₹ ${Number(val || 0).toLocaleString('en-IN')}`;
+  };
 
   return (
     <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs flex flex-col justify-between h-full text-left">
@@ -29,7 +74,7 @@ export const ProfitLossCard = () => {
             <span className="text-[#55635D] font-medium">Sales Income</span>
           </div>
           <span className="font-serif font-bold text-sm text-[#141A17]">
-            ₹ 2,45,000
+            {formatCurrency(plData.salesIncome)}
           </span>
         </div>
 
@@ -40,7 +85,7 @@ export const ProfitLossCard = () => {
             <span className="text-[#55635D] font-medium">Purchase Costs</span>
           </div>
           <span className="font-serif font-bold text-sm text-[#141A17]">
-            ₹ 1,32,500
+            {formatCurrency(plData.purchaseCosts)}
           </span>
         </div>
 
@@ -51,7 +96,7 @@ export const ProfitLossCard = () => {
             <span className="text-[#55635D] font-medium">Operating Expenses</span>
           </div>
           <span className="font-serif font-bold text-sm text-[#141A17]">
-            ₹ 31,000
+            {formatCurrency(plData.operatingExpenses)}
           </span>
         </div>
 
@@ -61,11 +106,13 @@ export const ProfitLossCard = () => {
             Net Profit
           </span>
           <div className="flex items-center gap-2">
-            <span className="font-serif font-bold text-base text-[#141A17]">
-              ₹ 81,500
+            <span className={`font-serif font-bold text-base ${plData.isProfitable ? 'text-[#141A17]' : 'text-[#C95426]'}`}>
+              {formatCurrency(plData.netProfit)}
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-[#E5F7ED] text-[#1E7445] text-[10px] font-bold">
-              ↑ 14%
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+              plData.isProfitable ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FDECE7] text-[#C95426]'
+            }`}>
+              {plData.isProfitable ? '↑' : '↓'} {plData.marginImprovement}%
             </span>
           </div>
         </div>

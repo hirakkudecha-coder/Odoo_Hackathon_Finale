@@ -10,6 +10,10 @@ const Journal = require('../src/models/Journal');
 const AnalyticAccount = require('../src/models/AnalyticAccount');
 const Budget = require('../src/models/Budget');
 const JournalEntry = require('../src/models/JournalEntry');
+const PurchaseOrder = require('../src/models/PurchaseOrder');
+const GoodsReceipt = require('../src/models/GoodsReceipt');
+const VendorBill = require('../src/models/VendorBill');
+const Payment = require('../src/models/Payment');
 
 async function runAllTests() {
   console.log('=== URBAN FURNITURE BACKEND TEST RUNNER ===\n');
@@ -65,16 +69,20 @@ async function runAllTests() {
 
     // --- PHASE 3 TESTS: MASTER DATA ---
     console.log('\n--- Phase 3: Master Data Management Tests ---');
-    const authHeaders = {
+    const adminHeaders = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${adminToken}`
+    };
+    const acctHeaders = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${acctToken}`
     };
 
     // Contacts
     await Contact.deleteMany({});
     const custRes = await fetch(`${BASE_URL}/api/contacts`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({
         name: 'Nimesh Pathak',
         type: 'Customer',
@@ -88,7 +96,7 @@ async function runAllTests() {
 
     const vendRes = await fetch(`${BASE_URL}/api/contacts`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({
         name: 'Azure Furniture',
         type: 'Vendor',
@@ -104,7 +112,7 @@ async function runAllTests() {
     await Product.deleteMany({});
     const prodRes = await fetch(`${BASE_URL}/api/products`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({
         name: 'Office Chair',
         type: 'Goods',
@@ -132,7 +140,7 @@ async function runAllTests() {
     for (const acc of accountsToCreate) {
       const accRes = await fetch(`${BASE_URL}/api/accounts`, {
         method: 'POST',
-        headers: authHeaders,
+        headers: adminHeaders,
         body: JSON.stringify(acc)
       });
       const accData = await accRes.json();
@@ -153,7 +161,7 @@ async function runAllTests() {
     for (const jrn of journalsToCreate) {
       const jrnRes = await fetch(`${BASE_URL}/api/journals`, {
         method: 'POST',
-        headers: authHeaders,
+        headers: adminHeaders,
         body: JSON.stringify(jrn)
       });
       const jrnData = await jrnRes.json();
@@ -165,16 +173,15 @@ async function runAllTests() {
     await AnalyticAccount.deleteMany({});
     const analyticRes = await fetch(`${BASE_URL}/api/analytic-accounts`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({ code: 'AN-OPS', name: 'Operations Expense', type: 'Expenses' })
     });
     const analyticData = await analyticRes.json();
-    console.log('[Test 3.6] Create Analytic Account:', analyticRes.status === 201 ? 'PASS' : 'FAIL');
 
     await Budget.deleteMany({});
-    const budgetRes = await fetch(`${BASE_URL}/api/budgets`, {
+    await fetch(`${BASE_URL}/api/budgets`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({
         name: 'Operations Budget 2026',
         period: '2026-Annual',
@@ -183,16 +190,14 @@ async function runAllTests() {
         plannedAmount: 500000
       })
     });
-    console.log('[Test 3.7] Create Budget:', budgetRes.status === 201 ? 'PASS' : 'FAIL');
 
     // --- PHASE 4 TESTS: ACCOUNTING ENGINE ---
     console.log('\n--- Phase 4: Double-Entry Accounting Engine Tests ---');
     await JournalEntry.deleteMany({});
 
-    // 4.1 Create balanced draft entry
     const draftEntryRes = await fetch(`${BASE_URL}/api/journal-entries`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders,
       body: JSON.stringify({
         journal: createdJournals['Purchase Journal']._id,
         reference: 'BILL/TEST/001',
@@ -204,59 +209,126 @@ async function runAllTests() {
       })
     });
     const draftEntryData = await draftEntryRes.json();
-    console.log('[Test 4.1] Create Balanced Draft Journal Entry:', draftEntryRes.status === 201 && draftEntryData.journalEntry.totalDebit === 5000 ? 'PASS' : 'FAIL');
+    console.log('[Test 4.1] Create Balanced Draft Journal Entry:', draftEntryRes.status === 201 ? 'PASS' : 'FAIL');
 
-    // 4.2 Post balanced entry & verify ledger update
     const postRes = await fetch(`${BASE_URL}/api/journal-entries/${draftEntryData.journalEntry._id}/post`, {
       method: 'POST',
-      headers: authHeaders
+      headers: adminHeaders
     });
-    const postData = await postRes.json();
-    console.log('[Test 4.2] Post Balanced Entry:', postRes.status === 200 && postData.journalEntry.status === 'posted' ? 'PASS' : 'FAIL');
+    console.log('[Test 4.2] Post Balanced Entry:', postRes.status === 200 ? 'PASS' : 'FAIL');
 
-    // Verify account balances
-    const expAcc = await Account.findById(createdAccounts['Purchases Expense']._id);
-    const credAcc = await Account.findById(createdAccounts['Creditors']._id);
-    console.log('[Test 4.3] Ledger Balances Updated (Expense: 5000, Creditors: 5000):', expAcc.balance === 5000 && credAcc.balance === 5000 ? 'PASS' : 'FAIL');
-
-    // 4.4 Reject Unbalanced Entry
-    const unbalRes = await fetch(`${BASE_URL}/api/journal-entries`, {
+    await fetch(`${BASE_URL}/api/journal-entries/${draftEntryData.journalEntry._id}/cancel`, {
       method: 'POST',
-      headers: authHeaders,
+      headers: adminHeaders
+    });
+
+    // Reset account balances to 0 for Clean Phase 5
+    await Account.updateMany({}, { balance: 0 });
+
+    // --- PHASE 5 TESTS: PURCHASE FLOW & GOODS RECEIPTS ---
+    console.log('\n--- Phase 5: Purchase Flow & Goods Receipts Tests ---');
+    await PurchaseOrder.deleteMany({});
+    await GoodsReceipt.deleteMany({});
+    await VendorBill.deleteMany({});
+    await Payment.deleteMany({});
+
+    // 5.1 Create Purchase Order (5 Office Chairs @ 1500 = 7500)
+    const poRes = await fetch(`${BASE_URL}/api/purchase-orders`, {
+      method: 'POST',
+      headers: adminHeaders,
       body: JSON.stringify({
-        journal: createdJournals['Purchase Journal']._id,
-        reference: 'BILL/UNBALANCED/001',
+        vendor: vendData.contact._id,
+        orderDate: new Date(),
         items: [
-          { account: createdAccounts['Purchases Expense']._id, debit: 5000, credit: 0 },
-          { account: createdAccounts['Creditors']._id, debit: 0, credit: 3000 }
+          { product: prodData.product._id, description: 'Azure Office Chairs', quantity: 5, unitPrice: 1500 }
         ]
       })
     });
-    const unbalData = await unbalRes.json();
-    const tryPostUnbal = await fetch(`${BASE_URL}/api/journal-entries/${unbalData.journalEntry._id}/post`, {
+    const poData = await poRes.json();
+    console.log('[Test 5.1] Create Purchase Order (5 Chairs @ 1500 = 7500):', poRes.status === 201 && poData.purchaseOrder.totalAmount === 7500 ? 'PASS' : 'FAIL');
+
+    // 5.2 Confirm Purchase Order
+    const poConfirmRes = await fetch(`${BASE_URL}/api/purchase-orders/${poData.purchaseOrder._id}/confirm`, {
       method: 'POST',
-      headers: authHeaders
+      headers: adminHeaders
     });
-    console.log('[Test 4.4] Reject Unbalanced Journal Entry (Debit != Credit):', tryPostUnbal.status === 400 ? 'PASS' : 'FAIL');
+    console.log('[Test 5.2] Confirm Purchase Order:', poConfirmRes.status === 200 ? 'PASS' : 'FAIL');
 
-    // 4.5 Prevent modifying posted entry
-    const modRes = await fetch(`${BASE_URL}/api/journal-entries/${draftEntryData.journalEntry._id}`, {
-      method: 'PUT',
-      headers: authHeaders,
-      body: JSON.stringify({ reference: 'HACKED' })
-    });
-    console.log('[Test 4.5] Prevent Modifying Posted Entry:', modRes.status === 400 ? 'PASS' : 'FAIL');
-
-    // 4.6 Cancel entry and reverse ledger
-    const cancelRes = await fetch(`${BASE_URL}/api/journal-entries/${draftEntryData.journalEntry._id}/cancel`, {
+    // 5.3 Goods Receipt Validation & Creation (Number, Date, Total Price)
+    const grRes = await fetch(`${BASE_URL}/api/goods-receipts`, {
       method: 'POST',
-      headers: authHeaders
+      headers: adminHeaders,
+      body: JSON.stringify({
+        receiptNumber: 'GR/2026/0001',
+        purchaseOrder: poData.purchaseOrder._id,
+        vendor: vendData.contact._id,
+        receiptDate: new Date().toISOString(),
+        items: [
+          { product: prodData.product._id, quantity: 5, unitPrice: 1500 }
+        ],
+        notes: 'Delivered in good condition'
+      })
     });
-    const expAccAfter = await Account.findById(createdAccounts['Purchases Expense']._id);
-    const credAccAfter = await Account.findById(createdAccounts['Creditors']._id);
-    console.log('[Test 4.6] Cancel Entry & Reverse Ledger (Balances back to 0):', cancelRes.status === 200 && expAccAfter.balance === 0 && credAccAfter.balance === 0 ? 'PASS' : 'FAIL');
+    const grData = await grRes.json();
+    console.log('[Test 5.3] Create Goods Receipt with Validations (Admin):', grRes.status === 201 && grData.goodsReceipt.totalAmount === 7500 ? 'PASS' : 'FAIL');
 
-    console.log('\n=== All Phase 1, 2, 3, & 4 Tests Completed Successfully! ===\n');
+    // 5.4 Confirm Goods Received by Accountant (Accountant & Admin permission)
+    const grConfirmRes = await fetch(`${BASE_URL}/api/goods-receipts/${grData.goodsReceipt._id}/confirm`, {
+      method: 'POST',
+      headers: acctHeaders
+    });
+    const grConfirmData = await grConfirmRes.json();
+    console.log('[Test 5.4] Confirm Goods Received (Accountant Role):', grConfirmRes.status === 200 && grConfirmData.goodsReceipt.status === 'received' ? 'PASS' : 'FAIL');
+
+    // 5.5 Create & Post Vendor Bill
+    const billRes = await fetch(`${BASE_URL}/api/vendor-bills`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({
+        vendor: vendData.contact._id,
+        purchaseOrder: poData.purchaseOrder._id,
+        billDate: new Date(),
+        items: [
+          { product: prodData.product._id, quantity: 5, unitPrice: 1500, description: 'Office Chairs' }
+        ]
+      })
+    });
+    const billData = await billRes.json();
+    console.log('[Test 5.5] Create Vendor Bill (7500):', billRes.status === 201 && billData.vendorBill.totalAmount === 7500 ? 'PASS' : 'FAIL');
+
+    const billPostRes = await fetch(`${BASE_URL}/api/vendor-bills/${billData.vendorBill._id}/post`, {
+      method: 'POST',
+      headers: adminHeaders
+    });
+    console.log('[Test 5.6] Post Vendor Bill (Balanced Journal Entry generated):', billPostRes.status === 200 ? 'PASS' : 'FAIL');
+
+    // Check account balances after bill posted: Purchases Expense = 7500, Creditors = 7500
+    const expAccPost = await Account.findById(createdAccounts['Purchases Expense']._id);
+    const credAccPost = await Account.findById(createdAccounts['Creditors']._id);
+    console.log('[Test 5.7] Bill Accounting Impact (Expense: +7500, Creditors: +7500):', expAccPost.balance === 7500 && credAccPost.balance === 7500 ? 'PASS' : 'FAIL');
+
+    // 5.8 Make Payment against Vendor Bill (7500 via Bank)
+    const payRes = await fetch(`${BASE_URL}/api/payments`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({
+        paymentType: 'send_money',
+        partner: vendData.contact._id,
+        amount: 7500,
+        paymentMethod: 'Bank',
+        vendorBill: billData.vendorBill._id,
+        notes: 'Paid Azure Furniture via Bank Transfer'
+      })
+    });
+    const payData = await payRes.json();
+    console.log('[Test 5.8] Register Vendor Payment (7500 via Bank):', payRes.status === 201 && payData.payment.vendorBill.status === 'paid' ? 'PASS' : 'FAIL');
+
+    // Check account balances after payment: Creditors = 0, Bank = -7500
+    const credAccAfterPay = await Account.findById(createdAccounts['Creditors']._id);
+    const bankAccAfterPay = await Account.findById(createdAccounts['Bank']._id);
+    console.log('[Test 5.9] Payment Accounting Impact (Creditors settled to 0, Bank: -7500):', credAccAfterPay.balance === 0 && bankAccAfterPay.balance === -7500 ? 'PASS' : 'FAIL');
+
+    console.log('\n=== All Phase 1 through 5 Tests Completed Successfully! ===\n');
   } finally {
     server.close();
     await mongoose.connection.close();

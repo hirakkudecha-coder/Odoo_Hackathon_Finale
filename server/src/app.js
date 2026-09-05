@@ -13,6 +13,10 @@ const journalRoutes = require('./routes/journalRoutes');
 const analyticAccountRoutes = require('./routes/analyticAccountRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
 const journalEntryRoutes = require('./routes/journalEntryRoutes');
+const purchaseOrderRoutes = require('./routes/purchaseOrderRoutes');
+const goodsReceiptRoutes = require('./routes/goodsReceiptRoutes');
+const vendorBillRoutes = require('./routes/vendorBillRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
 
 const app = express();
 
@@ -50,6 +54,10 @@ app.use('/api/journals', journalRoutes);
 app.use('/api/analytic-accounts', analyticAccountRoutes);
 app.use('/api/budgets', budgetRoutes);
 app.use('/api/journal-entries', journalEntryRoutes);
+app.use('/api/purchase-orders', purchaseOrderRoutes);
+app.use('/api/goods-receipts', goodsReceiptRoutes);
+app.use('/api/vendor-bills', vendorBillRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

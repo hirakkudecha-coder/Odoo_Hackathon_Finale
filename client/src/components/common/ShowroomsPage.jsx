@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft,
   MapPin,
@@ -110,9 +110,39 @@ export const ShowroomsPage = ({
     }
   ];
 
+  const [showroomsList, setShowroomsList] = useState(showrooms);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchShowrooms = async () => {
+      try {
+        const res = await fetch('/api/showrooms');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.showrooms && Array.isArray(data.showrooms) && data.showrooms.length > 0 && isMounted) {
+            const imageMap = {
+              mumbai: livingRoomHero,
+              delhi: livingRoomHero2,
+              bengaluru: livingRoomHero3
+            };
+            const enriched = data.showrooms.map(s => ({
+              ...s,
+              image: imageMap[s.cityKey] || s.image || livingRoomHero
+            }));
+            setShowroomsList(enriched);
+          }
+        }
+      } catch (err) {
+        console.warn('Live showrooms fetch failed, using fallback:', err.message);
+      }
+    };
+    fetchShowrooms();
+    return () => { isMounted = false; };
+  }, []);
+
   const filteredShowrooms = selectedCity === 'all' 
-    ? showrooms 
-    : showrooms.filter(s => s.cityKey === selectedCity);
+    ? showroomsList 
+    : showroomsList.filter(s => s.cityKey === selectedCity);
 
   const handleBackHome = (e) => {
     if (e) e.preventDefault();

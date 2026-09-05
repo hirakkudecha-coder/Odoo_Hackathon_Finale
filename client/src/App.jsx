@@ -212,14 +212,20 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN PARTNER & HELPDESK PORTAL: Accessible at /partner-helpdesk
+  // FULL SCREEN PARTNER & HELPDESK PORTAL: Accessible at /partner-helpdesk, /helpdesk, /trade-partner, /partner
   if (
     currentPath === '/partner-helpdesk' ||
     currentPath.startsWith('/partner-helpdesk') ||
+    currentPath === '/helpdesk' ||
+    currentPath.startsWith('/helpdesk') ||
+    currentPath === '/trade-partner' ||
+    currentPath.startsWith('/trade-partner') ||
+    currentPath === '/partner' ||
+    currentPath.startsWith('/partner') ||
     window.location.hash === '#partner' ||
     window.location.hash === '#helpdesk'
   ) {
-    const initialTab = (window.location.hash === '#partner' || window.location.hash === '#partner-program') ? 'partner' : 'helpdesk';
+    const initialTab = (window.location.hash === '#partner' || window.location.hash === '#partner-program' || currentPath.includes('partner')) ? 'partner' : 'helpdesk';
     return (
       <PartnerHelpdeskPage
         initialTab={initialTab}
@@ -232,10 +238,12 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN ATELIER ABOUT & EDITORIAL PAGE: Accessible at /about
+  // FULL SCREEN ATELIER ABOUT & EDITORIAL PAGE: Accessible at /about, /atelier
   if (
     currentPath === '/about' ||
-    currentPath.startsWith('/about')
+    currentPath.startsWith('/about') ||
+    currentPath === '/atelier' ||
+    currentPath.startsWith('/atelier')
   ) {
     const hashTab = window.location.hash.replace('#', '') || 'story';
     return (
@@ -250,10 +258,12 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN SHOWROOMS LOCATOR: Accessible at /showrooms
+  // FULL SCREEN SHOWROOMS LOCATOR: Accessible at /showrooms, /showroom
   if (
     currentPath === '/showrooms' ||
-    currentPath.startsWith('/showrooms')
+    currentPath.startsWith('/showrooms') ||
+    currentPath === '/showroom' ||
+    currentPath.startsWith('/showroom')
   ) {
     return (
       <ShowroomsPage
@@ -278,6 +288,9 @@ export const App = () => {
         onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
         currentUser={currentUser}
         onLogout={handleLogout}
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
       />
 
       {/* Main Long-Form Editorial Content */}

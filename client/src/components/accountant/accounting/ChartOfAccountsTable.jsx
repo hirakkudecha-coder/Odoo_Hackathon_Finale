@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-export { ChartOfAccountsTable, default } from '../../admin/accounting/ChartOfAccountsTable';
-=======
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BookOpen, 
   Search, 
@@ -112,6 +109,60 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
   ];
 
   const [accounts, setAccounts] = useState(initialAccounts);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadAccounts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/accounts', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.accounts && Array.isArray(json.accounts) && json.accounts.length > 0) {
+            const mapped = json.accounts.map((acc, idx) => {
+              const bal = Number(acc.currentBalance || 0);
+              const balStr = `₹ ${Math.abs(bal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const rawType = acc.type || 'asset';
+              let typeLabel = 'Current Asset';
+              let typeBadge = 'bg-[#EBF3FE] text-[#2563EB]';
+
+              if (rawType.toLowerCase().includes('bank') || rawType.toLowerCase().includes('cash')) {
+                typeLabel = 'Bank & Cash';
+                typeBadge = 'bg-[#E5F7ED] text-[#1E7445]';
+              } else if (rawType.toLowerCase().includes('liability') || rawType.toLowerCase().includes('payable')) {
+                typeLabel = 'Current Liability';
+                typeBadge = 'bg-[#FEF7EC] text-[#D97706]';
+              } else if (rawType.toLowerCase().includes('income') || rawType.toLowerCase().includes('revenue')) {
+                typeLabel = 'Operating Income';
+                typeBadge = 'bg-[#E5F7ED] text-[#1E7445]';
+              } else if (rawType.toLowerCase().includes('expense')) {
+                typeLabel = 'Operating Expense';
+                typeBadge = 'bg-[#FDE8E8] text-[#991B1B]';
+              }
+
+              return {
+                id: acc._id || idx + 1,
+                code: acc.code || `ACC-${String(idx + 1).padStart(4, '0')}`,
+                name: acc.name,
+                type: typeLabel,
+                typeBadge,
+                balance: balStr,
+                currency: 'INR',
+                status: acc.status === 'active' ? 'Active' : 'Inactive',
+                statusDot: acc.status === 'active' ? 'bg-[#10B981]' : 'bg-[#D97706]'
+              };
+            });
+            if (isMounted) setAccounts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live accounts fetch failed:', err.message);
+      }
+    };
+    loadAccounts();
+    return () => { isMounted = false; };
+  }, []);
 
   const [newAccountForm, setNewAccountForm] = useState({
     code: '',
@@ -636,4 +687,3 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
 };
 
 export default ChartOfAccountsTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

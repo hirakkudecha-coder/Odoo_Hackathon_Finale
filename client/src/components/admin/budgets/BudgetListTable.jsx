@@ -116,8 +116,9 @@ export const BudgetListTable = ({ onCreateBudget }) => {
         const res = await fetch('/api/reports/budget', { headers });
         if (res.ok) {
           const json = await res.json();
-          if (json.report && Array.isArray(json.report) && json.report.length > 0) {
-            const mapped = json.report.map((b, idx) => {
+          const items = json.report?.budgets || (Array.isArray(json.report) ? json.report : null);
+          if (items && Array.isArray(items) && items.length > 0) {
+            const mapped = items.map((b, idx) => {
               const util = Math.min(100, Math.round(b.utilizationPercent || 0));
               const isOver = util > 95;
               return {

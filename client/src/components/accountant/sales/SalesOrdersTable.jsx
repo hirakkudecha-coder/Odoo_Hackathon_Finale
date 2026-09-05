@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-export { SalesOrdersTable, default } from '../../admin/sales/SalesOrdersTable';
-=======
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShoppingCart, 
   Search, 
@@ -38,8 +35,8 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       customerInitials: 'NP',
       customerAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
       items: '4 items',
-      totalAmount: '₹ 1,24,000.00',
-      status: 'Invoiced',
+      totalAmount: '₹ 24,500.00',
+      status: 'Confirmed',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
       statusDot: 'bg-[#10B981]',
     },
@@ -47,12 +44,12 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       id: 2,
       soNo: 'SO-2025-002',
       date: '01 Sep 2025',
-      customer: 'DesignHub Interiors',
-      customerInitials: 'DI',
-      customerAvatarBg: 'bg-[#DFD8CE] text-[#3D372E]',
+      customer: 'Meera & Co.',
+      customerInitials: 'MC',
+      customerAvatarBg: 'bg-[#F2DDD0] text-[#5C3826]',
       items: '6 items',
-      totalAmount: '₹ 96,000.00',
-      status: 'Confirmed',
+      totalAmount: '₹ 56,800.00',
+      status: 'Quotation',
       statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
       statusDot: 'bg-[#3B82F6]',
     },
@@ -660,4 +657,3 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
 };
 
 export default SalesOrdersTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

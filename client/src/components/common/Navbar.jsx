@@ -2,7 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, Menu, X, ChevronRight, UserPlus } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
-export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAccountant, currentUser, onLogout }) => {
+export const Navbar = ({ 
+  onOpenAuth, 
+  onOpenCreateUser, 
+  onOpenDashboard, 
+  onOpenAccountant, 
+  currentUser, 
+  onLogout,
+  onNavigatePartnerHelpdesk,
+  onNavigateAbout,
+  onNavigateShowrooms
+}) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -219,7 +229,53 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                 );
               })}
 
-              <div className="flex flex-col gap-2 pt-3 mt-2 border-t border-[#2D4A3E]/15">
+              {/* Quick links to new full-page modules */}
+              <div className="grid grid-cols-3 gap-1.5 pt-2 mt-2 border-t border-[#2D4A3E]/12">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onNavigateAbout) onNavigateAbout('story');
+                    else {
+                      window.history.pushState(null, '', '/about');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
+                >
+                  Our Story
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onNavigateShowrooms) onNavigateShowrooms();
+                    else {
+                      window.history.pushState(null, '', '/showrooms');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
+                >
+                  Showrooms
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    if (onNavigatePartnerHelpdesk) onNavigatePartnerHelpdesk('helpdesk');
+                    else {
+                      window.history.pushState(null, '', '/partner-helpdesk');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
+                >
+                  Help Desk
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2 pt-2 border-t border-[#2D4A3E]/15">
                 {onOpenCreateUser && (
                   <button
                     onClick={() => {

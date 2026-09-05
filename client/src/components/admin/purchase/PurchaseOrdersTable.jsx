@@ -146,7 +146,6 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     },
   ];
 
-<<<<<<< HEAD
   const [apiOrders, setApiOrders] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -215,21 +214,9 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
   const displayedOrders = apiOrders || rawOrders;
 
-  // Filter orders by search
-  const filteredOrders = useMemo(() => {
-    if (!searchQuery.trim()) return displayedOrders;
-    const q = searchQuery.toLowerCase();
-    return displayedOrders.filter((order) =>
-      order.poNo.toLowerCase().includes(q) ||
-      order.supplier.toLowerCase().includes(q) ||
-      order.date.toLowerCase().includes(q) ||
-      order.status.toLowerCase().includes(q)
-    );
-  }, [displayedOrders, searchQuery]);
-=======
   // Filter purchase orders
   const filteredOrders = useMemo(() => {
-    return rawOrders.filter((order) => {
+    return displayedOrders.filter((order) => {
       if (statusFilter !== 'All Status' && order.status !== statusFilter) return false;
       if (activeTab === 'Suppliers' && !['HomeWorks Supplies', 'Sheetal Living', 'DesignCraft'].includes(order.supplier)) return false;
       if (searchQuery.trim()) {
@@ -243,8 +230,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       }
       return true;
     });
-  }, [searchQuery, statusFilter, activeTab]);
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
+  }, [displayedOrders, searchQuery, statusFilter, activeTab]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {

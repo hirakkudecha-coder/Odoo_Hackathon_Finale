@@ -91,8 +91,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
     },
   ];
 
-<<<<<<< HEAD
-  const [apiProducts, setApiProducts] = useState(null);
+  const [products, setProducts] = useState(rawProducts);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -109,7 +108,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
             const mapped = json.products.map((p, idx) => {
               const cp = `₹ ${Number(p.costPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
               const sp = `₹ ${Number(p.salesPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-              const sku = `UF-PRD-${String(idx + 1).padStart(3, '0')}`;
+              const sku = p.code || `UF-PRD-${String(idx + 1).padStart(3, '0')}`;
               const inStock = p.status === 'active';
 
               return {
@@ -125,7 +124,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 statusStyle: inStock ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FDECE7] text-[#C95426]'
               };
             });
-            if (isMounted) setApiProducts(mapped);
+            if (isMounted) setProducts(mapped);
           }
         }
       } catch (err) {
@@ -137,17 +136,6 @@ export const ProductsTable = ({ onCreateProduct }) => {
     loadProducts();
     return () => { isMounted = false; };
   }, []);
-
-  const displayedProducts = apiProducts || rawProducts;
-  const filterTabs = ['All', 'Living Room Seating', 'Living Room Sofas', 'Storage & Cabinetry', 'Dining Furniture', 'Accent Furniture'];
-
-  const filteredProducts = useMemo(() => {
-    let result = displayedProducts;
-    if (activeFilterTab !== 'All') {
-      result = result.filter((p) => p.category.toLowerCase().includes(activeFilterTab.toLowerCase()));
-    }
-=======
-  const [products, setProducts] = useState(initialProducts);
 
   const [newProductForm, setNewProductForm] = useState({
     sku: '',
@@ -166,7 +154,6 @@ export const ProductsTable = ({ onCreateProduct }) => {
     if (activeFilterTab === 'Low Stock') result = result.filter((p) => p.status === 'Low Stock');
     else if (activeFilterTab !== 'All') result = result.filter((p) => p.category.toLowerCase().includes(activeFilterTab.toLowerCase()));
 
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((p) =>
@@ -179,9 +166,6 @@ export const ProductsTable = ({ onCreateProduct }) => {
       return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
     });
     return result;
-<<<<<<< HEAD
-  }, [displayedProducts, searchQuery, activeFilterTab]);
-=======
   }, [products, searchQuery, activeFilterTab, sortAsc]);
 
   const itemsPerPage = 5;
@@ -327,7 +311,6 @@ export const ProductsTable = ({ onCreateProduct }) => {
     const pdfData = createMasterRegisterPdfData('Products & Finished Goods Inventory Register', headers, rows);
     downloadDirectPdf(pdfData);
   };
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">

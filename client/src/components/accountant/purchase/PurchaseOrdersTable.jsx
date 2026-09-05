@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-export { PurchaseOrdersTable, default } from '../../admin/purchase/PurchaseOrdersTable';
-=======
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShoppingBag, 
   Search, 
@@ -38,8 +35,8 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       supplierInitials: 'AF',
       supplierAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
       items: '5 items',
-      totalAmount: '₹ 48,750.00',
-      status: 'Received',
+      totalAmount: '₹ 18,000.00',
+      status: 'Confirmed',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
       statusDot: 'bg-[#10B981]',
     },
@@ -49,12 +46,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       date: '30 Aug 2025',
       supplier: 'Woodland Supplies',
       supplierInitials: 'WS',
-      supplierAvatarBg: 'bg-[#DFD8CE] text-[#3D372E]',
-      items: '3 items',
+      supplierAvatarBg: 'bg-[#F2DDD0] text-[#5C3826]',
+      items: '8 items',
       totalAmount: '₹ 33,200.00',
-      status: 'Ordered',
-      statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
-      statusDot: 'bg-[#3B82F6]',
+      status: 'Confirmed',
+      statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+      statusDot: 'bg-[#10B981]',
     },
     {
       id: 3,
@@ -62,12 +59,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       date: '28 Aug 2025',
       supplier: 'Royal Hardware',
       supplierInitials: 'RH',
-      supplierAvatarBg: 'bg-[#F2DDD0] text-[#5C3826]',
-      items: '8 items',
+      supplierAvatarBg: 'bg-[#E0E6E3] text-[#1F4536]',
+      items: '3 items',
       totalAmount: '₹ 12,500.00',
-      status: 'Received',
-      statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
-      statusDot: 'bg-[#10B981]',
+      status: 'RFQ',
+      statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
+      statusDot: 'bg-[#3B82F6]',
     },
     {
       id: 4,
@@ -75,8 +72,8 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       date: '26 Aug 2025',
       supplier: 'Crafty Wood Co.',
       supplierInitials: 'CW',
-      supplierAvatarBg: 'bg-[#D6DDD9] text-[#2C3B34]',
-      items: '4 items',
+      supplierAvatarBg: 'bg-[#DFD8CE] text-[#3D372E]',
+      items: '6 items',
       totalAmount: '₹ 27,800.00',
       status: 'Received',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
@@ -89,41 +86,101 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       supplier: 'Prime Metals',
       supplierInitials: 'PM',
       supplierAvatarBg: 'bg-[#CCD4D8] text-[#22353D]',
-      items: '6 items',
+      items: '4 items',
       totalAmount: '₹ 19,600.00',
-      status: 'Pending',
-      statusStyle: 'bg-[#FEF7EC] text-[#D97706]',
-      statusDot: 'bg-[#F59E0B]',
+      status: 'RFQ',
+      statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
+      statusDot: 'bg-[#3B82F6]',
     },
     {
       id: 6,
       poNo: 'PO-2025-006',
       date: '20 Aug 2025',
-      supplier: 'HomeWorks Supplies',
-      supplierInitials: 'HW',
-      supplierAvatarBg: 'bg-[#E0E6E3] text-[#1F4536]',
-      items: '7 items',
-      totalAmount: '₹ 64,200.00',
-      status: 'Ordered',
-      statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
-      statusDot: 'bg-[#3B82F6]',
+      supplier: 'Timber Direct',
+      supplierInitials: 'TD',
+      supplierAvatarBg: 'bg-[#E8EFF5] text-[#2C5282]',
+      items: '10 items',
+      totalAmount: '₹ 45,000.00',
+      status: 'Confirmed',
+      statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+      statusDot: 'bg-[#10B981]',
     },
     {
       id: 7,
       poNo: 'PO-2025-007',
       date: '18 Aug 2025',
-      supplier: 'Timber Craft',
-      supplierInitials: 'TC',
-      supplierAvatarBg: 'bg-[#E8EFF5] text-[#2C5282]',
+      supplier: 'Fabric Mill',
+      supplierInitials: 'FM',
+      supplierAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
       items: '2 items',
-      totalAmount: '₹ 15,300.00',
+      totalAmount: '₹ 8,900.00',
       status: 'Cancelled',
       statusStyle: 'bg-[#FDE8E8] text-[#991B1B]',
       statusDot: 'bg-[#DC2626]',
     },
   ]);
 
-  const filterTabs = ['All', 'Ordered', 'Received', 'Pending', 'Cancelled'];
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrders = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/purchase-orders', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.purchaseOrders && Array.isArray(json.purchaseOrders) && json.purchaseOrders.length > 0) {
+            const mapped = json.purchaseOrders.map((po, idx) => {
+              const supName = po.vendor?.name || 'Primary Supplier';
+              const initials = supName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const dateStr = po.orderDate ? new Date(po.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(po.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const rawStatus = (po.status || 'draft').toLowerCase();
+
+              let statusLabel = 'RFQ';
+              let statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+              let statusDot = 'bg-[#3B82F6]';
+
+              if (rawStatus === 'confirmed') {
+                statusLabel = 'Confirmed';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'received') {
+                statusLabel = 'Received';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'cancelled') {
+                statusLabel = 'Cancelled';
+                statusStyle = 'bg-[#FDE8E8] text-[#991B1B]';
+                statusDot = 'bg-[#DC2626]';
+              }
+
+              return {
+                id: po._id || idx + 1,
+                poNo: po.orderNumber || `PO-2026-${String(idx + 1).padStart(3, '0')}`,
+                date: dateStr,
+                supplier: supName,
+                supplierInitials: initials,
+                supplierAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+                items: `${po.items?.length || 1} items`,
+                totalAmount: amtStr,
+                status: statusLabel,
+                statusStyle,
+                statusDot
+              };
+            });
+            if (isMounted) setOrders(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live purchase orders fetch failed:', err.message);
+      }
+    };
+    loadOrders();
+    return () => { isMounted = false; };
+  }, []);
+
+  const filterTabs = ['All', 'RFQ', 'Confirmed', 'Received', 'Cancelled'];
 
   const filteredOrders = useMemo(() => {
     let result = [...orders];
@@ -659,4 +716,3 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 };
 
 export default PurchaseOrdersTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

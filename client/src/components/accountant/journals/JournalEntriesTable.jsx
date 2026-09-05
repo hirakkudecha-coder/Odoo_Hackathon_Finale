@@ -90,8 +90,7 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
     },
   ];
 
-<<<<<<< HEAD
-  const [apiEntries, setApiEntries] = useState(null);
+  const [entries, setEntries] = useState(rawEntries);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -124,7 +123,7 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
                 statusStyle: isPosted ? 'bg-[#E5F7ED] text-[#1E7445]' : je.status === 'cancelled' ? 'bg-[#FDE8E8] text-[#991B1B]' : 'bg-[#EBF3FE] text-[#2563EB]'
               };
             });
-            if (isMounted) setApiEntries(mapped);
+            if (isMounted) setEntries(mapped);
           }
         }
       } catch (err) {
@@ -136,14 +135,6 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
     loadEntries();
     return () => { isMounted = false; };
   }, []);
-
-  const displayedEntries = apiEntries || rawEntries;
-  const filterTabs = ['All', 'Posted', 'Draft', 'Customer Invoices', 'Vendor Bills', 'Bank'];
-
-  const filteredEntries = useMemo(() => {
-    let result = displayedEntries;
-=======
-  const [entries, setEntries] = useState(initialEntries);
 
   const [newEntryForm, setNewEntryForm] = useState({
     reference: '',
@@ -157,7 +148,6 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
 
   const filteredEntries = useMemo(() => {
     let result = [...entries];
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
     if (activeFilterTab === 'Posted') result = result.filter((e) => e.status === 'Posted');
     else if (activeFilterTab === 'Draft') result = result.filter((e) => e.status === 'Draft');
     else if (activeFilterTab !== 'All') result = result.filter((e) => e.journal.toLowerCase().includes(activeFilterTab.toLowerCase()));
@@ -174,9 +164,6 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
       return sortAsc ? a.id - b.id : b.id - a.id;
     });
     return result;
-<<<<<<< HEAD
-  }, [displayedEntries, searchQuery, activeFilterTab]);
-=======
   }, [entries, searchQuery, activeFilterTab, sortAsc]);
 
   const itemsPerPage = 5;
@@ -318,7 +305,6 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
     const pdfData = createMasterRegisterPdfData('General Ledger Journal Entries Register', headers, rows);
     downloadDirectPdf(pdfData);
   };
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">

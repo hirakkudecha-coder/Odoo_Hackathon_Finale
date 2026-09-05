@@ -1,7 +1,4 @@
-<<<<<<< HEAD
-import { ContactsTableView } from '../../admin/masterData/ContactsTableView';
-=======
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, 
   Search, 
@@ -113,6 +110,45 @@ export const ContactsTable = ({ onCreateContact }) => {
   ];
 
   const [contacts, setContacts] = useState(initialContacts);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchContacts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/contacts', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.contacts && Array.isArray(json.contacts) && json.contacts.length > 0) {
+            const mapped = json.contacts.map((c, idx) => {
+              const initials = c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const type = c.type === 'vendor' ? 'Vendor' : c.type === 'both' ? 'Both' : 'Customer';
+              const isCustomer = type === 'Customer';
+              return {
+                id: c._id || idx + 1,
+                name: c.name,
+                initials: initials || 'CO',
+                avatarBg: isCustomer ? 'bg-[#CCDCD2] text-[#1E3A2E]' : 'bg-[#F2DDD0] text-[#5C3826]',
+                type: type,
+                typeBadge: isCustomer ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEF7EC] text-[#D97706]',
+                email: c.email || '—',
+                phone: c.phone || '—',
+                city: c.city || 'National',
+                status: c.status === 'active' ? 'Active' : 'Inactive',
+                statusDot: c.status === 'active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
+              };
+            });
+            if (isMounted) setContacts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live contacts fetch failed:', err.message);
+      }
+    };
+    fetchContacts();
+    return () => { isMounted = false; };
+  }, []);
 
   const [newContactForm, setNewContactForm] = useState({
     name: '',
@@ -645,7 +681,5 @@ export const ContactsTable = ({ onCreateContact }) => {
     </div>
   );
 };
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
-export const ContactsTable = ContactsTableView;
 export default ContactsTable;

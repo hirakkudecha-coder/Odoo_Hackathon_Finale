@@ -1,20 +1,13 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
-
-export const RecentBillsTable = ({ onViewAll }) => {
-  const rawBills = [
-=======
-import React, { useState } from 'react';
 import { DocumentPdfModal } from './DocumentPdfModal';
 import { createPurchaseOrderPdfData, downloadDirectPdf } from '../../utils/pdfGenerator';
 import { FileText, Printer } from 'lucide-react';
 
-export const RecentBillsTable = () => {
+export const RecentBillsTable = ({ onViewAll }) => {
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
-  const bills = [
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
+  const rawBills = [
     { id: 'BILL-0021', vendor: 'Azure Furniture', date: '02 Sep 2025', amount: '₹ 18,000', status: 'Pending' },
     { id: 'BILL-0020', vendor: 'Woodland Supplies', date: '30 Aug 2025', amount: '₹ 33,200', status: 'Paid' },
     { id: 'BILL-0019', vendor: 'Royal Hardware', date: '28 Aug 2025', amount: '₹ 12,500', status: 'Due' },
@@ -22,7 +15,6 @@ export const RecentBillsTable = () => {
     { id: 'BILL-0017', vendor: 'Prime Metals', date: '24 Aug 2025', amount: '₹ 19,600', status: 'Pending' },
   ];
 
-<<<<<<< HEAD
   const [bills, setBills] = useState(rawBills);
 
   useEffect(() => {
@@ -61,7 +53,7 @@ export const RecentBillsTable = () => {
     fetchBills();
     return () => { isMounted = false; };
   }, []);
-=======
+
   const handleOpenBillPdf = (bill) => {
     const pdfData = createPurchaseOrderPdfData({
       poNo: bill.id,
@@ -84,7 +76,6 @@ export const RecentBillsTable = () => {
     });
     downloadDirectPdf(pdfData);
   };
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   const getStatusBadge = (status) => {
     switch (status) {

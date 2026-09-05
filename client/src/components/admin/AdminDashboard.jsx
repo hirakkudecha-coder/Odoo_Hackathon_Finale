@@ -12,6 +12,7 @@ import { TopSellingProducts } from './TopSellingProducts';
 import { SalesByCategoryChart } from './SalesByCategoryChart';
 import { FinancialReportsList } from './FinancialReportsList';
 import { MasterDataPage } from './masterData/MasterDataPage';
+import { PurchasePage } from './purchase/PurchasePage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -24,6 +25,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const handleQuickAction = (actionId) => {
     if (actionId === 'addContact' && onOpenCreateUser) {
       onOpenCreateUser();
+    } else if (actionId === 'newPurchase') {
+      setActiveMenu('purchase');
     } else if (actionId === 'newSale' || actionId === 'addProduct') {
       setActiveMenu('masterData');
     } else {
@@ -56,9 +59,11 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
         {/* Dashboard Main Scrollable Body with Unified Fluid Grid Padding */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 space-y-6 w-full">
           
-          {/* Conditional View: Master Data Page */}
+          {/* Conditional Views */}
           {activeMenu === 'masterData' || activeMenu === 'contacts' ? (
             <MasterDataPage onOpenCreateUser={onOpenCreateUser} />
+          ) : activeMenu === 'purchase' ? (
+            <PurchasePage onNavigateTab={handleSelectMenu} />
           ) : (
             <>
               {/* Greeting & Motivational Banner */}

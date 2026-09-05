@@ -10,7 +10,10 @@ import {
   ChevronRight,
   ArrowUpDown,
   Printer,
-  FileText
+  FileText,
+  X,
+  CheckCircle,
+  Eye
 } from 'lucide-react';
 import { DocumentPdfModal } from '../DocumentPdfModal';
 import { createPaymentReceiptPdfData, createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
@@ -20,10 +23,13 @@ export const PaymentsTable = ({ onCreatePayment }) => {
   const [activeFilterTab, setActiveFilterTab] = useState('All');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortAsc, setSortAsc] = useState(false);
+  const [activeRowMenuId, setActiveRowMenuId] = useState(null);
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
-  const rawPayments = [
+  const initialPayments = [
     {
       id: 1,
       payNo: 'PAY-2025-001',
@@ -110,10 +116,20 @@ export const PaymentsTable = ({ onCreatePayment }) => {
     },
   ];
 
+  const [payments, setPayments] = useState(initialPayments);
+
+  const [newPaymentForm, setNewPaymentForm] = useState({
+    partner: '',
+    type: 'Customer Receipt',
+    method: 'Bank Transfer (NEFT)',
+    amount: '',
+    status: 'Completed',
+  });
+
   const filterTabs = ['All', 'Reconciled', 'Completed', 'Pending'];
 
   const filteredPayments = useMemo(() => {
-    let result = rawPayments;
+    let result = [...payments];
     if (activeFilterTab !== 'All') {
       result = result.filter((p) => p.status.toLowerCase() === activeFilterTab.toLowerCase());
     }
@@ -126,8 +142,18 @@ export const PaymentsTable = ({ onCreatePayment }) => {
         p.status.toLowerCase().includes(q)
       );
     }
+    result.sort((a, b) => {
+      return sortAsc ? a.id - b.id : b.id - a.id;
+    });
     return result;
-  }, [searchQuery, activeFilterTab]);
+  }, [payments, searchQuery, activeFilterTab, sortAsc]);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredPayments.length / itemsPerPage));
+  const paginatedPayments = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredPayments.slice(start, start + itemsPerPage);
+  }, [filteredPayments, currentPage]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredPayments.length) {
@@ -143,15 +169,84 @@ export const PaymentsTable = ({ onCreatePayment }) => {
     );
   };
 
+  const handleOpenCreateModal = () => {
+    if (onCreatePayment) {
+      onCreatePayment();
+    } else {
+      setIsCreateModalOpen(true);
+    }
+  };
+
+  const handleSavePayment = (e) => {
+    e.preventDefault();
+    if (!newPaymentForm.partner || !newPaymentForm.amount) return;
+
+    const nextId = payments.length + 1;
+    const formattedIdStr = String(nextId).padStart(3, '0');
+    const initials = newPaymentForm.partner.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'PY';
+    
+    let statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+    let statusDot = 'bg-[#3B82F6]';
+    if (newPaymentForm.status === 'Reconciled') {
+      statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+      statusDot = 'bg-[#10B981]';
+    } else if (newPaymentForm.status === 'Pending') {
+      statusStyle = 'bg-[#FEF7EC] text-[#D97706]';
+      statusDot = 'bg-[#F59E0B]';
+    }
+
+    const newEntry = {
+      id: nextId,
+      payNo: `PAY-2025-${formattedIdStr}`,
+      date: 'Today, 02 Sep 2025',
+      partner: newPaymentForm.partner,
+      type: newPaymentForm.type,
+      partnerInitials: initials,
+      partnerAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+      method: newPaymentForm.method,
+      amount: newPaymentForm.amount.startsWith('₹') ? newPaymentForm.amount : `₹ ${newPaymentForm.amount}`,
+      status: newPaymentForm.status,
+      statusStyle,
+      statusDot,
+    };
+
+    setPayments([newEntry, ...payments]);
+    setIsCreateModalOpen(false);
+    setNewPaymentForm({
+      partner: '',
+      type: 'Customer Receipt',
+      method: 'Bank Transfer (NEFT)',
+      amount: '',
+      status: 'Completed',
+    });
+  };
+
+  const handleToggleStatus = (payId) => {
+    setPayments((prev) =>
+      prev.map((p) => {
+        if (p.id === payId) {
+          const nextStatus = p.status === 'Reconciled' ? 'Pending' : 'Reconciled';
+          const nextStyle = nextStatus === 'Reconciled' ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEF7EC] text-[#D97706]';
+          const nextDot = nextStatus === 'Reconciled' ? 'bg-[#10B981]' : 'bg-[#F59E0B]';
+          return { ...p, status: nextStatus, statusStyle: nextStyle, statusDot: nextDot };
+        }
+        return p;
+      })
+    );
+    setActiveRowMenuId(null);
+  };
+
   const handleViewPaymentPdf = (payment) => {
     const pdfData = createPaymentReceiptPdfData(payment);
     setSelectedPdfDoc(pdfData);
     setIsPdfModalOpen(true);
+    setActiveRowMenuId(null);
   };
 
   const handleDownloadPaymentPdfDirect = (payment) => {
     const pdfData = createPaymentReceiptPdfData(payment);
     downloadDirectPdf(pdfData);
+    setActiveRowMenuId(null);
   };
 
   const handleExportPdf = () => {
@@ -200,14 +295,17 @@ export const PaymentsTable = ({ onCreatePayment }) => {
               type="text"
               placeholder="Search payments..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl pl-9 pr-3 py-2 text-xs text-[#141A17] placeholder:text-[#8A9B93] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F] transition-all"
             />
           </div>
 
           <button
             type="button"
-            onClick={onCreatePayment}
+            onClick={handleOpenCreateModal}
             className="inline-flex items-center gap-2 bg-[#1C3A2F] hover:bg-[#142C23] text-[#FAF8F5] text-xs font-semibold px-4 py-2 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
@@ -223,7 +321,10 @@ export const PaymentsTable = ({ onCreatePayment }) => {
           {filterTabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveFilterTab(tab)}
+              onClick={() => {
+                setActiveFilterTab(tab);
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeFilterTab === tab
                   ? 'bg-[#1C3A2F] text-white shadow-2xs'
@@ -238,10 +339,12 @@ export const PaymentsTable = ({ onCreatePayment }) => {
         <div className="flex items-center gap-2 ml-auto">
           <button
             type="button"
+            onClick={() => setSortAsc(!sortAsc)}
             className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Toggle sort order"
           >
             <Filter className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Filter</span>
+            <span>{sortAsc ? 'Oldest First' : 'Newest First'}</span>
           </button>
           <button
             type="button"
@@ -279,8 +382,10 @@ export const PaymentsTable = ({ onCreatePayment }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
-            {filteredPayments.map((pay) => {
+            {paginatedPayments.map((pay) => {
               const isSelected = selectedIds.includes(pay.id);
+              const isMenuOpen = activeRowMenuId === pay.id;
+
               return (
                 <tr
                   key={pay.id}
@@ -326,7 +431,7 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                     </span>
                   </td>
                   <td className="py-3.5 pr-6 pl-3 text-right">
-                    <div className="flex items-center justify-end gap-1">
+                    <div className="flex items-center justify-end gap-1 relative">
                       <button 
                         type="button" 
                         onClick={() => handleDownloadPaymentPdfDirect(pay)}
@@ -335,9 +440,45 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                       >
                         <Download className="w-3.5 h-3.5" />
                       </button>
-                      <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
+                      <button 
+                        type="button" 
+                        onClick={() => setActiveRowMenuId(isMenuOpen ? null : pay.id)}
+                        className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                        title="More options"
+                      >
                         <MoreVertical className="w-4 h-4" />
                       </button>
+
+                      {/* Context Menu Dropdown */}
+                      {isMenuOpen && (
+                        <div className="absolute right-0 top-8 z-30 w-48 bg-white rounded-xl shadow-lg border border-[#E8E1D5] py-1 text-left">
+                          <button
+                            type="button"
+                            onClick={() => handleViewPaymentPdf(pay)}
+                            className="w-full px-3.5 py-2 text-xs text-[#141A17] hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-[#1C3A2F]" />
+                            <span>View Receipt PDF</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDownloadPaymentPdfDirect(pay)}
+                            className="w-full px-3.5 py-2 text-xs text-[#141A17] hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5 text-[#1C3A2F]" />
+                            <span>Download PDF</span>
+                          </button>
+                          <div className="border-t border-[#F0EAE1] my-1"></div>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleStatus(pay.id)}
+                            className="w-full px-3.5 py-2 text-xs text-[#1C3A2F] font-semibold hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
+                          >
+                            <CheckCircle className="w-3.5 h-3.5" />
+                            <span>{pay.status === 'Reconciled' ? 'Mark as Pending' : 'Mark as Reconciled'}</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -349,13 +490,157 @@ export const PaymentsTable = ({ onCreatePayment }) => {
 
       {/* 4. Pagination */}
       <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
-        <span>Showing 1 to {filteredPayments.length} of {rawPayments.length} payments</span>
+        <span>
+          Showing {filteredPayments.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{' '}
+          {Math.min(currentPage * itemsPerPage, filteredPayments.length)} of {filteredPayments.length} payments
+        </span>
         <div className="flex items-center gap-1.5">
-          <button type="button" className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer"><ChevronLeft className="w-4 h-4" /></button>
-          <span className="px-3 py-1 bg-[#1C3A2F] text-white font-bold rounded-lg shadow-2xs">1</span>
-          <button type="button" className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
+          <button 
+            type="button" 
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              type="button"
+              onClick={() => setCurrentPage(pageNum)}
+              className={`px-3 py-1 font-bold rounded-lg cursor-pointer transition-all ${
+                currentPage === pageNum
+                  ? 'bg-[#1C3A2F] text-white shadow-2xs'
+                  : 'bg-white text-[#4A5952] border border-[#E2DAD0] hover:bg-[#F2ECE4]'
+              }`}
+            >
+              {pageNum}
+            </button>
+          ))}
+
+          <button 
+            type="button" 
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      {/* Create Payment Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-2xl max-w-md w-full overflow-hidden text-left animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-5 border-b border-[#F0EAE1] flex items-center justify-between bg-[#FAF8F5]">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#1C3A2F] text-white flex items-center justify-center">
+                  <CreditCard className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif-luxury font-bold text-base text-[#141A17]">Register Payment</h3>
+                  <p className="text-[11px] text-[#6B7A74]">Enter transaction and reconciliation details</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCreateModalOpen(false)}
+                className="p-1 rounded-lg text-[#6B7A74] hover:text-[#141A17] hover:bg-[#EAE4DC] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSavePayment} className="p-5 space-y-4 text-xs">
+              <div>
+                <label className="block text-xs font-semibold text-[#141A17] mb-1">Partner / Entity Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Royal Interiors Ltd."
+                  value={newPaymentForm.partner}
+                  onChange={(e) => setNewPaymentForm({ ...newPaymentForm, partner: e.target.value })}
+                  className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Type</label>
+                  <select
+                    value={newPaymentForm.type}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  >
+                    <option value="Customer Receipt">Customer Receipt</option>
+                    <option value="Vendor Payment">Vendor Payment</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Method</label>
+                  <select
+                    value={newPaymentForm.method}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, method: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  >
+                    <option value="Bank Transfer (NEFT)">Bank Transfer (NEFT)</option>
+                    <option value="Online Banking">Online Banking</option>
+                    <option value="UPI Instant">UPI Instant</option>
+                    <option value="Cheque Deposit">Cheque Deposit</option>
+                    <option value="Credit Card">Credit Card</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Amount (INR)</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. 25000"
+                    value={newPaymentForm.amount}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, amount: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Initial Status</label>
+                  <select
+                    value={newPaymentForm.status}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, status: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  >
+                    <option value="Completed">Completed</option>
+                    <option value="Reconciled">Reconciled</option>
+                    <option value="Pending">Pending</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-[#F0EAE1] flex items-center justify-end gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-[#E2DAD0] text-[#55665E] hover:bg-[#FAF8F5] font-semibold cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#1C3A2F] hover:bg-[#142C23] text-white font-semibold cursor-pointer shadow-xs"
+                >
+                  Save Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Document PDF Modal */}
       <DocumentPdfModal

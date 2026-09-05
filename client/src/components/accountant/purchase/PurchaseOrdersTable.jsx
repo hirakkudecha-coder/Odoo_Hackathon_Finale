@@ -22,8 +22,11 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [activeRowMenuId, setActiveRowMenuId] = useState(null);
+  const [sortAsc, setSortAsc] = useState(false);
 
-  const rawOrders = [
+  const [orders, setOrders] = useState([
     {
       id: 1,
       poNo: 'PO-2025-001',
@@ -115,12 +118,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       statusStyle: 'bg-[#FDE8E8] text-[#991B1B]',
       statusDot: 'bg-[#DC2626]',
     },
-  ];
+  ]);
 
   const filterTabs = ['All', 'Ordered', 'Received', 'Pending', 'Cancelled'];
 
   const filteredOrders = useMemo(() => {
-    let result = rawOrders;
+    let result = [...orders];
     if (activeFilterTab !== 'All') {
       result = result.filter((o) => o.status.toLowerCase() === activeFilterTab.toLowerCase());
     }
@@ -133,14 +136,24 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
         o.status.toLowerCase().includes(q)
       );
     }
+    if (sortAsc) {
+      result.reverse();
+    }
     return result;
-  }, [searchQuery, activeFilterTab]);
+  }, [orders, searchQuery, activeFilterTab, sortAsc]);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const paginatedOrders = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredOrders.slice(start, start + itemsPerPage);
+  }, [filteredOrders, currentPage]);
 
   const toggleSelectAll = () => {
-    if (selectedIds.length === filteredOrders.length) {
+    if (selectedIds.length === paginatedOrders.length) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(filteredOrders.map((o) => o.id));
+      setSelectedIds(paginatedOrders.map((o) => o.id));
     }
   };
 
@@ -154,11 +167,39 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     const pdfData = createPurchaseOrderPdfData(order);
     setSelectedPdfDoc(pdfData);
     setIsPdfModalOpen(true);
+    setActiveRowMenuId(null);
   };
 
   const handleDownloadPoPdfDirect = (order) => {
     const pdfData = createPurchaseOrderPdfData(order);
     downloadDirectPdf(pdfData);
+    setActiveRowMenuId(null);
+  };
+
+  const handleUpdateStatus = (id, newStatus) => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.id === id
+          ? {
+              ...o,
+              status: newStatus,
+              statusStyle:
+                newStatus === 'Received'
+                  ? 'bg-[#E5F7ED] text-[#1E7445]'
+                  : newStatus === 'Ordered'
+                  ? 'bg-[#EBF3FE] text-[#2563EB]'
+                  : 'bg-[#FDE8E8] text-[#991B1B]',
+              statusDot:
+                newStatus === 'Received'
+                  ? 'bg-[#10B981]'
+                  : newStatus === 'Ordered'
+                  ? 'bg-[#3B82F6]'
+                  : 'bg-[#DC2626]',
+            }
+          : o
+      )
+    );
+    setActiveRowMenuId(null);
   };
 
   const handleExportPdf = () => {
@@ -178,6 +219,34 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
     const pdfData = createMasterRegisterPdfData('Purchase Orders Procurement Register', headers, rows);
     downloadDirectPdf(pdfData);
+  };
+
+  const [newSupplierName, setNewSupplierName] = useState('');
+  const [newPoAmount, setNewPoAmount] = useState('');
+  const [newPoItems, setNewPoItems] = useState('3 items');
+
+  const handleCreateNewPo = (e) => {
+    e.preventDefault();
+    if (!newSupplierName.trim() || !newPoAmount.trim()) return;
+
+    const newOrder = {
+      id: Date.now(),
+      poNo: `PO-2025-00${orders.length + 1}`,
+      date: '02 Sep 2025',
+      supplier: newSupplierName,
+      supplierInitials: newSupplierName.slice(0, 2).toUpperCase(),
+      supplierAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+      items: newPoItems || '1 item',
+      totalAmount: `₹ ${Number(newPoAmount.replace(/[^0-9.-]+/g, '') || 0).toLocaleString('en-IN')}.00`,
+      status: 'Ordered',
+      statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
+      statusDot: 'bg-[#3B82F6]',
+    };
+
+    setOrders([newOrder, ...orders]);
+    setNewSupplierName('');
+    setNewPoAmount('');
+    setIsCreateModalOpen(false);
   };
 
   return (
@@ -210,7 +279,10 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
               type="text"
               placeholder="Search purchase orders..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl pl-9 pr-3 py-2 text-xs text-[#141A17] placeholder:text-[#8A9B93] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F] transition-all"
             />
           </div>
@@ -218,8 +290,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
           {/* Primary Action Button */}
           <button
             type="button"
-            onClick={onCreatePO}
+            onClick={() => {
+              if (onCreatePO) onCreatePO();
+              else setIsCreateModalOpen(true);
+            }}
             className="inline-flex items-center gap-2 bg-[#1C3A2F] hover:bg-[#142C23] text-[#FAF8F5] text-xs font-semibold px-4 py-2 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer shrink-0"
+            title="Create Purchase Order"
           >
             <Plus className="w-4 h-4" />
             <span className="hidden sm:inline">Create Purchase Order</span>
@@ -237,7 +313,10 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
           {filterTabs.map((tab) => (
             <button
               key={tab}
-              onClick={() => setActiveFilterTab(tab)}
+              onClick={() => {
+                setActiveFilterTab(tab);
+                setCurrentPage(1);
+              }}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                 activeFilterTab === tab
                   ? 'bg-[#1C3A2F] text-white shadow-2xs'
@@ -253,10 +332,14 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
         <div className="flex items-center gap-2 ml-auto">
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            onClick={() => setSortAsc((prev) => !prev)}
+            className={`inline-flex items-center gap-1.5 border border-[#E2DAD0] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs ${
+              sortAsc ? 'bg-[#1C3A2F] text-white' : 'bg-white hover:bg-[#F5EFE6] text-[#4A5952]'
+            }`}
+            title="Toggle sort direction"
           >
-            <Filter className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Filter</span>
+            <ArrowUpDown className="w-3.5 h-3.5" />
+            <span>{sortAsc ? 'Oldest First' : 'Newest First'}</span>
           </button>
 
           <button
@@ -315,15 +398,17 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
-            {filteredOrders.length === 0 ? (
+            {paginatedOrders.length === 0 ? (
               <tr>
                 <td colSpan={8} className="py-12 text-center text-[#738C80]">
                   No purchase orders found matching your search.
                 </td>
               </tr>
             ) : (
-              filteredOrders.map((order) => {
+              paginatedOrders.map((order) => {
                 const isSelected = selectedIds.includes(order.id);
+                const isMenuOpen = activeRowMenuId === order.id;
+
                 return (
                   <tr
                     key={order.id}
@@ -341,7 +426,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                       />
                     </td>
 
-                    {/* PO No (Clickable to view PO Receipt PDF) */}
+                    {/* PO No */}
                     <td className="py-3.5 px-3">
                       <button
                         type="button"
@@ -354,7 +439,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                       </button>
                     </td>
 
-                    {/* Supplier with Initials Badge */}
+                    {/* Supplier */}
                     <td className="py-3.5 px-3">
                       <div className="flex items-center gap-2.5">
                         <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold ${order.supplierAvatarBg} shadow-2xs shrink-0`}>
@@ -389,8 +474,8 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                       </span>
                     </td>
 
-                    {/* Actions: Direct Download PDF & Menu */}
-                    <td className="py-3.5 pr-6 pl-3 text-right">
+                    {/* Actions */}
+                    <td className="py-3.5 pr-6 pl-3 text-right relative">
                       <div className="flex items-center justify-end gap-1">
                         <button
                           type="button"
@@ -400,12 +485,52 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                         >
                           <Download className="w-3.5 h-3.5" />
                         </button>
-                        <button
-                          type="button"
-                          className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
-                        >
-                          <MoreVertical className="w-4 h-4" />
-                        </button>
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => setActiveRowMenuId((prev) => (prev === order.id ? null : order.id))}
+                            className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                            title="Actions menu"
+                          >
+                            <MoreVertical className="w-4 h-4" />
+                          </button>
+
+                          {isMenuOpen && (
+                            <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl border border-[#E8E1D5] shadow-xl py-1.5 z-40 text-left text-xs">
+                              <button
+                                type="button"
+                                onClick={() => handleViewPoPdf(order)}
+                                className="w-full px-3 py-1.5 text-left text-[#141A17] hover:bg-[#FAF8F5] transition-colors flex items-center gap-2 cursor-pointer"
+                              >
+                                <FileText className="w-3.5 h-3.5 text-[#2D4A3E]" />
+                                <span>View PO PDF</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDownloadPoPdfDirect(order)}
+                                className="w-full px-3 py-1.5 text-left text-[#141A17] hover:bg-[#FAF8F5] transition-colors flex items-center gap-2 cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5 text-[#2D4A3E]" />
+                                <span>Download PDF</span>
+                              </button>
+                              <div className="my-1 border-t border-[#F0EAE1]" />
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateStatus(order.id, 'Received')}
+                                className="w-full px-3 py-1.5 text-left text-[#1E7445] hover:bg-[#E5F7ED] transition-colors cursor-pointer"
+                              >
+                                Mark as Received
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleUpdateStatus(order.id, 'Ordered')}
+                                className="w-full px-3 py-1.5 text-left text-[#2563EB] hover:bg-[#EBF3FE] transition-colors cursor-pointer"
+                              >
+                                Mark as Ordered
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </td>
                   </tr>
@@ -419,7 +544,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       {/* 4. Pagination Footer */}
       <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
         <span>
-          Showing 1 to {filteredOrders.length} of {rawOrders.length} orders
+          Showing {Math.min(filteredOrders.length, (currentPage - 1) * itemsPerPage + 1)} to {Math.min(filteredOrders.length, currentPage * itemsPerPage)} of {filteredOrders.length} orders
         </span>
 
         <div className="flex items-center gap-1.5">
@@ -428,28 +553,96 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
             disabled={currentPage === 1}
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer transition-colors"
+            title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           
-          <span className="px-3 py-1 bg-[#1C3A2F] text-white font-bold rounded-lg shadow-2xs">
-            1
-          </span>
-          <button
-            type="button"
-            className="px-3 py-1 bg-white border border-[#E2DAD0] hover:bg-[#F2ECE4] text-[#141A17] font-semibold rounded-lg transition-colors cursor-pointer"
-          >
-            2
-          </button>
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i + 1}
+              type="button"
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded-lg font-bold transition-colors cursor-pointer shadow-2xs ${
+                currentPage === i + 1
+                  ? 'bg-[#1C3A2F] text-white'
+                  : 'bg-white border border-[#E2DAD0] hover:bg-[#F2ECE4] text-[#141A17]'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
           
           <button
             type="button"
-            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer transition-colors"
+            disabled={currentPage >= totalPages}
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer transition-colors"
+            title="Next Page"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {/* Inline Create Purchase Order Modal */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 bg-[#141A17]/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-2xl p-6 w-full max-w-md text-left">
+            <h3 className="font-serif font-bold text-lg text-[#141A17] mb-1">Create Purchase Order</h3>
+            <p className="text-xs text-[#6B7A74] mb-4">Add a new supplier procurement order.</p>
+            <form onSubmit={handleCreateNewPo} className="space-y-3.5">
+              <div>
+                <label className="block text-xs font-semibold text-[#141A17] mb-1">Supplier / Vendor Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Woodland Supplies Ltd."
+                  value={newSupplierName}
+                  onChange={(e) => setNewSupplierName(e.target.value)}
+                  className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#141A17] mb-1">PO Items Summary</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 4 items (Teakwood & Hardware)"
+                  value={newPoItems}
+                  onChange={(e) => setNewPoItems(e.target.value)}
+                  className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#141A17] mb-1">Total Amount (₹)</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. 45000"
+                  value={newPoAmount}
+                  onChange={(e) => setNewPoAmount(e.target.value)}
+                  className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCreateModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-[#E2DAD0] text-xs font-semibold text-[#5B6963] hover:bg-[#FAF8F5] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-[#1C3A2F] hover:bg-[#142C23] text-white text-xs font-semibold shadow-xs cursor-pointer"
+                >
+                  Save Purchase Order
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Document PDF Modal */}
       <DocumentPdfModal

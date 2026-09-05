@@ -1093,8 +1093,14 @@ export const createMasterRegisterPdfData = (title, headers, rows) => {
 };
 
 /**
- * High-Level Export Functions for Direct Component Invocations
+ * High-Level Export Functions for Direct Component Invocations & Backward Compatibility
  */
+export const exportTableToPDF = (title, headers, rows) => {
+  const data = createMasterRegisterPdfData(title, headers, rows);
+  downloadDirectPdf(data);
+  return data;
+};
+
 export const generateTaxInvoicePDF = (order) => {
   const data = createSalesOrderPdfData(order || {});
   downloadDirectPdf(data);
@@ -1107,13 +1113,14 @@ export const generatePurchaseOrderPDF = (order) => {
   return data;
 };
 
-export const generatePaymentReceiptPDF = (payment) => {
+export const generatePaymentReceiptPDF = (payment = {}) => {
   const data = createPaymentReceiptPdfData(payment || {});
   downloadDirectPdf(data);
   return data;
 };
 
-export const generateFinancialReportPDF = (reportTitle = 'Financial Statement', reportRows = null, period = 'August & Q3 2025') => {
+export const generateFinancialReportPDF = (reportInput, reportRows = null, period = 'August & Q3 2025') => {
+  const reportTitle = typeof reportInput === 'string' ? reportInput : (reportInput?.title || reportInput?.name || 'Financial Statement');
   const data = createFinancialReportPdfData(reportTitle, period);
   if (reportRows) {
     data.tableData = {
@@ -1125,8 +1132,8 @@ export const generateFinancialReportPDF = (reportTitle = 'Financial Statement', 
   return data;
 };
 
-export const exportTableToPDF = (title, headers, rows) => {
-  const data = createMasterRegisterPdfData(title, headers, rows);
+export const generateBillPDF = (bill) => {
+  const data = createPurchaseOrderPdfData(bill || {});
   downloadDirectPdf(data);
   return data;
 };

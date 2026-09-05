@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   BarChart3, 
   Search, 
@@ -8,17 +8,23 @@ import {
   TrendingUp,
   PieChart,
   DollarSign,
-  Printer
+  Printer,
+  Filter,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import { DocumentPdfModal } from '../DocumentPdfModal';
 import { createFinancialReportPdfData, createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const ReportsTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState('All');
+  const [sortAsc, setSortAsc] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
-  const reports = [
+  const initialReports = [
     {
       id: 1,
       name: 'Profit & Loss Statement',
@@ -81,10 +87,33 @@ export const ReportsTable = () => {
     },
   ];
 
-  const filteredReports = reports.filter((r) =>
-    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    r.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const categories = ['All', 'Financial Performance', 'Financial Position', 'Liquidity', 'Credit & Audit', 'Statutory Compliance'];
+
+  const filteredReports = useMemo(() => {
+    let result = [...initialReports];
+    if (activeCategory !== 'All') {
+      result = result.filter((r) => r.category.toLowerCase() === activeCategory.toLowerCase());
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter((r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.category.toLowerCase().includes(q) ||
+        r.period.toLowerCase().includes(q)
+      );
+    }
+    result.sort((a, b) => {
+      return sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+    });
+    return result;
+  }, [searchQuery, activeCategory, sortAsc]);
+
+  const itemsPerPage = 5;
+  const totalPages = Math.max(1, Math.ceil(filteredReports.length / itemsPerPage));
+  const paginatedReports = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filteredReports.slice(start, start + itemsPerPage);
+  }, [filteredReports, currentPage]);
 
   const handleViewReportPdf = (report) => {
     const pdfData = createFinancialReportPdfData(report.name, report.period);
@@ -137,7 +166,10 @@ export const ReportsTable = () => {
               type="text"
               placeholder="Search reports..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl pl-9 pr-3 py-2 text-xs text-[#141A17] placeholder:text-[#8A9B93] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F] transition-all"
             />
           </div>
@@ -154,7 +186,41 @@ export const ReportsTable = () => {
         </div>
       </div>
 
-      {/* 2. Main Data Table */}
+      {/* 2. Category & Filter Bar */}
+      <div className="px-5 sm:px-6 py-3.5 bg-[#FAF8F5]/80 border-b border-[#F0EAE1] flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => {
+                setActiveCategory(cat);
+                setCurrentPage(1);
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                activeCategory === cat
+                  ? 'bg-[#1C3A2F] text-white shadow-2xs'
+                  : 'bg-white text-[#5B6963] border border-[#E8E1D5] hover:bg-[#F2ECE4] hover:text-[#141A17]'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 ml-auto">
+          <button 
+            type="button" 
+            onClick={() => setSortAsc(!sortAsc)}
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Sort alphabetically"
+          >
+            <Filter className="w-3.5 h-3.5 text-[#738C80]" />
+            <span>{sortAsc ? 'Name (A-Z)' : 'Name (Z-A)'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 3. Main Data Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-187.5">
           <thead>
@@ -168,7 +234,7 @@ export const ReportsTable = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
-            {filteredReports.map((rep) => {
+            {paginatedReports.map((rep) => {
               const Icon = rep.icon;
               return (
                 <tr key={rep.id} className="hover:bg-[#FAF7F2] transition-colors group">
@@ -217,6 +283,48 @@ export const ReportsTable = () => {
             })}
           </tbody>
         </table>
+      </div>
+
+      {/* 4. Pagination */}
+      <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
+        <span>
+          Showing {filteredReports.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{' '}
+          {Math.min(currentPage * itemsPerPage, filteredReports.length)} of {filteredReports.length} reports
+        </span>
+        <div className="flex items-center gap-1.5">
+          <button 
+            type="button" 
+            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+            <button
+              key={pageNum}
+              type="button"
+              onClick={() => setCurrentPage(pageNum)}
+              className={`px-3 py-1 font-bold rounded-lg cursor-pointer transition-all ${
+                currentPage === pageNum
+                  ? 'bg-[#1C3A2F] text-white shadow-2xs'
+                  : 'bg-white text-[#4A5952] border border-[#E2DAD0] hover:bg-[#F2ECE4]'
+              }`}
+            >
+              {pageNum}
+            </button>
+          ))}
+
+          <button 
+            type="button" 
+            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Document PDF Modal */}

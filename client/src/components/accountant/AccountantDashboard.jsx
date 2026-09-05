@@ -110,7 +110,7 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
               </div>
 
               {/* Bottom Row: Quick Actions, Shortcuts, and Today's Tasks */}
-              <AccountantBottomWidgets />
+              <AccountantBottomWidgets onNavigateTab={(tabId) => setActiveMenu(tabId)} />
             </>
           )}
 

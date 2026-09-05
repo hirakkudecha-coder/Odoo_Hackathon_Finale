@@ -24,6 +24,14 @@ export const PurchasePage = ({ onNavigateTab }) => {
 
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
+    if (onNavigateTab) {
+      if (tabId === 'contacts') onNavigateTab('contacts');
+      else if (tabId === 'products') onNavigateTab('products');
+      else if (tabId === 'purchases') onNavigateTab('purchases');
+      else if (tabId === 'chartOfAccounts') onNavigateTab('accounting');
+      else if (tabId === 'journals') onNavigateTab('journalEntries');
+      else if (tabId === 'analyticAccounts') onNavigateTab('accounting');
+    }
   };
 
   return (

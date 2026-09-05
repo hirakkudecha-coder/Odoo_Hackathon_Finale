@@ -19,6 +19,9 @@ import { AuthLayout } from './components/auth/AuthLayout';
 import { CreateUserModal } from './components/admin/CreateUserModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AccountantDashboard } from './components/accountant/AccountantDashboard';
+import { PartnerHelpdeskPage } from './components/common/PartnerHelpdeskPage';
+import { AtelierAboutPage } from './components/common/AtelierAboutPage';
+import { ShowroomsPage } from './components/common/ShowroomsPage';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -66,6 +69,26 @@ export const App = () => {
   const handleNavigateAccountant = () => {
     window.history.pushState(null, '', '/accountant');
     setCurrentPath('/accountant');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleNavigatePartnerHelpdesk = (tab = 'helpdesk') => {
+    const targetPath = `/partner-helpdesk#${tab}`;
+    window.history.pushState(null, '', targetPath);
+    setCurrentPath('/partner-helpdesk');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleNavigateAbout = (tab = 'story') => {
+    const targetPath = `/about#${tab}`;
+    window.history.pushState(null, '', targetPath);
+    setCurrentPath('/about');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleNavigateShowrooms = () => {
+    window.history.pushState(null, '', '/showrooms');
+    setCurrentPath('/showrooms');
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
@@ -189,6 +212,60 @@ export const App = () => {
     );
   }
 
+  // FULL SCREEN PARTNER & HELPDESK PORTAL: Accessible at /partner-helpdesk
+  if (
+    currentPath === '/partner-helpdesk' ||
+    currentPath.startsWith('/partner-helpdesk') ||
+    window.location.hash === '#partner' ||
+    window.location.hash === '#helpdesk'
+  ) {
+    const initialTab = (window.location.hash === '#partner' || window.location.hash === '#partner-program') ? 'partner' : 'helpdesk';
+    return (
+      <PartnerHelpdeskPage
+        initialTab={initialTab}
+        onNavigateHome={handleNavigateHome}
+        onOpenAuth={handleOpenAuth}
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
+      />
+    );
+  }
+
+  // FULL SCREEN ATELIER ABOUT & EDITORIAL PAGE: Accessible at /about
+  if (
+    currentPath === '/about' ||
+    currentPath.startsWith('/about')
+  ) {
+    const hashTab = window.location.hash.replace('#', '') || 'story';
+    return (
+      <AtelierAboutPage
+        initialTab={hashTab}
+        onNavigateHome={handleNavigateHome}
+        onOpenAuth={handleOpenAuth}
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
+      />
+    );
+  }
+
+  // FULL SCREEN SHOWROOMS LOCATOR: Accessible at /showrooms
+  if (
+    currentPath === '/showrooms' ||
+    currentPath.startsWith('/showrooms')
+  ) {
+    return (
+      <ShowroomsPage
+        onNavigateHome={handleNavigateHome}
+        onOpenAuth={handleOpenAuth}
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
+      />
+    );
+  }
+
   // LANDING PAGE: Accessible at /
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1A1F1D] flex flex-col selection:bg-[#2D4A3E] selection:text-[#FAF8F5]">
@@ -248,7 +325,12 @@ export const App = () => {
       </main>
 
       {/* Luxury Dark Forest Footer */}
-      <Footer onOpenAuth={handleOpenAuth} />
+      <Footer 
+        onOpenAuth={handleOpenAuth} 
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
+      />
 
       {/* Admin Create User Interactive Modal */}
       <CreateUserModal

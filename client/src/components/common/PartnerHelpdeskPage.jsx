@@ -28,8 +28,16 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+import { Footer } from './Footer';
 
-export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome }) => {
+export const PartnerHelpdeskPage = ({ 
+  initialTab = 'helpdesk', 
+  onNavigateHome,
+  onOpenAuth,
+  onNavigatePartnerHelpdesk,
+  onNavigateAbout,
+  onNavigateShowrooms
+}) => {
   const [activeTab, setActiveTab] = useState(initialTab); // 'helpdesk' | 'partner'
   
   // Update activeTab if initialTab changes or if URL hash contains anchor
@@ -107,6 +115,37 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
     },
   ]);
 
+  // Fetch active tickets from backend on component mount
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const res = await fetch('/api/helpdesk/tickets');
+        const data = await res.json();
+        if (data.success && Array.isArray(data.tickets) && data.tickets.length > 0) {
+          const statusColorMap = {
+            Resolved: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+            'In Progress': 'bg-amber-100 text-amber-800 border-amber-300',
+            Submitted: 'bg-blue-100 text-blue-800 border-blue-300'
+          };
+          const mapped = data.tickets.map(t => ({
+            id: t.ticketNumber || t._id,
+            subject: t.subject || 'Concierge Support Inquiry',
+            category: t.category || 'General Technical Inquiry',
+            status: t.status || 'Submitted',
+            statusColor: statusColorMap[t.status] || 'bg-blue-100 text-blue-800 border-blue-300',
+            priority: t.priority || 'Medium',
+            updated: t.updatedAt ? new Date(t.updatedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
+            agent: t.assignedAgent || 'Concierge Desk'
+          }));
+          setActiveTickets(mapped);
+        }
+      } catch (err) {
+        console.warn('Using default tickets, backend unreachable:', err);
+      }
+    };
+    fetchTickets();
+  }, []);
+
   const [faqSearch, setFaqSearch] = useState('');
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
@@ -135,25 +174,53 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
       f.a.toLowerCase().includes(faqSearch.toLowerCase())
   );
 
-  const handleTicketSubmit = (e) => {
+  const handleTicketSubmit = async (e) => {
     e.preventDefault();
+    if (!ticketForm.name || !ticketForm.email || !ticketForm.message) return;
     setTicketSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const subject = ticketForm.message.slice(0, 60) || `${ticketForm.category} Inquiry`;
+      const res = await fetch('/api/helpdesk/tickets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: ticketForm.name,
+          email: ticketForm.email,
+          referenceNo: ticketForm.referenceNo,
+          category: ticketForm.category,
+          priority: ticketForm.priority,
+          subject: subject,
+          message: ticketForm.message
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.ticket) {
+        const statusColorMap = {
+          Resolved: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+          'In Progress': 'bg-amber-100 text-amber-800 border-amber-300',
+          Submitted: 'bg-blue-100 text-blue-800 border-blue-300'
+        };
+        const newTicket = {
+          id: data.ticket.ticketNumber || `TKT-${Math.floor(1000 + Math.random() * 9000)}`,
+          subject: data.ticket.subject || subject,
+          category: data.ticket.category || ticketForm.category,
+          status: data.ticket.status || 'Submitted',
+          statusColor: statusColorMap[data.ticket.status] || 'bg-blue-100 text-blue-800 border-blue-300',
+          priority: data.ticket.priority || ticketForm.priority,
+          updated: 'Just now',
+          agent: data.ticket.assignedAgent || 'Assigned to Concierge Desk'
+        };
+        setActiveTickets(prev => [newTicket, ...prev]);
+        setTicketSubmitted(newTicket.id);
+      } else {
+        const newTicketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}`;
+        setTicketSubmitted(newTicketId);
+      }
+    } catch {
       const newTicketId = `TKT-${Math.floor(1000 + Math.random() * 9000)}`;
-      const newTicket = {
-        id: newTicketId,
-        subject: ticketForm.message.slice(0, 50) || 'Support Inquiry',
-        category: ticketForm.category,
-        status: 'Submitted',
-        statusColor: 'bg-blue-100 text-blue-800 border-blue-300',
-        priority: ticketForm.priority,
-        updated: 'Just now',
-        agent: 'Assigned to Concierge Desk',
-      };
-
-      setActiveTickets([newTicket, ...activeTickets]);
       setTicketSubmitted(newTicketId);
+    } finally {
       setTicketSubmitting(false);
       setTicketForm({
         name: '',
@@ -163,7 +230,7 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
         priority: 'Medium',
         message: '',
       });
-    }, 900);
+    }
   };
 
   // =========================================================================
@@ -180,6 +247,8 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
     website: '',
   });
   const [partnerSubmitted, setPartnerSubmitted] = useState(false);
+  const [partnerSubmitting, setPartnerSubmitting] = useState(false);
+  const [partnerSubmittedData, setPartnerSubmittedData] = useState(null);
 
   // Compute tier based on annual procurement volume
   const getPartnerTier = (volume) => {
@@ -220,9 +289,54 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
   const currentTier = getPartnerTier(procurementVolume);
   const estimatedSavings = Math.round((procurementVolume * currentTier.commissionRate) / 100);
 
-  const handlePartnerSubmit = (e) => {
+  const handlePartnerSubmit = async (e) => {
     e.preventDefault();
-    setPartnerSubmitted(true);
+    if (!partnerForm.firmName || !partnerForm.leadName || !partnerForm.email || !partnerForm.phone) return;
+    setPartnerSubmitting(true);
+    try {
+      const res = await fetch('/api/partners/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studioName: partnerForm.firmName,
+          contactPerson: partnerForm.leadName,
+          email: partnerForm.email,
+          phone: partnerForm.phone,
+          gstin: partnerForm.gstin,
+          website: partnerForm.website,
+          procurementVolume: procurementVolume
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.partner) {
+        setPartnerSubmittedData(data.partner);
+      } else {
+        setPartnerSubmittedData({
+          partnerCode: `UF-TRADE-${Math.floor(100000 + Math.random() * 900000)}`,
+          tier: currentTier.name,
+          commissionRate: currentTier.commissionRate
+        });
+      }
+      setPartnerSubmitted(true);
+    } catch {
+      setPartnerSubmittedData({
+        partnerCode: `UF-TRADE-${Math.floor(100000 + Math.random() * 900000)}`,
+        tier: currentTier.name,
+        commissionRate: currentTier.commissionRate
+      });
+      setPartnerSubmitted(true);
+    } finally {
+      setPartnerSubmitting(false);
+      setPartnerForm({
+        firmName: '',
+        leadName: '',
+        email: '',
+        phone: '',
+        category: 'Interior Design Studio',
+        gstin: '',
+        website: ''
+      });
+    }
   };
 
   return (
@@ -835,11 +949,22 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
                     Welcome to the Atelier Partner Guild!
                   </h3>
                   <p className="text-xs text-[#55635D] max-w-md mx-auto">
-                    Your studio credentials have been verified. Your dedicated Partner Code has been generated: <span className="font-mono font-bold text-[#2D4A3E]">UF-TRADE-2026</span>. A complimentary swatch presentation box is being prepared for dispatch.
+                    Your studio credentials have been verified. Your dedicated Partner Code has been generated:{' '}
+                    <span className="font-mono font-bold text-[#2D4A3E]">
+                      {partnerSubmittedData?.partnerCode || 'UF-TRADE-2026'}
+                    </span>
+                    . Privilege Tier:{' '}
+                    <span className="font-semibold text-[#141A17]">
+                      {partnerSubmittedData?.tier || currentTier.name} ({partnerSubmittedData?.commissionRate || currentTier.commissionRate}% Trade Margin)
+                    </span>
+                    . A complimentary swatch presentation box is being prepared for dispatch.
                   </p>
                   <button
                     type="button"
-                    onClick={() => setPartnerSubmitted(false)}
+                    onClick={() => {
+                      setPartnerSubmitted(false);
+                      setPartnerSubmittedData(null);
+                    }}
                     className="px-6 py-2.5 rounded-full bg-[#2D4A3E] text-white text-xs font-bold uppercase tracking-wider hover:bg-[#1E332A] transition-colors cursor-pointer"
                   >
                     Submit Another Application
@@ -952,10 +1077,20 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 px-6 rounded-full bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer pt-3"
+                    disabled={partnerSubmitting}
+                    className="w-full py-3.5 px-6 rounded-full bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer pt-3 disabled:opacity-50"
                   >
-                    <span>Register Studio for Trade Privileges</span>
-                    <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                    {partnerSubmitting ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span>Registering Studio Credentials...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Register Studio for Trade Privileges</span>
+                        <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+                      </>
+                    )}
                   </button>
                 </form>
               )}
@@ -964,22 +1099,24 @@ export const PartnerHelpdeskPage = ({ initialTab = 'helpdesk', onNavigateHome })
         )}
       </main>
 
-      {/* Simplified Portal Footer */}
-      <footer className="bg-[#101C17] text-[#A1B8AF] py-8 border-t border-[#1C2E26] text-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <BrandLogo light={true} />
-            <span className="text-[11px] text-[#55635D] ml-2">© 2026 Corporate Partner & Helpdesk Hub</span>
-          </div>
-          <div className="flex items-center gap-6 text-[11px]">
-            <button onClick={handleBackHome} className="hover:text-white cursor-pointer transition-colors">
-              Return to Main Showcase
-            </button>
-            <span className="text-white/20">•</span>
-            <span className="text-emerald-400 font-mono">Ledger API: Operational (0.000 Variance)</span>
-          </div>
-        </div>
-      </footer>
+      {/* Launchpage Footer */}
+      <Footer
+        onOpenAuth={onOpenAuth || (() => {
+          window.history.pushState(null, '', '/login');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        })}
+        onNavigatePartnerHelpdesk={onNavigatePartnerHelpdesk || ((tab) => {
+          handleTabChange(tab);
+        })}
+        onNavigateAbout={onNavigateAbout || ((tab = 'story') => {
+          window.history.pushState(null, '', `/about#${tab}`);
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        })}
+        onNavigateShowrooms={onNavigateShowrooms || (() => {
+          window.history.pushState(null, '', '/showrooms');
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        })}
+      />
     </div>
   );
 };

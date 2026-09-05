@@ -21,6 +21,10 @@ const salesOrderRoutes = require('./routes/salesOrderRoutes');
 const salesReceiptRoutes = require('./routes/salesReceiptRoutes');
 const customerInvoiceRoutes = require('./routes/customerInvoiceRoutes');
 const reportRoutes = require('./routes/reportRoutes');
+const inquiryRoutes = require('./routes/inquiryRoutes');
+const showroomRoutes = require('./routes/showroomRoutes');
+const partnerRoutes = require('./routes/partnerRoutes');
+const helpdeskRoutes = require('./routes/helpdeskRoutes');
 
 const app = express();
 
@@ -66,6 +70,10 @@ app.use('/api/sales-orders', salesOrderRoutes);
 app.use('/api/sales-receipts', salesReceiptRoutes);
 app.use('/api/customer-invoices', customerInvoiceRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/inquiries', inquiryRoutes);
+app.use('/api/showrooms', showroomRoutes);
+app.use('/api/partners', partnerRoutes);
+app.use('/api/helpdesk', helpdeskRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

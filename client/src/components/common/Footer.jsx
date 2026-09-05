@@ -1,68 +1,19 @@
 import React, { useState } from 'react';
-import { BrandLogo } from './BrandLogo';
-import blueSofa from '../../assets/images/blue_sofa.png';
 import { ComplianceModal } from './ComplianceModal';
 
-export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
+export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk, onNavigateAbout, onNavigateShowrooms }) => {
   const [complianceModal, setComplianceModal] = useState({ isOpen: false, tab: 'privacy' });
 
   return (
-    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24 w-full">
+    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-14 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24 w-full">
       {/* Subtle background glow */}
-      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#2D4A3E]/30 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#2D4A3E]/20 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* Edge-to-edge container without restricting max-w */}
       <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
 
-        {/* Top Section: Brand + Newsletter + Center Blue Sofa Showcase matching Reference */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-[#1E332A] items-center">
-
-          {/* Left: Brand & Newsletter */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="flex items-center gap-3">
-              <BrandLogo light={true} />
-            </div>
-
-            <p className="text-xs text-[#A1B8AF] leading-relaxed max-w-sm">
-              The premier business operating workspace for furniture ateliers, bespoke fabricators, and design showrooms.
-            </p>
-
-
-
-            <h3 className="font-serif-luxury text-2xl sm:text-3xl text-[#FAF8F5] tracking-tight pt-2 leading-snug">
-              Redefine the way you <br />
-              <span className="italic font-normal text-[#D2E7A4]">Live at Home & Run your Business.</span>
-            </h3>
-          </div>
-
-          {/* Center/Right: Deep Blue Modern Sofa image matching reference */}
-          <div className="lg:col-span-7 flex flex-col items-center lg:items-end">
-            <div className="w-full max-w-lg bg-[#15251F] rounded-3xl p-6 border border-[#223B2F] relative group hover:border-[#2D4A3E] transition-colors">
-              <div className="flex justify-between items-center text-xs text-[#8EABA0] mb-4">
-                <span className="uppercase tracking-wider font-bold text-[10px]">Royal Velvet Collection</span>
-                <span className="font-mono text-white text-xs">SKU: UF-ROYAL-BLU</span>
-              </div>
-
-              <div className="py-2 flex justify-center">
-                <img
-                  src={blueSofa}
-                  alt="Royal Blue Luxury Sofa"
-                  className="w-full max-h-48 object-contain filter drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
-                />
-              </div>
-
-              <div className="flex justify-between items-center pt-3 border-t border-[#223B2F] text-[11px]">
-                <span className="text-[#A1B8AF]">General Ledger Assets</span>
-                <span className="text-emerald-400 font-bold">Auto-Synchronized</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-
-        {/* Middle Navigation Columns: Sleek Minimalist Luxury Typography */}
-        <div className="py-14 border-b border-[#1E332A]">
+        {/* Navigation Columns: Sleek Minimalist Typography matching Reference */}
+        <div className="pb-12 border-b border-[#1E332A]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-20 max-w-4xl text-xs">
             
             {/* Col 1: Company */}
@@ -110,12 +61,37 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
                   </a>
                 </li>
                 <li>
-                  <a href="#catalogue" className="hover:text-white transition-colors block">
+                  <a
+                    href="/#catalogue"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const cat = document.getElementById('catalogue');
+                      if (cat) {
+                        cat.scrollIntoView({ behavior: 'smooth' });
+                      } else {
+                        window.history.pushState(null, '', '/#catalogue');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
                     Categories
                   </a>
                 </li>
                 <li>
-                  <a href="#about" className="hover:text-white transition-colors block">
+                  <a
+                    href="/showrooms"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateShowrooms) {
+                        onNavigateShowrooms();
+                      } else {
+                        window.history.pushState(null, '', '/showrooms');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
                     Showroom Locator
                   </a>
                 </li>
@@ -126,10 +102,74 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
             <div className="space-y-4">
               <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">About Us</h4>
               <ul className="space-y-2.5 text-[#A1B8AF]">
-                <li><a href="#about" className="hover:text-white transition-colors block">Our Story</a></li>
-                <li><a href="#about" className="hover:text-white transition-colors block">Craftsmanship</a></li>
-                <li><a href="#about" className="hover:text-white transition-colors block">Editorial Reviews</a></li>
-                <li><a href="#about" className="hover:text-white transition-colors block">Contact Designers</a></li>
+                <li>
+                  <a
+                    href="/about#story"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateAbout) {
+                        onNavigateAbout('story');
+                      } else {
+                        window.history.pushState(null, '', '/about#story');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Our Story
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/about#craftsmanship"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateAbout) {
+                        onNavigateAbout('craftsmanship');
+                      } else {
+                        window.history.pushState(null, '', '/about#craftsmanship');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Craftsmanship
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/about#reviews"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateAbout) {
+                        onNavigateAbout('reviews');
+                      } else {
+                        window.history.pushState(null, '', '/about#reviews');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Editorial Reviews
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/about#designers"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateAbout) {
+                        onNavigateAbout('designers');
+                      } else {
+                        window.history.pushState(null, '', '/about#designers');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Contact Designers
+                  </a>
+                </li>
               </ul>
             </div>
 

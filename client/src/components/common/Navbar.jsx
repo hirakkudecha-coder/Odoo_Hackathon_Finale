@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, ArrowUpRight, Menu, X, ShieldCheck, ChevronDown } from 'lucide-react';
+import { ShoppingBag, ArrowUpRight, Menu, X, ShieldCheck, ChevronDown, UserPlus } from 'lucide-react';
 
-export const Navbar = ({ onOpenAuth }) => {
+export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -61,22 +61,20 @@ export const Navbar = ({ onOpenAuth }) => {
           </nav>
 
           {/* Right Action Items */}
-          <div className="hidden lg:flex items-center gap-4">
-            {/* Subtle Cart / System Badge */}
-            <a 
-              href="#catalogue"
-              className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#3D4542] hover:text-[#2D4A3E] px-3 py-1.5 rounded-full border border-[#2D4A3E]/15 hover:border-[#2D4A3E]/40 transition-colors"
+          <div className="hidden lg:flex items-center gap-3">
+            {/* Create User Button */}
+            <button
+              onClick={() => onOpenCreateUser && onOpenCreateUser()}
+              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 py-2 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs"
             >
-              <span>Catalogue</span>
-              <div className="w-5 h-5 rounded-full bg-[#EAE4DC] text-[#2D4A3E] flex items-center justify-center text-[10px] font-bold">
-                8
-              </div>
-            </a>
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Create User</span>
+            </button>
 
             {/* Login Button */}
             <button
               onClick={() => onOpenAuth && onOpenAuth('login')}
-              className="text-xs font-semibold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-4 py-2 transition-colors cursor-pointer"
+              className="text-xs font-semibold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3 py-2 transition-colors cursor-pointer"
             >
               Sign In
             </button>
@@ -84,7 +82,7 @@ export const Navbar = ({ onOpenAuth }) => {
             {/* Primary CTA - Forest Green Pill Button */}
             <button
               onClick={() => onOpenAuth && onOpenAuth('signup')}
-              className="flex items-center gap-1.5 bg-[#2D4A3E] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-5 py-2.5 rounded-full hover:bg-[#1E332A] transition-all duration-300 hover:shadow-md cursor-pointer group"
+              className="flex items-center gap-1.5 bg-[#2D4A3E] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 py-2.5 rounded-full hover:bg-[#1E332A] transition-all duration-300 hover:shadow-md cursor-pointer group"
             >
               <span>Get Started</span>
               <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -115,6 +113,16 @@ export const Navbar = ({ onOpenAuth }) => {
               </a>
             ))}
             <div className="flex flex-col gap-2 pt-3 border-t border-[#2D4A3E]/10">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenCreateUser && onOpenCreateUser();
+                }}
+                className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#2D4A3E] border border-[#2D4A3E]/30 rounded-full flex items-center justify-center gap-1.5"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create User</span>
+              </button>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

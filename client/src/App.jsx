@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useScrollObserver } from './hooks/useScrollObserver';
 import { Navbar } from './components/common/Navbar';
 import { HeroSection } from './components/sections/HeroSection';
@@ -15,29 +15,82 @@ import { SpacesLivingSection } from './components/sections/SpacesLivingSection';
 import { CoreModulesSection } from './components/sections/CoreModulesSection';
 import { FinalCTASection } from './components/sections/FinalCTASection';
 import { Footer } from './components/common/Footer';
-import { AuthModal } from './components/auth/AuthModal';
+import { AuthLayout } from './components/auth/AuthLayout';
+import { CreateUserModal } from './components/admin/CreateUserModal';
 
 export const App = () => {
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authMode, setAuthMode] = useState('login');
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
 
-  // Trigger formal editorial scroll entrance animations
-  useScrollObserver();
+  // Sync route on popstate (browser back/forward)
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    return () => window.removeEventListener('popstate', handleLocationChange);
+  }, []);
+
+  // Trigger formal editorial scroll entrance animations whenever currentPath changes
+  useScrollObserver(currentPath);
 
   const handleOpenAuth = (mode = 'login') => {
-    setAuthMode(mode);
-    setAuthModalOpen(true);
+    const targetPath = mode === 'register' || mode === 'signup' ? '/register' : '/login';
+    window.history.pushState(null, '', targetPath);
+    setCurrentPath(targetPath);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
-  const handleCloseAuth = () => {
-    setAuthModalOpen(false);
+  const handleNavigateHome = () => {
+    window.history.pushState(null, '', '/');
+    setCurrentPath('/');
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleOpenCreateUser = () => {
+    setCreateUserModalOpen(true);
+  };
+
+  const handleCloseCreateUser = () => {
+    setCreateUserModalOpen(false);
+  };
+
+  // FULL SCREEN LOGIN PAGE: Accessible at /login
+  if (currentPath === '/login' || currentPath.endsWith('/login') || window.location.hash === '#login') {
+    return (
+      <AuthLayout
+        initialMode="login"
+        onNavigateHome={handleNavigateHome}
+      />
+    );
+  }
+
+  // FULL SCREEN REGISTER / SIGNUP PAGE: Accessible at /register or /signup
+  if (
+    currentPath === '/register' || 
+    currentPath === '/signup' || 
+    currentPath.endsWith('/register') || 
+    currentPath.endsWith('/signup') ||
+    window.location.hash === '#register' ||
+    window.location.hash === '#signup'
+  ) {
+    return (
+      <AuthLayout
+        initialMode="register"
+        onNavigateHome={handleNavigateHome}
+      />
+    );
+  }
+
+  // LANDING PAGE: Accessible at /
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-[#1A1F1D] flex flex-col selection:bg-[#2D4A3E] selection:text-[#FAF8F5]">
       
       {/* Editorial Luxury Top Navigation */}
-      <Navbar onOpenAuth={handleOpenAuth} />
+      <Navbar 
+        onOpenAuth={handleOpenAuth} 
+        onOpenCreateUser={handleOpenCreateUser}
+      />
 
       {/* Main Long-Form Editorial Content */}
       <main className="flex-1">
@@ -86,11 +139,10 @@ export const App = () => {
       {/* Luxury Dark Forest Footer */}
       <Footer onOpenAuth={handleOpenAuth} />
 
-      {/* Sign In / Sign Up Interactive Modal */}
-      <AuthModal
-        isOpen={authModalOpen}
-        onClose={handleCloseAuth}
-        initialMode={authMode}
+      {/* Admin Create User Interactive Modal */}
+      <CreateUserModal
+        isOpen={createUserModalOpen}
+        onClose={handleCloseCreateUser}
       />
 
     </div>

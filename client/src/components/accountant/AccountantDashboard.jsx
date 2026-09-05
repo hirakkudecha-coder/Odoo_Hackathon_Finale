@@ -17,6 +17,7 @@ import { ReportsPage } from './reports/ReportsPage';
 import { ContactsPage } from './contacts/ContactsPage';
 import { ProductsPage } from './products/ProductsPage';
 import { JournalEntriesPage } from './journals/JournalEntriesPage';
+import { BudgetsPage } from './budgets/BudgetsPage';
 
 export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, currentUser, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -55,6 +56,8 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
             <PurchasePage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'payments' ? (
             <PaymentsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
+          ) : activeMenu === 'budgets' ? (
+            <BudgetsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'accounting' ? (
             <AccountingPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'reports' ? (

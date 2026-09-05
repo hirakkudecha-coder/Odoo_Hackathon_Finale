@@ -17,6 +17,7 @@ import { FinalCTASection } from './components/sections/FinalCTASection';
 import { Footer } from './components/common/Footer';
 import { AuthLayout } from './components/auth/AuthLayout';
 import { CreateUserModal } from './components/admin/CreateUserModal';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -47,6 +48,12 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleNavigateDashboard = () => {
+    window.history.pushState(null, '', '/dashboard');
+    setCurrentPath('/dashboard');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const handleOpenCreateUser = () => {
     setCreateUserModalOpen(true);
   };
@@ -55,12 +62,33 @@ export const App = () => {
     setCreateUserModalOpen(false);
   };
 
+  // FULL SCREEN ADMIN DASHBOARD: Accessible at /dashboard or #dashboard
+  if (
+    currentPath === '/dashboard' || 
+    currentPath.endsWith('/dashboard') || 
+    window.location.hash === '#dashboard'
+  ) {
+    return (
+      <>
+        <AdminDashboard
+          onNavigateHome={handleNavigateHome}
+          onOpenCreateUser={handleOpenCreateUser}
+        />
+        <CreateUserModal
+          isOpen={createUserModalOpen}
+          onClose={handleCloseCreateUser}
+        />
+      </>
+    );
+  }
+
   // FULL SCREEN LOGIN PAGE: Accessible at /login
   if (currentPath === '/login' || currentPath.endsWith('/login') || window.location.hash === '#login') {
     return (
       <AuthLayout
         initialMode="login"
         onNavigateHome={handleNavigateHome}
+        onSuccess={handleNavigateDashboard}
       />
     );
   }
@@ -78,6 +106,7 @@ export const App = () => {
       <AuthLayout
         initialMode="register"
         onNavigateHome={handleNavigateHome}
+        onSuccess={handleNavigateDashboard}
       />
     );
   }
@@ -90,6 +119,7 @@ export const App = () => {
       <Navbar 
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
+        onOpenDashboard={handleNavigateDashboard}
       />
 
       {/* Main Long-Form Editorial Content */}

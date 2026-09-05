@@ -5,6 +5,8 @@
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-editorial: 'Cormorant Garamond', Georgia, serif;
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-numeric: 'Space Grotesk', 'JetBrains Mono', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
   }
 
   html {
@@ -18,6 +20,7 @@
     color: #1A1F1D;
     max-width: 100%;
     overflow-x: clip;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 
   /* Custom Smooth Luxury Scrollbars */
@@ -43,6 +46,20 @@
   .font-editorial {
     font-family: var(--font-editorial);
   }
+
+  /* Universal High-Precision Numerical & Amount Font Rules */
+  .font-mono, code, kbd, samp, pre {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-feature-settings: "tnum" 1, "zero" 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-numeric, .font-numbers, .font-amount, .font-price, .font-stat, .font-kpi {
+    font-family: 'Space Grotesk', 'JetBrains Mono', sans-serif !important;
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
+  }
 }
 
 /* Custom editorial aesthetics & utility classes */
@@ -52,6 +69,18 @@
 
 .font-editorial-luxury {
   font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-numeric {
+  font-family: 'Space Grotesk', 'JetBrains Mono', sans-serif !important;
+  font-feature-settings: "tnum" 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-feature-settings: "tnum" 1, "zero" 1;
+  font-variant-numeric: tabular-nums;
 }
 
 .bg-ivory {

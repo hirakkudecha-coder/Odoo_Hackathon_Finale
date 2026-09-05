@@ -53,9 +53,9 @@ export const DashboardPreviewSection = ({ onOpenAuth }) => {
             <div className="p-5 rounded-2xl bg-[#1A2E26] border border-[#264438]">
               <div className="flex justify-between items-start text-xs text-[#95B2A6] mb-2">
                 <span>Total Monthly Sales</span>
-                <span className="text-emerald-400 text-[11px] font-bold">+18.2%</span>
+                <span className="text-emerald-400 text-[11px] font-bold font-numeric">+18.2%</span>
               </div>
-              <div className="text-2xl font-bold font-serif text-white">₹18,42,500</div>
+              <div className="text-2xl font-bold font-numeric text-white tracking-tight">₹18,42,500</div>
               <div className="text-[10px] text-[#719083] mt-1">42 Orders Delivered</div>
             </div>
 
@@ -64,16 +64,16 @@ export const DashboardPreviewSection = ({ onOpenAuth }) => {
                 <span>Material Purchases</span>
                 <span className="text-[#E86034] text-[11px] font-bold">Planned</span>
               </div>
-              <div className="text-2xl font-bold font-serif text-white">₹9,85,200</div>
+              <div className="text-2xl font-bold font-numeric text-white tracking-tight">₹9,85,200</div>
               <div className="text-[10px] text-[#719083] mt-1">16 Vendor Invoices</div>
             </div>
 
             <div className="p-5 rounded-2xl bg-[#1A2E26] border border-[#264438]">
               <div className="flex justify-between items-start text-xs text-[#95B2A6] mb-2">
                 <span>Receivables (Due)</span>
-                <span className="text-emerald-400 text-[11px] font-bold">94% Current</span>
+                <span className="text-emerald-400 text-[11px] font-bold font-numeric">94% Current</span>
               </div>
-              <div className="text-2xl font-bold font-serif text-white">₹3,40,000</div>
+              <div className="text-2xl font-bold font-numeric text-white tracking-tight">₹3,40,000</div>
               <div className="text-[10px] text-[#719083] mt-1">Avg 12 days collection</div>
             </div>
 
@@ -82,7 +82,7 @@ export const DashboardPreviewSection = ({ onOpenAuth }) => {
                 <span>Payables (Due)</span>
                 <span className="text-[#E86034] text-[11px] font-bold">On Schedule</span>
               </div>
-              <div className="text-2xl font-bold font-serif text-white">₹2,15,000</div>
+              <div className="text-2xl font-bold font-numeric text-white tracking-tight">₹2,15,000</div>
               <div className="text-[10px] text-[#719083] mt-1">0 overdue supplier bills</div>
             </div>
 

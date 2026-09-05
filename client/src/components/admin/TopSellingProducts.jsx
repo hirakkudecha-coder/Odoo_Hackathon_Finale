@@ -74,7 +74,7 @@ export const TopSellingProducts = () => {
           >
             {/* Rank & Image & Name */}
             <div className="flex items-center gap-3">
-              <span className="w-4 text-center font-bold text-[#8E9B95] text-[11px] group-hover:text-[#2D4A3E] transition-colors">
+              <span className="w-4 text-center font-bold text-[#8E9B95] text-[11px] font-numeric group-hover:text-[#2D4A3E] transition-colors">
                 {item.rank}
               </span>
               <div className="w-9 h-9 rounded-lg bg-[#F5F1EA] p-1 flex items-center justify-center shrink-0 border border-[#E8E1D5] overflow-hidden group-hover:border-[#2D4A3E]/30 shadow-2xs">
@@ -91,10 +91,10 @@ export const TopSellingProducts = () => {
 
             {/* Units & Revenue */}
             <div className="flex items-center gap-6 text-right">
-              <span className="text-[#6D7D76] text-[11px]">
+              <span className="text-[#6D7D76] text-[11px] font-numeric">
                 {item.units}
               </span>
-              <span className="font-serif font-bold text-[#141A17] w-20 group-hover:text-[#2D4A3E] transition-colors">
+              <span className="font-numeric font-bold text-[#141A17] w-20 group-hover:text-[#2D4A3E] transition-colors">
                 {item.revenue}
               </span>
             </div>

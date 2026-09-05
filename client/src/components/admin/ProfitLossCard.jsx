@@ -73,7 +73,7 @@ export const ProfitLossCard = () => {
             <span className="w-2.5 h-2.5 rounded-full bg-[#1F6E43]"></span>
             <span className="text-[#55635D] font-medium">Sales Income</span>
           </div>
-          <span className="font-serif font-bold text-sm text-[#141A17]">
+          <span className="font-numeric font-bold text-sm text-[#141A17]">
             {formatCurrency(plData.salesIncome)}
           </span>
         </div>
@@ -84,7 +84,7 @@ export const ProfitLossCard = () => {
             <span className="w-2.5 h-2.5 rounded-full bg-[#D65D33]"></span>
             <span className="text-[#55635D] font-medium">Purchase Costs</span>
           </div>
-          <span className="font-serif font-bold text-sm text-[#141A17]">
+          <span className="font-numeric font-bold text-sm text-[#141A17]">
             {formatCurrency(plData.purchaseCosts)}
           </span>
         </div>
@@ -95,7 +95,7 @@ export const ProfitLossCard = () => {
             <span className="w-2.5 h-2.5 rounded-full bg-[#8E9C94]"></span>
             <span className="text-[#55635D] font-medium">Operating Expenses</span>
           </div>
-          <span className="font-serif font-bold text-sm text-[#141A17]">
+          <span className="font-numeric font-bold text-sm text-[#141A17]">
             {formatCurrency(plData.operatingExpenses)}
           </span>
         </div>
@@ -106,10 +106,10 @@ export const ProfitLossCard = () => {
             Net Profit
           </span>
           <div className="flex items-center gap-2">
-            <span className={`font-serif font-bold text-base ${plData.isProfitable ? 'text-[#141A17]' : 'text-[#C95426]'}`}>
+            <span className={`font-numeric font-bold text-base ${plData.isProfitable ? 'text-[#141A17]' : 'text-[#C95426]'}`}>
               {formatCurrency(plData.netProfit)}
             </span>
-            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-numeric ${
               plData.isProfitable ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FDECE7] text-[#C95426]'
             }`}>
               {plData.isProfitable ? '↑' : '↓'} {plData.marginImprovement}%

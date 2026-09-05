@@ -121,7 +121,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
                 </button>
 
                 <div className="text-right">
-                  <span className="text-lg font-bold text-[#141A17] font-serif">
+                  <span className="text-lg font-bold text-[#141A17] font-numeric tracking-tight">
                     {item.price}
                   </span>
                   <span className="block text-[9px] uppercase tracking-wider text-[#68736E]">

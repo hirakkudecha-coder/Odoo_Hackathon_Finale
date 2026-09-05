@@ -95,7 +95,7 @@ export const BudgetSnapshotCard = () => {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="font-serif font-bold text-lg text-[#141A17] leading-none">
+            <span className="font-numeric font-bold text-lg text-[#141A17] leading-none">
               {percentage}%
             </span>
           </div>
@@ -103,10 +103,10 @@ export const BudgetSnapshotCard = () => {
 
         {/* Spend Figures */}
         <div className="flex flex-col justify-center space-y-1.5 text-left">
-          <div className="font-serif font-bold text-xl text-[#141A17] leading-none">
+          <div className="font-numeric font-bold text-xl text-[#141A17] leading-none">
             {formatCurrency(budgetData.totalActual)}
           </div>
-          <div className="text-[11px] text-[#718079] font-medium">
+          <div className="text-[11px] text-[#718079] font-medium font-numeric">
             of {formatCurrency(budgetData.totalPlanned)}
           </div>
 

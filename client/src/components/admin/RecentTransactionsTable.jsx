@@ -117,7 +117,7 @@ export const RecentTransactionsTable = () => {
           <tbody className="divide-y divide-[#F6F2EC]">
             {transactions.map((tx, idx) => (
               <tr key={idx} className="hover:bg-[#FAF6F0] transition-colors duration-150 cursor-pointer group">
-                <td className="py-3 text-[#5A6862] text-[11px] font-medium group-hover:text-[#141A17]">
+                <td className="py-3 text-[#5A6862] text-[11px] font-medium font-numeric group-hover:text-[#141A17]">
                   {tx.date}
                 </td>
                 <td className="py-3 text-[#141A17] font-medium">
@@ -129,7 +129,7 @@ export const RecentTransactionsTable = () => {
                 <td className="py-3 text-[#141A17] font-semibold group-hover:text-[#2D4A3E]">
                   {tx.name}
                 </td>
-                <td className="py-3 text-right font-serif font-bold text-[#141A17]">
+                <td className="py-3 text-right font-numeric font-bold text-[#141A17]">
                   {tx.amount}
                 </td>
                 <td className="py-3 text-right">

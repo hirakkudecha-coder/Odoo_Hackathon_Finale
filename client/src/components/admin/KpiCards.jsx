@@ -129,14 +129,14 @@ export const KpiCards = () => {
                   <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider block group-hover:text-[#2D4A3E] transition-colors">
                     {card.title}
                   </span>
-                  <span className="font-serif font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
+                  <span className="font-numeric font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
                     {card.value}
                   </span>
                 </div>
               </div>
 
               {/* Trend Pill */}
-              <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-0.5 ${
+              <div className={`px-2 py-0.5 rounded-full text-[10px] font-bold font-numeric flex items-center gap-0.5 ${
                 card.isPositive 
                   ? 'bg-[#E5F7ED] text-[#1E7445]' 
                   : 'bg-[#FDECE7] text-[#C95426]'

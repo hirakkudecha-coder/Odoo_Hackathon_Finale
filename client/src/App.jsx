@@ -143,7 +143,6 @@ export const App = () => {
     setCreateUserModalOpen(false);
   };
 
-<<<<<<< HEAD
   // FULL SCREEN SUPER ADMIN DASHBOARD: Accessible at /superadmin
   if (
     currentPath === '/superadmin' ||
@@ -151,14 +150,6 @@ export const App = () => {
     currentPath.endsWith('/superadmin') ||
     currentPath.endsWith('/super-admin') ||
     window.location.hash === '#superadmin'
-=======
-  // FULL SCREEN CONTACT SELF-SERVICE PORTAL: Accessible at /portal, /my-invoices
-  if (
-    currentPath === '/portal' ||
-    currentPath.startsWith('/portal') ||
-    currentPath === '/my-invoices' ||
-    window.location.hash === '#portal'
->>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
   ) {
     if (!currentUser) {
       return (
@@ -171,19 +162,38 @@ export const App = () => {
     }
 
     return (
-<<<<<<< HEAD
       <SuperAdminDashboard
         onNavigateHome={handleNavigateHome}
         onNavigateAdmin={handleNavigateDashboard}
         onNavigateAccountant={handleNavigateAccountant}
         currentUser={currentUser}
         onLogout={handleLogout}
-=======
+      />
+    );
+  }
+
+  // FULL SCREEN CONTACT SELF-SERVICE PORTAL: Accessible at /portal, /my-invoices
+  if (
+    currentPath === '/portal' ||
+    currentPath.startsWith('/portal') ||
+    currentPath === '/my-invoices' ||
+    window.location.hash === '#portal'
+  ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
+    return (
       <ContactPortal
         currentUser={currentUser}
         onLogout={handleLogout}
         onNavigateHome={handleNavigateHome}
->>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
       />
     );
   }

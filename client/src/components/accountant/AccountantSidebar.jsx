@@ -9,7 +9,6 @@ import {
   Users, 
   Package, 
   FileText, 
-  ChevronDown,
   X
 } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
@@ -23,15 +22,15 @@ export const AccountantSidebar = ({
   onClose 
 }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, hasDropdown: false },
-    { id: 'sales', label: 'Sales', icon: ShoppingCart, hasDropdown: true },
-    { id: 'purchases', label: 'Purchases', icon: ShoppingBag, hasDropdown: true },
-    { id: 'payments', label: 'Payments', icon: CreditCard, hasDropdown: true },
-    { id: 'accounting', label: 'Accounting', icon: BookOpen, hasDropdown: true },
-    { id: 'reports', label: 'Reports', icon: BarChart3, hasDropdown: true },
-    { id: 'contacts', label: 'Contacts', icon: Users, hasDropdown: false },
-    { id: 'products', label: 'Products', icon: Package, hasDropdown: false },
-    { id: 'journalEntries', label: 'Journal Entries', icon: FileText, hasDropdown: false },
+    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { id: 'sales', label: 'Sales', icon: ShoppingCart },
+    { id: 'purchases', label: 'Purchases', icon: ShoppingBag },
+    { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'accounting', label: 'Accounting', icon: BookOpen },
+    { id: 'reports', label: 'Reports', icon: BarChart3 },
+    { id: 'contacts', label: 'Contacts', icon: Users },
+    { id: 'products', label: 'Products', icon: Package },
+    { id: 'journalEntries', label: 'Journal Entries', icon: FileText },
   ];
 
   return (
@@ -86,7 +85,7 @@ export const AccountantSidebar = ({
                   key={item.id}
                   onClick={() => onSelectMenu && onSelectMenu(item.id)}
                   type="button"
-                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium tracking-wide transition-all cursor-pointer ${
+                  className={`w-full flex items-center px-3.5 py-2.5 rounded-xl text-xs font-medium tracking-wide transition-all cursor-pointer ${
                     isActive 
                       ? 'bg-[#234233] text-[#FAF8F5] shadow-xs border border-[#3E6551]/40' 
                       : 'text-[#A3B8AE] hover:text-[#FAF8F5] hover:bg-[#1C3629]/70'
@@ -96,10 +95,6 @@ export const AccountantSidebar = ({
                     <Icon className={`w-4 h-4 ${isActive ? 'text-[#FAF8F5]' : 'text-[#8EA59B]'}`} />
                     <span>{item.label}</span>
                   </div>
-
-                  {item.hasDropdown && (
-                    <ChevronDown className="w-3.5 h-3.5 text-[#738C80] transition-transform" />
-                  )}
                 </button>
               );
             })}

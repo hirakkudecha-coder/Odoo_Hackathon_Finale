@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowUpRight, Menu, X, ChevronRight, UserPlus } from 'lucide-react';
+<<<<<<<<< Temporary merge branch 1
+import { ShoppingBag, ArrowUpRight, Menu, X, ShieldCheck, ChevronDown, UserPlus } from 'lucide-react';
+=========
+import { ArrowUpRight, Menu, X, ChevronRight } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+>>>>>>>>> Temporary merge branch 2
 
 export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
   const [scrolled, setScrolled] = useState(false);
@@ -59,18 +63,61 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-300">
+
+<<<<<<<<< Temporary merge branch 1
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center space-x-7 text-xs font-medium uppercase tracking-wider text-[#3D4542]">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                className="hover:text-[#2D4A3E] transition-colors relative py-1 after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1.5px] after:bg-[#2D4A3E] hover:after:w-full after:transition-all after:duration-300"
+              >
+                {link.name}
+              </a>
+            ))}
+          </nav>
+
+          {/* Right Action Items */}
+          <div className="hidden lg:flex items-center gap-3">
+            {/* Create User Button */}
+            <button
+              onClick={() => onOpenCreateUser && onOpenCreateUser()}
+              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 py-2 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs"
+            >
+              <UserPlus className="w-3.5 h-3.5" />
+              <span>Create User</span>
+            </button>
+
+            {/* Login Button */}
+            <button
+              onClick={() => onOpenAuth && onOpenAuth('login')}
+              className="text-xs font-semibold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3 py-2 transition-colors cursor-pointer"
+            >
+              Sign In
+            </button>
+
+            {/* Primary CTA - Forest Green Pill Button */}
+            <button
+              onClick={() => onOpenAuth && onOpenAuth('signup')}
+              className="flex items-center gap-1.5 bg-[#2D4A3E] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 py-2.5 rounded-full hover:bg-[#1E332A] transition-all duration-300 hover:shadow-md cursor-pointer group"
+            >
+              <span>Get Started</span>
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </button>
+          </div>
+=========
       {/* Main Header Container with Distinct Elevation & Frame */}
-      <div className={`transition-all duration-300 ${
-        scrolled 
-          ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2.5' 
+      <div className={`transition-all duration-300 ${scrolled
+          ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2.5'
           : 'bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(20,30,25,0.06)] border-b border-[#2D4A3E]/12 py-3'
-      }`}>
+        }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between gap-4">
-            
+
             {/* Custom Brand Logo Component (Architectural Arch + Typography in SVG/CSS) */}
-            <a 
-              href="#" 
+            <a
+              href="#"
               onClick={(e) => {
                 e.preventDefault();
                 window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -89,11 +136,10 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
                     key={link.name}
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.href)}
-                    className={`text-xs font-semibold uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all duration-200 ${
-                      isActive 
-                        ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs' 
+                    className={`text-xs font-semibold uppercase tracking-wider px-3.5 py-1.5 rounded-full transition-all duration-200 ${isActive
+                        ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
                         : 'text-[#3D4542] hover:text-[#141A17] hover:bg-white/60'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </a>
@@ -110,11 +156,10 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
                     key={link.name}
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.href)}
-                    className={`transition-colors py-1 px-2 rounded-md ${
-                      isActive 
-                        ? 'text-[#2D4A3E] bg-[#EAE3D6] font-bold' 
+                    className={`transition-colors py-1 px-2 rounded-md ${isActive
+                        ? 'text-[#2D4A3E] bg-[#EAE3D6] font-bold'
                         : 'hover:text-[#2D4A3E]'
-                    }`}
+                      }`}
                   >
                     {link.name}
                   </a>
@@ -123,41 +168,49 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
             </nav>
 
             {/* Right Action Items */}
-            <div className="hidden md:flex items-center gap-2.5 shrink-0">
+            <div className="hidden md:flex items-center gap-3 shrink-0">
               
               {/* Quick Catalogue Pill with Counter */}
               <a 
                 href="#catalogue"
-                onClick={(e) => handleNavClick(e, '#catalogue')}
-                className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:text-[#1A1F1D] px-3 py-1.5 rounded-full bg-[#EAE4DC]/80 hover:bg-[#E2DACF] border border-[#2D4A3E]/15 transition-all duration-200"
+                className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[#3D4542] hover:text-[#2D4A3E] px-3 py-1.5 rounded-full border border-[#2D4A3E]/15 hover:border-[#2D4A3E]/40 transition-colors"
               >
                 <span>Catalogue</span>
-                <span className="w-5 h-5 rounded-full bg-[#2D4A3E] text-[#FAF8F5] flex items-center justify-center text-[10px] font-bold">
+                <div className="w-5 h-5 rounded-full bg-[#EAE4DC] text-[#2D4A3E] flex items-center justify-center text-[10px] font-bold">
                   8
-                </span>
+                </div>
               </a>
 
               {/* Create User Button */}
               <button
-                onClick={() => onOpenCreateUser && onOpenCreateUser()}
-                className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 py-1.5 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs"
+<<<<<<<<< Temporary merge branch 1
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenCreateUser && onOpenCreateUser();
+                }}
+                className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#2D4A3E] border border-[#2D4A3E]/30 rounded-full flex items-center justify-center gap-1.5"
               >
-                <UserPlus className="w-3.5 h-3.5" />
+                <UserPlus className="w-4 h-4" />
                 <span>Create User</span>
               </button>
-
-              {/* Login Button */}
               <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  onOpenAuth && onOpenAuth('login');
+                }}
+                className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#1A1F1D] border border-[#2D4A3E]/20 rounded-full"
+=========
                 onClick={() => onOpenAuth && onOpenAuth('login')}
-                className="text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3 py-1.5 transition-colors cursor-pointer"
+                className="text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3.5 py-2 transition-colors cursor-pointer"
+>>>>>>>>> Temporary merge branch 2
               >
                 Sign In
               </button>
 
-              {/* Primary CTA Button */}
+              {/* Primary CTA - Forest Green Pill Button */}
               <button
                 onClick={() => onOpenAuth && onOpenAuth('signup')}
-                className="flex items-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4 py-2 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
+                className="flex items-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 py-2.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group"
               >
                 <span>Get Started</span>
                 <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
@@ -217,30 +270,20 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser }) => {
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    onOpenCreateUser && onOpenCreateUser();
-                  }}
-                  className="w-full text-center py-2 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] border border-[#2D4A3E]/30 rounded-full flex items-center justify-center gap-1.5"
-                >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Create User</span>
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
                     onOpenAuth && onOpenAuth('login');
                   }}
-                  className="w-full text-center py-2.5 text-xs font-bold uppercase tracking-wider text-[#1A1F1D] border border-[#2D4A3E]/25 rounded-full hover:bg-white transition-colors"
+                  className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#1A1F1D] border border-[#2D4A3E]/20 rounded-full"
                 >
-                  Sign In to Portal
+                  Sign In
                 </button>
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);
                     onOpenAuth && onOpenAuth('signup');
                   }}
-                  className="w-full text-center py-3 text-xs font-bold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-md"
+                  className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5"
                 >
-                  <span>Launch Accounting Workspace</span>
+                  <span>Get Started</span>
                   <ArrowUpRight className="w-4 h-4" />
                 </button>
               </div>

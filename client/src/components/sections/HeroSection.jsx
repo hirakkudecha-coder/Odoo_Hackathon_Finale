@@ -1,11 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, Play, Sparkles, CheckCircle2, ChevronRight, Layers, DollarSign, TrendingUp } from 'lucide-react';
-import livingRoomHero from '../../assets/living_room_hero.png';
+import livingRoomHero1 from '../../assets/living_room_hero.png';
+import livingRoomHero2 from '../../assets/living_room_hero2.png';
+import livingRoomHero3 from '../../assets/living_room_hero3.png';
 import orangeSofa from '../../assets/images/orange_sofa.png';
 import creamLoungeChair from '../../assets/images/cream_lounge_chair.png';
 import botanicalPlant from '../../assets/images/botanical_plant.png';
 
 export const HeroSection = ({ onOpenAuth }) => {
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+  const heroImages = [
+    { src: livingRoomHero1, alt: 'Urban Furniture Living Room Ensemble 1' },
+    { src: livingRoomHero2, alt: 'Urban Furniture Living Room Ensemble 2' },
+    { src: livingRoomHero3, alt: 'Urban Furniture Living Room Ensemble 3' },
+  ];
+
+  // Auto change hero image every 2 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
+
   return (
     <section className="relative overflow-hidden pt-6 pb-20 md:pt-10 md:pb-28">
       {/* Subtle organic watermark texture */}
@@ -63,14 +81,37 @@ export const HeroSection = ({ onOpenAuth }) => {
             </div>
           </div>
 
-          {/* Top Right User-Provided Living Room Ensemble PNG */}
-          <div className="lg:col-span-6 flex justify-center lg:justify-end reveal reveal-right delay-150">
-            <div className="w-full max-w-xl flex items-center justify-center">
-              <img
-                src={livingRoomHero}
-                alt="Urban Furniture Living Room Ensemble"
-                className="w-full h-auto max-h-[380px] sm:max-h-[440px] object-contain filter drop-shadow-2xl hover:scale-[1.02] transition-transform duration-500"
-              />
+          {/* Top Right Auto-Rotating Living Room Ensemble (2-second interval, same position and size) */}
+          <div className="lg:col-span-6 flex flex-col items-center lg:items-end justify-center reveal reveal-right delay-150">
+            <div className="w-full max-w-xl relative flex items-center justify-center h-[320px] sm:h-[390px] md:h-[440px]">
+              {heroImages.map((item, index) => (
+                <img
+                  key={index}
+                  src={item.src}
+                  alt={item.alt}
+                  className={`absolute inset-0 m-auto w-full h-auto max-h-[380px] sm:max-h-[440px] object-contain filter drop-shadow-2xl transition-all duration-700 ease-in-out ${
+                    currentHeroIndex === index
+                      ? 'opacity-100 scale-100 z-10'
+                      : 'opacity-0 scale-95 z-0 pointer-events-none'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Subtle Carousel Progress Dots */}
+            <div className="flex items-center gap-2 mt-2">
+              {heroImages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentHeroIndex(index)}
+                  aria-label={`Slide ${index + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 cursor-pointer ${
+                    currentHeroIndex === index
+                      ? 'w-7 bg-[#2D4A3E]'
+                      : 'w-2 bg-[#2D4A3E]/20 hover:bg-[#2D4A3E]/40'
+                  }`}
+                />
+              ))}
             </div>
           </div>
         </div>

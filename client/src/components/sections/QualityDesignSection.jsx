@@ -1,20 +1,21 @@
 import React from 'react';
 import { ArrowUpRight, CheckCircle2, Shield, Sparkles, RefreshCw } from 'lucide-react';
+import rattanChair from '../../assets/images/rattan_chair.png';
 
 export const QualityDesignSection = () => {
   return (
     <section className="py-20 bg-[#F7F3EB] border-y border-[#E8E1D5] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-          
+
           {/* Left: Soft Yellow Bulb / Lighting Card matching reference */}
           <div className="lg:col-span-3 reveal reveal-left delay-100">
             <div className="rounded-3xl bg-[#FAF17B] p-6 border border-[#E4DC68] shadow-xs flex flex-col justify-between h-80 group hover:scale-[1.02] transition-transform">
               <div className="w-16 h-16 rounded-2xl bg-white/80 backdrop-blur-xs flex items-center justify-center text-3xl shadow-xs mx-auto">
                 💡
               </div>
-              
+
               <div className="text-center space-y-1">
                 <h4 className="font-serif-luxury font-bold text-lg text-[#2B2806]">
                   Ambient Clarity
@@ -38,7 +39,7 @@ export const QualityDesignSection = () => {
           {/* Center: Rattan / Teal Chair with Floating Badges matching reference */}
           <div className="lg:col-span-5 flex justify-center reveal reveal-scale delay-200">
             <div className="relative p-6 bg-white rounded-3xl border border-[#E4DCCE] shadow-md w-full max-w-sm text-center">
-              
+
               {/* Floating Badge 1: Terracotta Delivery Badge */}
               <div className="absolute -top-3 left-4 bg-[#E86034] text-white px-3 py-1 rounded-full text-[10px] font-bold tracking-wider uppercase shadow-xs animate-bounce">
                 Delivery: Reconciled
@@ -52,7 +53,7 @@ export const QualityDesignSection = () => {
               {/* Central Rattan / Teal Chair */}
               <div className="py-4 flex justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80"
+                  src={rattanChair}
                   alt="Teal Rattan Studio Armchair"
                   className="w-56 h-56 object-contain filter drop-shadow-xl hover:scale-105 transition-transform duration-500"
                 />
@@ -71,7 +72,7 @@ export const QualityDesignSection = () => {
 
           {/* Right: Editorial Headline & Statement */}
           <div className="lg:col-span-4 space-y-6 reveal reveal-right delay-300">
-            
+
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#E86034]"></span>
               <span className="text-[11px] font-bold uppercase tracking-widest text-[#2D4A3E]">

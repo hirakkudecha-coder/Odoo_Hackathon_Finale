@@ -1,13 +1,15 @@
 import React from 'react';
 import { ArrowUpRight, Sparkles } from 'lucide-react';
+import yellowOttoman from '../../assets/images/yellow_ottoman.png';
+import oakCredenza from '../../assets/images/oak_credenza.png';
 
 export const SpacesLivingSection = ({ onOpenAuth }) => {
   return (
     <section className="py-20 bg-[#FAF8F5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
+
           {/* Left: Editorial Statement & Link */}
           <div className="lg:col-span-4 space-y-6 reveal reveal-left">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#EAE2D4] text-[#2D4A3E] text-[11px] font-bold uppercase tracking-widest">
@@ -39,7 +41,7 @@ export const SpacesLivingSection = ({ onOpenAuth }) => {
           {/* Center: Soft Peach/Pink Card with Mustard Yellow Ottoman */}
           <div className="lg:col-span-4 reveal reveal-scale delay-150">
             <div className="rounded-3xl bg-[#FFDFD6] p-6 sm:p-7 border border-[#F5C7BC] shadow-sm flex flex-col justify-between h-96 group hover:scale-[1.01] transition-transform duration-500">
-              
+
               <div className="flex items-center justify-between">
                 <span className="px-3 py-1 rounded-full bg-white/80 text-[#8B341B] text-[10px] font-bold uppercase tracking-wider">
                   #Furniture Design
@@ -52,7 +54,7 @@ export const SpacesLivingSection = ({ onOpenAuth }) => {
               {/* Mustard Yellow Ottoman Image */}
               <div className="py-3 flex justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=500&q=80"
+                  src={yellowOttoman}
                   alt="Minimalist Mustard Yellow Storage Ottoman"
                   className="w-48 h-40 object-contain drop-shadow-xl group-hover:-translate-y-1 transition-transform duration-500"
                 />
@@ -76,10 +78,10 @@ export const SpacesLivingSection = ({ onOpenAuth }) => {
           {/* Right: Wooden Dining Console with Books */}
           <div className="lg:col-span-4 space-y-4 reveal reveal-right delay-250">
             <div className="rounded-3xl bg-white p-6 border border-[#E6DFD4] shadow-xs group hover:shadow-md transition-shadow">
-              
+
               <div className="h-52 rounded-2xl bg-[#F8F5EE] flex items-center justify-center overflow-hidden mb-4 p-4">
                 <img
-                  src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=700&q=80"
+                  src={oakCredenza}
                   alt="Nordic Solid Oak Console with Books"
                   className="w-full h-full object-cover rounded-xl group-hover:scale-105 transition-transform duration-500"
                 />

@@ -16,7 +16,6 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
     { name: 'Accounting', href: '#accounting', id: 'accounting' },
     { name: 'Reports', href: '#reports', id: 'reports' },
     { name: 'About', href: '#about', id: 'about' },
-    { name: 'Contact', href:'#contact',id:'about'}
   ];
 
   // Scroll listener for elevation and active section tracking (Scroll Spy)
@@ -66,7 +65,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
           ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2 sm:py-2.5' 
           : 'bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(20,30,25,0.06)] border-b border-[#2D4A3E]/12 py-2.5 sm:py-3'
       }`}>
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 2xl:px-16">
           <div className="flex items-center justify-between gap-3 sm:gap-4">
             
             {/* Left Column: Brand Logo */}
@@ -83,8 +82,8 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
               </a>
             </div>
 
-            {/* Center Column: Desktop Navigation Links (Centered in available space) */}
-            <div className="hidden xl:flex items-center justify-center flex-1 mx-2">
+            {/* Center-Left Column: Desktop Navigation Links (Shifted to left side) */}
+            <div className="hidden xl:flex items-center justify-start flex-1 ml-6 xl:ml-8 2xl:ml-10">
               <nav className="flex items-center justify-center bg-[#F2ECE4]/75 p-1 rounded-full border border-[#2D4A3E]/12 shadow-inner">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;

@@ -3,7 +3,8 @@ import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu, Wifi, Wi
 import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, currentUser, onLogout }) => {
-  const [profileDropdownOpen, setProfileDropdownOpen] = React.useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [heartbeat, setHeartbeat] = useState({ status: 'checking', dbConnected: false, uptime: '' });
 
   // Read stored user as fallback
   const storedUser = React.useMemo(() => {
@@ -36,19 +37,7 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
     year: 'numeric'
   });
 
-  const [heartbeat, setHeartbeat] = useState({ status: 'checking', dbConnected: false, uptime: '' });
-  const [user, setUser] = useState({ name: 'Admin User', role: 'Admin' });
-
   useEffect(() => {
-    // Load logged-in user info from localStorage
-    const stored = localStorage.getItem('user');
-    if (stored) {
-      try {
-        const u = JSON.parse(stored);
-        setUser({ name: u.name || 'Admin User', role: u.role || 'Admin' });
-      } catch (_) {}
-    }
-
     // Fetch server heartbeat
     const fetchHeartbeat = async () => {
       try {
@@ -110,6 +99,21 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
       {/* Right User & Actions Module */}
       <div className="flex items-center gap-5 w-full md:w-auto justify-end">
         
+        {/* Server Status Indicator */}
+        <div className="hidden lg:flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-[#E6DFD4] shadow-2xs text-[11px] text-[#4A5550]">
+          {heartbeat.status === 'online' ? (
+            <span className="flex items-center gap-1.5 text-[#2D7A4D] font-medium">
+              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+              API Online
+            </span>
+          ) : (
+            <span className="flex items-center gap-1.5 text-[#9CA3AF]">
+              <span className="w-2 h-2 rounded-full bg-[#9CA3AF]" />
+              API Standby
+            </span>
+          )}
+        </div>
+
         {/* Notification Bell */}
         <button 
           className="relative p-2 rounded-xl bg-white border border-[#E6DFD4] text-[#4A5550] hover:text-[#1A2420] hover:bg-[#F5EFE6] transition-colors cursor-pointer shadow-2xs"

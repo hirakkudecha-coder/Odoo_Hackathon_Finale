@@ -31,7 +31,12 @@ const getCustomerInvoices = async (req, res, next) => {
     const { customer, status, search } = req.query;
     const filter = {};
 
-    if (customer) filter.customer = customer;
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      filter.customer = req.user.contactId;
+    } else if (customer) {
+      filter.customer = customer;
+    }
+
     if (status) filter.status = status;
     if (search) filter.invoiceNumber = { $regex: search, $options: 'i' };
 

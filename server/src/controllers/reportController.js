@@ -1,7 +1,8 @@
 const {
   getProfitAndLossReport,
   getBalanceSheetReport,
-  getBudgetReport
+  getBudgetReport,
+  getStockValuationReport
 } = require('../services/reportService');
 
 // Profit & Loss Report
@@ -43,8 +44,22 @@ const getBudgetSummary = async (req, res, next) => {
   }
 };
 
+// Stock / Inventory Valuation Report
+const getStockValuation = async (req, res, next) => {
+  try {
+    const report = await getStockValuationReport(req.query);
+    res.status(200).json({
+      success: true,
+      report
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getProfitAndLoss,
   getBalanceSheet,
-  getBudgetSummary
+  getBudgetSummary,
+  getStockValuation
 };

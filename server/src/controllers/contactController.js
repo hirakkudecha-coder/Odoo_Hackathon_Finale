@@ -1,19 +1,66 @@
 const Contact = require('../models/Contact');
+const User = require('../models/User');
 
 // Create contact
 const createContact = async (req, res, next) => {
   try {
-    if (!req.body.name || !req.body.type) {
+    const { name, type, email, mobile, phone, address, city, state, pincode, createPortalUser, portalPassword, portalEmail } = req.body;
+    if (!name || !type) {
       return res.status(400).json({
         success: false,
         message: 'Validation failed: name and type are required for contact creation.'
       });
     }
-    const contact = await Contact.create(req.body);
+
+    const contactData = {
+      name,
+      type,
+      email: email || portalEmail || '',
+      mobile: mobile || phone || '',
+      address: typeof address === 'object' && address !== null ? address : {
+        street: address || '',
+        city: city || 'Ahmedabad',
+        state: state || 'Gujarat',
+        pincode: pincode || '380001'
+      },
+      status: req.body.status || 'active'
+    };
+
+    const contact = await Contact.create(contactData);
+
+    let portalUser = null;
+    if (createPortalUser && (portalPassword || req.body.password)) {
+      const userEmail = (portalEmail || email || '').toLowerCase().trim();
+      if (userEmail) {
+        let existing = await User.findOne({ email: userEmail });
+        if (!existing) {
+          portalUser = await User.create({
+            name,
+            email: userEmail,
+            password: portalPassword || req.body.password,
+            role: 'contact',
+            contactId: contact._id,
+            status: 'active'
+          });
+        } else {
+          existing.contactId = contact._id;
+          if (portalPassword || req.body.password) {
+            existing.password = portalPassword || req.body.password;
+          }
+          await existing.save();
+          portalUser = existing;
+        }
+
+        contact.user = portalUser._id;
+        await contact.save();
+      }
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Contact created successfully',
-      contact
+      message: 'Contact created successfully' + (portalUser ? ' with portal user credentials.' : ''),
+      contact,
+      portalUserCreated: !!portalUser
     });
   } catch (error) {
     next(error);

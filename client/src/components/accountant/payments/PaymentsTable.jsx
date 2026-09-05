@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useMemo } from 'react';
+=======
+import React, { useState, useEffect, useMemo } from 'react';
+>>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
 import { 
   CreditCard, 
   Search, 
@@ -619,23 +623,20 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                     onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   >
-                    <option value="Customer Receipt">Customer Receipt</option>
-                    <option value="Vendor Payment">Vendor Payment</option>
+                    <option value="Customer Receipt">Customer Receipt (Inflow)</option>
+                    <option value="Vendor Payment">Vendor Payment (Outflow)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Method</label>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Journal / Account</label>
                   <select
-                    value={newPaymentForm.method}
-                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, method: e.target.value })}
+                    value={newPaymentForm.journal || 'Bank'}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, journal: e.target.value, method: e.target.value === 'Cash' ? 'Cash Desk' : 'Bank Transfer (NEFT)' })}
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   >
-                    <option value="Bank Transfer (NEFT)">Bank Transfer (NEFT)</option>
-                    <option value="Online Banking">Online Banking</option>
-                    <option value="UPI Instant">UPI Instant</option>
-                    <option value="Cheque Deposit">Cheque Deposit</option>
-                    <option value="Credit Card">Credit Card</option>
+                    <option value="Bank">Bank Journal (1001 - HDFC Bank)</option>
+                    <option value="Cash">Cash Journal (1002 - Cash in Hand)</option>
                   </select>
                 </div>
               </div>

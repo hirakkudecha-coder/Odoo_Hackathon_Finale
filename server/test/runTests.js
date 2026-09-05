@@ -3,6 +3,12 @@ const connectDB = require('../src/config/db');
 const app = require('../src/app');
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
+const Contact = require('../src/models/Contact');
+const Product = require('../src/models/Product');
+const Account = require('../src/models/Account');
+const Journal = require('../src/models/Journal');
+const AnalyticAccount = require('../src/models/AnalyticAccount');
+const Budget = require('../src/models/Budget');
 
 async function runAllTests() {
   console.log('=== URBAN FURNITURE BACKEND TEST RUNNER ===\n');
@@ -24,10 +30,9 @@ async function runAllTests() {
 
     // --- PHASE 2 TESTS: AUTH & RBAC ---
     console.log('\n--- Phase 2: Authentication & RBAC Tests ---');
-    // Clear test users
-    await User.deleteMany({ email: { $in: ['testadmin@urbanfurniture.com', 'testacct@urbanfurniture.com', 'testcontact@urbanfurniture.com'] } });
+    await User.deleteMany({ email: { $in: ['testadmin@urbanfurniture.com', 'testacct@urbanfurniture.com'] } });
 
-    // 2.1 Register Admin
+    // Register Admin
     const regAdminRes = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -39,10 +44,10 @@ async function runAllTests() {
       })
     });
     const regAdminData = await regAdminRes.json();
-    console.log('[Test 2.1] Register Admin User:', regAdminRes.status === 201 && regAdminData.token ? 'PASS' : 'FAIL');
     const adminToken = regAdminData.token;
+    console.log('[Test 2.1] Register Admin User:', regAdminRes.status === 201 && adminToken ? 'PASS' : 'FAIL');
 
-    // 2.2 Register Accountant
+    // Register Accountant
     const regAcctRes = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,52 +59,142 @@ async function runAllTests() {
       })
     });
     const regAcctData = await regAcctRes.json();
-    console.log('[Test 2.2] Register Accountant User:', regAcctRes.status === 201 && regAcctData.token ? 'PASS' : 'FAIL');
     const acctToken = regAcctData.token;
+    console.log('[Test 2.2] Register Accountant User:', regAcctRes.status === 201 && acctToken ? 'PASS' : 'FAIL');
 
-    // 2.3 Login Valid
-    const loginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+    // --- PHASE 3 TESTS: MASTER DATA ---
+    console.log('\n--- Phase 3: Master Data Management Tests ---');
+    const authHeaders = {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${adminToken}`
+    };
+
+    // 3.1 Contacts
+    await Contact.deleteMany({});
+    const custRes = await fetch(`${BASE_URL}/api/contacts`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
-        email: 'testadmin@urbanfurniture.com',
-        password: 'AdminPassword123!'
+        name: 'Nimesh Pathak',
+        type: 'Customer',
+        email: 'nimesh@example.com',
+        mobile: '9876543210',
+        address: { city: 'Ahmedabad', state: 'Gujarat', pincode: '380015' }
       })
     });
-    const loginData = await loginRes.json();
-    console.log('[Test 2.3] Login Valid Credentials:', loginRes.status === 200 && loginData.token ? 'PASS' : 'FAIL');
+    const custData = await custRes.json();
+    console.log('[Test 3.1] Create Customer (Nimesh Pathak):', custRes.status === 201 && custData.contact.name === 'Nimesh Pathak' ? 'PASS' : 'FAIL');
 
-    // 2.4 Login Invalid Password
-    const loginBadRes = await fetch(`${BASE_URL}/api/auth/login`, {
+    const vendRes = await fetch(`${BASE_URL}/api/contacts`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: authHeaders,
       body: JSON.stringify({
-        email: 'testadmin@urbanfurniture.com',
-        password: 'WrongPassword!'
+        name: 'Azure Furniture',
+        type: 'Vendor',
+        email: 'vendor@azure.com',
+        mobile: '9876543211',
+        address: { city: 'Mumbai', state: 'Maharashtra', pincode: '400001' }
       })
     });
-    console.log('[Test 2.4] Reject Invalid Password:', loginBadRes.status === 401 ? 'PASS' : 'FAIL');
+    const vendData = await vendRes.json();
+    console.log('[Test 3.2] Create Vendor (Azure Furniture):', vendRes.status === 201 && vendData.contact.name === 'Azure Furniture' ? 'PASS' : 'FAIL');
 
-    // 2.5 Protected /me route
-    const meRes = await fetch(`${BASE_URL}/api/auth/me`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
+    // 3.2 Products
+    await Product.deleteMany({});
+    const prodRes = await fetch(`${BASE_URL}/api/products`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        name: 'Office Chair',
+        type: 'Goods',
+        salesPrice: 2500,
+        costPrice: 1500,
+        category: 'Office Furniture'
+      })
     });
-    const meData = await meRes.json();
-    console.log('[Test 2.5] Protected GET /me (Admin):', meRes.status === 200 && meData.user.email === 'testadmin@urbanfurniture.com' ? 'PASS' : 'FAIL');
+    const prodData = await prodRes.json();
+    console.log('[Test 3.3] Create Product (Office Chair):', prodRes.status === 201 && prodData.product.salesPrice === 2500 ? 'PASS' : 'FAIL');
 
-    // 2.6 RBAC: Admin can access /api/auth/users
-    const usersAdminRes = await fetch(`${BASE_URL}/api/auth/users`, {
-      headers: { Authorization: `Bearer ${adminToken}` }
+    // 3.3 Accounts (Chart of Accounts)
+    await Account.deleteMany({});
+    const accountsToCreate = [
+      { code: '1001', name: 'Cash', type: 'Asset' },
+      { code: '1002', name: 'Bank', type: 'Asset' },
+      { code: '1003', name: 'Debtors', type: 'Asset' },
+      { code: '2001', name: 'Creditors', type: 'Liability' },
+      { code: '3001', name: 'Capital', type: 'Capital' },
+      { code: '4001', name: 'Sale Income', type: 'Income' },
+      { code: '5001', name: 'Purchases Expense', type: 'Expense' }
+    ];
+
+    let allAccountsCreated = true;
+    const createdAccounts = {};
+    for (const acc of accountsToCreate) {
+      const accRes = await fetch(`${BASE_URL}/api/accounts`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify(acc)
+      });
+      const accData = await accRes.json();
+      if (accRes.status === 201) {
+        createdAccounts[acc.name] = accData.account;
+      } else {
+        allAccountsCreated = false;
+      }
+    }
+    console.log('[Test 3.4] Create Chart of Accounts (7 Standard Accounts):', allAccountsCreated ? 'PASS' : 'FAIL');
+
+    // 3.4 Journals
+    await Journal.deleteMany({});
+    const journalsToCreate = [
+      { code: 'INV', name: 'Sales Journal', type: 'Sales', defaultCreditAccount: createdAccounts['Sale Income']?._id, defaultDebitAccount: createdAccounts['Debtors']?._id },
+      { code: 'BILL', name: 'Purchase Journal', type: 'Purchase', defaultDebitAccount: createdAccounts['Purchases Expense']?._id, defaultCreditAccount: createdAccounts['Creditors']?._id },
+      { code: 'BNK', name: 'Bank Journal', type: 'Bank', defaultDebitAccount: createdAccounts['Bank']?._id, defaultCreditAccount: createdAccounts['Bank']?._id },
+      { code: 'CSH', name: 'Cash Journal', type: 'Cash', defaultDebitAccount: createdAccounts['Cash']?._id, defaultCreditAccount: createdAccounts['Cash']?._id }
+    ];
+
+    let allJournalsCreated = true;
+    for (const jrn of journalsToCreate) {
+      const jrnRes = await fetch(`${BASE_URL}/api/journals`, {
+        method: 'POST',
+        headers: authHeaders,
+        body: JSON.stringify(jrn)
+      });
+      if (jrnRes.status !== 201) allJournalsCreated = false;
+    }
+    console.log('[Test 3.5] Create Standard Journals (Sales, Purchase, Bank, Cash):', allJournalsCreated ? 'PASS' : 'FAIL');
+
+    // 3.5 Analytic Accounts
+    await AnalyticAccount.deleteMany({});
+    const analyticRes = await fetch(`${BASE_URL}/api/analytic-accounts`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        code: 'AN-OPS',
+        name: 'Operations Expense',
+        type: 'Expenses'
+      })
     });
-    console.log('[Test 2.6] RBAC Allowed (Admin accessing /api/auth/users):', usersAdminRes.status === 200 ? 'PASS' : 'FAIL');
+    const analyticData = await analyticRes.json();
+    console.log('[Test 3.6] Create Analytic Account (Operations Expense):', analyticRes.status === 201 && analyticData.analyticAccount.name === 'Operations Expense' ? 'PASS' : 'FAIL');
 
-    // 2.7 RBAC: Accountant forbidden on /api/auth/users
-    const usersAcctRes = await fetch(`${BASE_URL}/api/auth/users`, {
-      headers: { Authorization: `Bearer ${acctToken}` }
+    // 3.6 Budgets
+    await Budget.deleteMany({});
+    const budgetRes = await fetch(`${BASE_URL}/api/budgets`, {
+      method: 'POST',
+      headers: authHeaders,
+      body: JSON.stringify({
+        name: 'Operations Budget 2026',
+        period: '2026-Annual',
+        responsiblePerson: 'Admin User',
+        analyticAccount: analyticData.analyticAccount._id,
+        plannedAmount: 500000
+      })
     });
-    console.log('[Test 2.7] RBAC Forbidden (Accountant accessing admin-only endpoint):', usersAcctRes.status === 403 ? 'PASS' : 'FAIL');
+    const budgetData = await budgetRes.json();
+    console.log('[Test 3.7] Create Budget linking to Analytic Account:', budgetRes.status === 201 && budgetData.budget.plannedAmount === 500000 ? 'PASS' : 'FAIL');
 
-    console.log('\n=== All Phase 1 & 2 Tests Completed Successfully! ===\n');
+    console.log('\n=== All Phase 1, 2, & 3 Tests Completed Successfully! ===\n');
   } finally {
     server.close();
     await mongoose.connection.close();

@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Plus, Check, ShoppingCart, Tag, Sparkles } from 'lucide-react';
+import oliveChair from '../../assets/images/olive_chair.png';
+import sandDaybed from '../../assets/images/sand_daybed.png';
+import charcoalChair from '../../assets/images/charcoal_chair.png';
 
 export const ProductCatalogSection = ({ onOpenAuth }) => {
   const [selectedProduct, setSelectedProduct] = useState(null);
@@ -13,7 +16,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
       accountCategory: 'Finished Goods Asset',
       taxRate: '18% GST Included',
       stock: '28 In Stock',
-      image: 'https://images.unsplash.com/photo-1580481077195-c9a96f131109?auto=format&fit=crop&w=700&q=80',
+      image: oliveChair,
       sku: 'UF-ARM-OLV',
     },
     {
@@ -24,7 +27,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
       accountCategory: 'Finished Goods Asset',
       taxRate: '18% GST Included',
       stock: '14 In Stock',
-      image: 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80',
+      image: sandDaybed,
       sku: 'UF-SOF-SND',
     },
     {
@@ -35,7 +38,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
       accountCategory: 'Finished Goods Asset',
       taxRate: '18% GST Included',
       stock: '09 In Stock',
-      image: 'https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=700&q=80',
+      image: charcoalChair,
       sku: 'UF-ARM-CHR',
     },
   ];
@@ -43,7 +46,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
   return (
     <section id="catalogue" className="py-20 bg-[#FAF8F5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header Block with Editorial Layout */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 pb-6 border-b border-[#E8E1D5] reveal">
           <div className="max-w-xl">
@@ -54,7 +57,7 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
               Turning spaces into places you love
             </h2>
           </div>
-          
+
           <div className="max-w-xs text-left md:text-right">
             <p className="text-xs font-bold uppercase tracking-widest text-[#141A17]">
               Furniture That Lasts a Lifetime
@@ -70,14 +73,13 @@ export const ProductCatalogSection = ({ onOpenAuth }) => {
           {products.map((item, idx) => (
             <div
               key={item.id}
-              className={`rounded-3xl bg-white p-6 border border-[#E6DFD4] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group reveal reveal-scale ${
-                idx === 0 ? 'delay-100' : idx === 1 ? 'delay-200' : 'delay-300'
-              }`}
+              className={`rounded-3xl bg-white p-6 border border-[#E6DFD4] shadow-xs hover:shadow-lg transition-all duration-300 flex flex-col justify-between group reveal reveal-scale ${idx === 0 ? 'delay-100' : idx === 1 ? 'delay-200' : 'delay-300'
+                }`}
             >
               <div>
                 {/* Product Image Stage with soft ivory backdrop */}
                 <div className="relative h-64 sm:h-72 rounded-2xl bg-[#F8F5EE] p-6 flex items-center justify-center overflow-hidden mb-6 group-hover:bg-[#F2ECE1] transition-colors">
-                  
+
                   {/* Floating SKU / Account Category Tag */}
                   <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-xs px-2.5 py-1 rounded-full text-[10px] font-semibold text-[#2D4A3E] border border-[#2D4A3E]/10">
                     {item.sku}

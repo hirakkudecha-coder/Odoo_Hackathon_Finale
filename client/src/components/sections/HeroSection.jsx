@@ -1,6 +1,9 @@
 import React from 'react';
 import { ArrowUpRight, Play, Sparkles, CheckCircle2, ChevronRight, Layers, DollarSign, TrendingUp } from 'lucide-react';
 import livingRoomHero from '../../assets/living_room_hero.png';
+import orangeSofa from '../../assets/images/orange_sofa.png';
+import creamLoungeChair from '../../assets/images/cream_lounge_chair.png';
+import botanicalPlant from '../../assets/images/botanical_plant.png';
 
 export const HeroSection = ({ onOpenAuth }) => {
   return (
@@ -80,7 +83,7 @@ export const HeroSection = ({ onOpenAuth }) => {
             <div className="p-3.5 rounded-2xl bg-white border border-[#E6E0D6] shadow-xs hover:shadow-md transition-shadow">
               <div className="w-full h-24 rounded-xl bg-[#F5F2EB] flex items-center justify-center p-2 mb-2">
                 <img
-                  src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=400&q=80"
+                  src={creamLoungeChair}
                   alt="Minimal Lounge Chair"
                   className="w-20 h-20 object-contain drop-shadow-sm"
                 />
@@ -131,7 +134,7 @@ export const HeroSection = ({ onOpenAuth }) => {
               {/* Main Image: Orange Sofa with Plaid Throw */}
               <div className="relative py-2 flex justify-center items-center">
                 <img
-                  src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1000&q=80"
+                  src={orangeSofa}
                   alt="Luxury Modern Orange Living Room Sofa"
                   className="w-full max-h-72 sm:max-h-80 object-cover rounded-2xl shadow-xl group-hover:scale-[1.01] transition-transform duration-500"
                 />
@@ -194,7 +197,7 @@ export const HeroSection = ({ onOpenAuth }) => {
               </div>
               <div className="w-20 h-24 flex-shrink-0 flex items-center justify-center">
                 <img
-                  src="https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=300&q=80"
+                  src={botanicalPlant}
                   alt="Minimal Plant"
                   className="w-16 h-20 object-contain drop-shadow-md group-hover:scale-105 transition-transform"
                 />

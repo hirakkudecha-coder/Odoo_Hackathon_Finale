@@ -1,11 +1,12 @@
 import React from 'react';
 import { ArrowUpRight, Sparkles, ArrowRight } from 'lucide-react';
+import cyanArmchair from '../../assets/images/cyan_armchair.png';
 
 export const LuxurySpaceBanner = () => {
   return (
     <section className="py-16 bg-[#FAF8F5] relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Editorial Heading with Aesthetic Pill */}
         <div className="text-center space-y-3 mb-12 reveal">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[#2D4A3E]/15 text-[11px] font-bold uppercase tracking-widest text-[#2D4A3E]">
@@ -22,10 +23,10 @@ export const LuxurySpaceBanner = () => {
 
         {/* Asymmetric composition matching reference */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          
+
           {/* Left Asymmetric Badges */}
           <div className="lg:col-span-4 flex flex-row lg:flex-col justify-center items-center lg:items-end gap-6 reveal reveal-left delay-150">
-            
+
             {/* Yellow Round Badge */}
             <div className="w-40 sm:w-48 p-4 rounded-3xl bg-[#F6ED78] border border-[#E0D75D] shadow-xs flex flex-col items-center text-center group hover:rotate-1 transition-transform">
               <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-2xl shadow-xs mb-2">
@@ -55,13 +56,13 @@ export const LuxurySpaceBanner = () => {
           {/* Right Mint / Cyan Feature Card with Cyan Armchair */}
           <div className="lg:col-span-8 reveal reveal-right delay-200">
             <div className="rounded-3xl bg-[#D2F0DE] p-6 sm:p-10 border border-[#B8E5CA] shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 group">
-              
+
               {/* Cyan Accent Armchair Image */}
               <div className="w-full md:w-1/2 flex justify-center">
                 <div className="relative">
                   <div className="absolute -inset-4 bg-white/40 rounded-full blur-xl"></div>
                   <img
-                    src="https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?auto=format&fit=crop&w=700&q=80"
+                    src={cyanArmchair}
                     alt="Cyan Velvet Armchair"
                     className="relative w-64 sm:w-72 h-52 sm:h-60 object-contain drop-shadow-2xl group-hover:scale-105 transition-transform duration-500"
                   />

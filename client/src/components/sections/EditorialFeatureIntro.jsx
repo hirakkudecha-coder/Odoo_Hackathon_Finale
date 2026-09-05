@@ -1,16 +1,18 @@
 import React from 'react';
 import { ArrowUpRight, Users, Sparkles, CheckCircle, ShieldCheck } from 'lucide-react';
+import oakCredenza from '../../assets/images/oak_credenza.png';
+import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const EditorialFeatureIntro = ({ onOpenAuth }) => {
   return (
     <section id="features" className="py-20 bg-[#F5F1EA] border-y border-[#E8E1D5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
+
           {/* Left Column: Credenza / Console + Designer Pill */}
           <div className="lg:col-span-5 space-y-6 reveal reveal-left">
-            
+
             <div className="flex items-center gap-3">
               <span className="text-xs font-bold uppercase tracking-widest text-[#2D4A3E] border-b border-[#2D4A3E]/30 pb-0.5">
                 Luxury You Can Live In
@@ -25,7 +27,7 @@ export const EditorialFeatureIntro = ({ onOpenAuth }) => {
             <div className="relative rounded-3xl bg-white p-6 border border-[#E4DDD1] shadow-xs group hover:shadow-md transition-shadow">
               <div className="h-48 sm:h-56 flex items-center justify-center overflow-hidden rounded-2xl bg-[#FAF8F5] mb-4">
                 <img
-                  src="https://images.unsplash.com/photo-1595428774223-ef52624120d2?auto=format&fit=crop&w=800&q=80"
+                  src={oakCredenza}
                   alt="Mid-century Solid Oak Console"
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -48,7 +50,7 @@ export const EditorialFeatureIntro = ({ onOpenAuth }) => {
             {/* Designer / Auditor Pill matching the reference orange designer badge */}
             <div className="flex items-center gap-4 bg-[#FAF8F5] p-3.5 rounded-2xl border border-[#E6DFD4]">
               <img
-                src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80"
+                src={designerPortrait}
                 alt="Accountant & Curator"
                 className="w-12 h-12 rounded-xl object-cover border border-[#2D4A3E]/20"
               />
@@ -66,7 +68,7 @@ export const EditorialFeatureIntro = ({ onOpenAuth }) => {
 
           {/* Right Column: Editorial Statement matching reference */}
           <div className="lg:col-span-7 lg:pl-8 space-y-6 reveal reveal-right delay-200">
-            
+
             <div className="inline-block px-3 py-1 rounded-full bg-[#EAE2D4] text-[#2D4A3E] text-[11px] font-bold uppercase tracking-widest">
               Design Architecture
             </div>

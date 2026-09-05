@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
-import { 
-  LayoutDashboard, 
-  Database, 
-  Users, 
-  Package, 
-  FileSpreadsheet, 
-  BookOpen, 
-  PieChart, 
-  ShoppingCart, 
-  ShoppingBag, 
-  CreditCard, 
-  Scale, 
-  Wallet, 
-  FileText, 
-  ChevronDown, 
-  ChevronRight, 
-  X, 
-  ArrowUpRight 
+import {
+  LayoutDashboard,
+  Database,
+  Users,
+  Package,
+  FileSpreadsheet,
+  BookOpen,
+  PieChart,
+  ShoppingCart,
+  ShoppingBag,
+  CreditCard,
+  Scale,
+  Wallet,
+  FileText,
+  ChevronDown,
+  ChevronRight,
+  X,
+  ArrowUpRight
 } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
 import creamLoungeChair from '../../assets/images/cream_lounge_chair.png';
 
-export const AdminSidebar = ({ 
-  activeMenu = 'dashboard', 
-  onSelectMenu, 
+export const AdminSidebar = ({
+  activeMenu = 'dashboard',
+  onSelectMenu,
   onNavigateHome,
   isOpen = true,
   onClose
@@ -117,7 +117,7 @@ export const AdminSidebar = ({
     <>
       {/* Mobile Backdrop Overlay */}
       {isOpen && (
-        <div 
+        <div
           onClick={onClose}
           className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 lg:hidden transition-opacity duration-300"
           aria-hidden="true"
@@ -128,16 +128,16 @@ export const AdminSidebar = ({
       <aside className={`
         fixed inset-y-0 left-0 z-50 bg-[#14231C] text-[#FAF8F5] h-screen flex flex-col justify-between border-r border-[#1E332A] select-none shrink-0 transition-all duration-300 ease-in-out overflow-y-auto overflow-x-hidden
         lg:static
-        ${isOpen 
-          ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none lg:w-64' 
+        ${isOpen
+          ? 'w-64 translate-x-0 shadow-2xl lg:shadow-none lg:w-64'
           : '-translate-x-full w-64 lg:translate-x-0 lg:w-20'
         }
       `}>
-        
+
         {/* Top Header & Brand */}
         <div>
           <div className="p-4 sm:p-5 border-b border-[#1E332A]/80 flex items-center justify-between min-h-[73px]">
-            <div 
+            <div
               onClick={() => {
                 if (onNavigateHome) onNavigateHome();
                 if (onClose && window.innerWidth < 1024) onClose();
@@ -179,14 +179,13 @@ export const AdminSidebar = ({
                     key={item.id}
                     onClick={() => handleItemClick(item.id)}
                     title={item.label}
-                    className={`relative p-3 rounded-xl transition-all duration-200 cursor-pointer group flex items-center justify-center ${
-                      isActive
+                    className={`relative p-3 rounded-xl transition-all duration-200 cursor-pointer group flex items-center justify-center ${isActive
                         ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
                         : 'text-[#85988F] hover:text-[#FAF8F5] hover:bg-[#1E332A]'
-                    }`}
+                      }`}
                   >
                     <Icon className="w-5 h-5" />
-                    
+
                     {/* Hover Floating Tooltip */}
                     <span className="absolute left-full ml-3 px-2.5 py-1 bg-[#1E332A] text-[#FAF8F5] text-[11px] font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-200 z-50 shadow-lg border border-[#2D4A3E]">
                       {item.label}
@@ -201,11 +200,10 @@ export const AdminSidebar = ({
                   <button
                     key={item.id}
                     onClick={() => handleItemClick(item.id)}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer ${
-                      isActive
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-medium transition-all duration-200 cursor-pointer ${isActive
                         ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs font-semibold'
                         : 'text-[#A1B3AB] hover:text-[#FAF8F5] hover:bg-[#1E332A]/60'
-                    }`}
+                      }`}
                   >
                     <Icon className={`w-4 h-4 ${isActive ? 'text-[#FAF8F5]' : 'text-[#85988F]'}`} />
                     <span className="flex-1 text-left">{item.label}</span>
@@ -240,11 +238,10 @@ export const AdminSidebar = ({
                           <button
                             key={sub.id}
                             onClick={() => handleItemClick(sub.id)}
-                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-left ${
-                              isSubActive
+                            className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-left ${isSubActive
                                 ? 'text-[#FAF8F5] bg-[#2D4A3E]/70 font-semibold'
                                 : 'text-[#8EABA0] hover:text-[#FAF8F5] hover:bg-[#1E332A]/40'
-                            }`}
+                              }`}
                           >
                             {SubIcon && <SubIcon className="w-3.5 h-3.5 text-[#8EABA0]" />}
                             <span>{sub.label}</span>
@@ -264,9 +261,9 @@ export const AdminSidebar = ({
           <div className="p-4 m-3 rounded-2xl bg-gradient-to-br from-[#1A2C23] to-[#122019] border border-[#274438] relative overflow-hidden group">
             <div className="flex items-center gap-3 relative z-10">
               <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center p-1 border border-white/10 shrink-0">
-                <img 
-                  src={creamLoungeChair} 
-                  alt="Living Room Armchair" 
+                <img
+                  src={creamLoungeChair}
+                  alt="Living Room Armchair"
                   className="w-full h-full object-contain group-hover:scale-105 transition-transform"
                 />
               </div>

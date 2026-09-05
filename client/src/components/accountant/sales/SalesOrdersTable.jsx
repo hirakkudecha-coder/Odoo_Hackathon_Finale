@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export { SalesOrdersTable, default } from '../../admin/sales/SalesOrdersTable';
-=======
 import React, { useState, useMemo } from 'react';
 import { 
   ShoppingCart, 
@@ -660,4 +657,3 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
 };
 
 export default SalesOrdersTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

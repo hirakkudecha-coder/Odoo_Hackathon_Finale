@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export { ChartOfAccountsTable, default } from '../../admin/accounting/ChartOfAccountsTable';
-=======
 import React, { useState, useMemo } from 'react';
 import { 
   BookOpen, 
@@ -636,4 +633,3 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
 };
 
 export default ChartOfAccountsTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

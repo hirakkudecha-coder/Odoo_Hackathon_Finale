@@ -1,20 +1,13 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from 'react';
-
-export const RecentInvoicesTable = ({ onViewAll }) => {
-  const rawInvoices = [
-=======
-import React, { useState } from 'react';
 import { DocumentPdfModal } from './DocumentPdfModal';
 import { createSalesOrderPdfData, downloadDirectPdf } from '../../utils/pdfGenerator';
 import { FileText, Printer } from 'lucide-react';
 
-export const RecentInvoicesTable = () => {
+export const RecentInvoicesTable = ({ onViewAll }) => {
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
-  const invoices = [
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
+  const rawInvoices = [
     { id: 'INV-0012', customer: 'Nimesh Pathak', date: '02 Sep 2025', amount: '₹ 24,500', status: 'Paid' },
     { id: 'INV-0011', customer: 'Meera & Co.', date: '01 Sep 2025', amount: '₹ 56,800', status: 'Pending' },
     { id: 'INV-0010', customer: 'Studio Nest', date: '30 Aug 2025', amount: '₹ 32,000', status: 'Due' },
@@ -22,7 +15,6 @@ export const RecentInvoicesTable = () => {
     { id: 'INV-0008', customer: 'DesignHub Interiors', date: '26 Aug 2025', amount: '₹ 41,250', status: 'Pending' },
   ];
 
-<<<<<<< HEAD
   const [invoices, setInvoices] = useState(rawInvoices);
 
   useEffect(() => {
@@ -61,7 +53,7 @@ export const RecentInvoicesTable = () => {
     fetchInvoices();
     return () => { isMounted = false; };
   }, []);
-=======
+
   const handleOpenInvoicePdf = (inv) => {
     const pdfData = createSalesOrderPdfData({
       soNo: inv.id,
@@ -84,7 +76,6 @@ export const RecentInvoicesTable = () => {
     });
     downloadDirectPdf(pdfData);
   };
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6
 
   const getStatusBadge = (status) => {
     switch (status) {

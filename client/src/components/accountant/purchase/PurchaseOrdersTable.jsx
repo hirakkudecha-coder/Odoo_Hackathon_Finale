@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export { PurchaseOrdersTable, default } from '../../admin/purchase/PurchaseOrdersTable';
-=======
 import React, { useState, useMemo } from 'react';
 import { 
   ShoppingBag, 
@@ -659,4 +656,3 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 };
 
 export default PurchaseOrdersTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

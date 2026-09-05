@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-export { PaymentsTable, default } from '../../admin/payments/PaymentsTable';
-=======
 import React, { useState, useMemo } from 'react';
 import { 
   CreditCard, 
@@ -657,4 +654,3 @@ export const PaymentsTable = ({ onCreatePayment }) => {
 };
 
 export default PaymentsTable;
->>>>>>> cf98a0a0b97483e2b0ad6dae9cda8ce59f23bfe6

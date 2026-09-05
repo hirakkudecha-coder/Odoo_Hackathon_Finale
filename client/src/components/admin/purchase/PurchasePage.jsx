@@ -1,29 +1,63 @@
 import React, { useState } from 'react';
 import { 
+  ShoppingCart, 
+  FileText, 
   Users, 
   Package, 
-  ShoppingCart,
-  FileSpreadsheet, 
-  BookOpen, 
-  PieChart 
+  IndianRupee,
+  Receipt,
+  ArrowUp
 } from 'lucide-react';
 import { PurchaseOrdersTable } from './PurchaseOrdersTable';
 import purchaseBanner from '../../../assets/images/purchase_banner.png';
 
-export const PurchasePage = ({ onNavigateTab }) => {
-  const [activeTab, setActiveTab] = useState('purchase');
+export const PurchasePage = ({ onNavigateTab, onCreatePO }) => {
+  const [activeTab, setActiveTab] = useState('purchaseOrders');
 
   const navigationTabs = [
-    { id: 'contacts', label: 'Contacts', icon: Users },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'purchase', label: 'Purchase', icon: ShoppingCart },
-    { id: 'chartOfAccounts', label: 'Chart of Accounts', icon: FileSpreadsheet },
-    { id: 'journals', label: 'Journals', icon: BookOpen },
-    { id: 'analyticAccounts', label: 'Analytic Accounts', icon: PieChart },
+    { id: 'purchaseOrders', label: 'Purchase Orders', icon: ShoppingCart },
+    { id: 'purchaseBills', label: 'Purchase Bills', icon: FileText },
+    { id: 'suppliers', label: 'Suppliers & Vendors', icon: Users },
+    { id: 'receipts', label: 'Goods Receipts', icon: Receipt },
+  ];
+
+  const kpis = [
+    {
+      title: 'Total Purchase Orders',
+      value: '42',
+      change: '+10% from last month',
+      icon: ShoppingCart,
+      iconBg: 'bg-[#E5F7ED]',
+      iconColor: 'text-[#1E7445]',
+    },
+    {
+      title: 'Total Purchase Bills',
+      value: '38',
+      change: '+6% from last month',
+      icon: FileText,
+      iconBg: 'bg-[#E5F7ED]',
+      iconColor: 'text-[#1E7445]',
+    },
+    {
+      title: 'Procurement Amount',
+      value: '₹ 8,92,400',
+      change: '+14% from last month',
+      icon: IndianRupee,
+      iconBg: 'bg-[#E5F7ED]',
+      iconColor: 'text-[#1E7445]',
+    },
+    {
+      title: 'Active Suppliers',
+      value: '18',
+      change: '+2 new this quarter',
+      icon: Users,
+      iconBg: 'bg-[#E5F7ED]',
+      iconColor: 'text-[#1E7445]',
+    },
   ];
 
   const handleTabClick = (tabId) => {
-    if (tabId === 'contacts' && onNavigateTab) {
+    if (tabId === 'suppliers' && onNavigateTab) {
       onNavigateTab('masterData');
     } else {
       setActiveTab(tabId);
@@ -81,24 +115,39 @@ export const PurchasePage = ({ onNavigateTab }) => {
         })}
       </div>
 
-      {/* Active View: Purchase Orders Table */}
-      {activeTab === 'purchase' && (
-        <PurchaseOrdersTable />
-      )}
+      {/* 4 Metric Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {kpis.map((kpi, idx) => {
+          const Icon = kpi.icon;
+          return (
+            <div 
+              key={idx}
+              className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-3.5">
+                <div className={`w-11 h-11 rounded-2xl ${kpi.iconBg} ${kpi.iconColor} flex items-center justify-center shrink-0 border border-[#D5E8DC] shadow-2xs`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider block">
+                    {kpi.title}
+                  </span>
+                  <span className="font-numeric font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
+                    {kpi.value}
+                  </span>
+                  <div className="flex items-center gap-1 text-[10px] font-bold font-numeric text-[#1E7445] mt-0.5">
+                    <ArrowUp className="w-3 h-3" />
+                    <span>{kpi.change}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
 
-      {activeTab !== 'purchase' && (
-        <div className="bg-white rounded-3xl p-12 border border-[#E8E1D5] shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#F5F1EA] text-[#2D4A3E] flex items-center justify-center mx-auto border border-[#E4DCD0]">
-            <ShoppingCart className="w-7 h-7" />
-          </div>
-          <h3 className="font-serif font-bold text-lg text-[#141A17]">
-            {navigationTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <p className="text-xs text-[#6B7A74] max-w-sm mx-auto">
-            Procurement records and automated vendor ledger synchronizations are active.
-          </p>
-        </div>
-      )}
+      {/* Active View: Purchase Orders Table */}
+      <PurchaseOrdersTable onCreatePO={onCreatePO} />
 
     </div>
   );

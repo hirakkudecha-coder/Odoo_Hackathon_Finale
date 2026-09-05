@@ -76,7 +76,7 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
           {activeMenu === 'masterData' || activeMenu === 'contacts' ? (
             <MasterDataPage onOpenCreateUser={onOpenCreateUser} />
           ) : activeMenu === 'purchase' ? (
-            <PurchasePage onNavigateTab={handleSelectMenu} />
+            <PurchasePage onNavigateTab={handleSelectMenu} onCreatePO={onOpenCreateUser} />
           ) : activeMenu === 'sales' ? (
             <SalesPage onNavigateTab={handleSelectMenu} onOpenCreateUser={onOpenCreateUser} />
           ) : activeMenu === 'payments' ? (

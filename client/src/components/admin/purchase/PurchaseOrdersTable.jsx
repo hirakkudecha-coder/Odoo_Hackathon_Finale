@@ -8,14 +8,26 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  ArrowUpDown,
+  FileText
 } from 'lucide-react';
+import { generatePurchaseOrderPDF, exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const PurchaseOrdersTable = ({ onCreatePO }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('Purchase Orders'); // 'Purchase Orders' | 'Purchase Bills' | 'Suppliers' | 'Payments'
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['PO No.', 'Date', 'Supplier', 'Items', 'Total Amount', 'Status'];
+    const rows = filteredOrders.map(o => [o.poNo, o.date, o.supplier, o.items, o.totalAmount, o.status]);
+    exportTableToPDF('Purchase Orders Register', headers, rows);
+  };
+
+  const handleDownloadPO = (order) => {
+    generatePurchaseOrderPDF(order);
+  };
 
   const rawOrders = [
     {
@@ -223,9 +235,13 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
             <span>Filter</span>
           </button>
 
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+          <button 
+            onClick={handleExportPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+            title="Export Purchase Orders Register PDF"
+          >
             <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
@@ -330,12 +346,25 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
                     {/* Actions Button */}
                     <td className="py-3.5 px-4 text-right">
-                      <button 
-                        className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                        title="More Options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadPO(o);
+                          }}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE3D6] hover:text-[#141A17] active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          title={`Download PO for ${o.poNo}`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-semibold hidden md:inline">PDF</span>
+                        </button>
+                        <button 
+                          className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
+                          title="More Options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

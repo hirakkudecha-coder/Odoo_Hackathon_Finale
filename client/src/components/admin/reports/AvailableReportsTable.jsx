@@ -8,10 +8,21 @@ import {
   MoreVertical, 
   Calendar 
 } from 'lucide-react';
+import { generateFinancialReportPDF } from '../../../utils/pdfGenerator';
 
 export const AvailableReportsTable = ({ onGenerateReport }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
+  const [downloadingId, setDownloadingId] = useState(null);
+
+  const handleDownloadPDF = (report) => {
+    setDownloadingId(report.id);
+    try {
+      generateFinancialReportPDF(report.name);
+    } finally {
+      setTimeout(() => setDownloadingId(null), 600);
+    }
+  };
 
   const rawReports = [
     {
@@ -134,11 +145,14 @@ export const AvailableReportsTable = ({ onGenerateReport }) => {
           </div>
 
           <button
-            onClick={onGenerateReport}
+            onClick={() => {
+              generateFinancialReportPDF('Executive Financial Statement');
+              if (onGenerateReport) onGenerateReport();
+            }}
             className="inline-flex items-center gap-2 bg-[#1C3A2F] hover:bg-[#142921] active:scale-95 text-[#FAF8F5] px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-sm shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Generate Report</span>
+            <Download className="w-4 h-4" />
+            <span>Generate PDF Report</span>
           </button>
         </div>
       </div>
@@ -226,12 +240,14 @@ export const AvailableReportsTable = ({ onGenerateReport }) => {
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         <button 
-                          className="p-1.5 rounded-lg text-[#5A6963] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                          title="Download Report"
+                          onClick={() => handleDownloadPDF(r)}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:text-[#141A17] hover:bg-[#E5F7ED] active:scale-95 transition-all cursor-pointer"
+                          title={`Download ${r.name} PDF`}
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button 
+                          onClick={() => handleDownloadPDF(r)}
                           className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
                           title="More Options"
                         >

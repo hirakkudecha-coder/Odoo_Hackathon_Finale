@@ -7,9 +7,11 @@ import {
   Download, 
   MoreVertical, 
   ChevronLeft, 
-  ChevronRight,
-  Calendar
+  ChevronRight, 
+  Calendar,
+  FileText
 } from 'lucide-react';
+import { generateTaxInvoicePDF, exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const SalesOrdersTable = ({ onCreateSO }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,6 +19,16 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
   const [customerFilter, setCustomerFilter] = useState('All Customers');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['SO No.', 'Date', 'Customer', 'Items', 'Total Amount', 'Status'];
+    const rows = filteredOrders.map(o => [o.soNo, o.date, o.customer, o.items, o.totalAmount, o.status]);
+    exportTableToPDF('Sales Orders Register', headers, rows);
+  };
+
+  const handleDownloadInvoice = (order) => {
+    generateTaxInvoicePDF(order);
+  };
 
   const rawOrders = [
     {
@@ -247,10 +259,13 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
         </button>
 
         {/* Export Button */}
-        <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+        <button 
+          onClick={handleExportPDF}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+          title="Export Sales Register PDF"
+        >
           <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-          <span>Export</span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#7A8881]" />
+          <span>Export PDF</span>
         </button>
       </div>
 
@@ -354,12 +369,25 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
 
                     {/* Actions Button */}
                     <td className="py-3.5 px-4 text-right">
-                      <button 
-                        className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                        title="More Options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadInvoice(o);
+                          }}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE3D6] hover:text-[#141A17] active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          title={`Download Invoice for ${o.soNo}`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-semibold hidden md:inline">PDF</span>
+                        </button>
+                        <button 
+                          className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
+                          title="More Options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

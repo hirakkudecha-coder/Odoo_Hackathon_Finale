@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Download } from 'lucide-react';
+import { exportTableToPDF } from '../../utils/pdfGenerator';
 
 const STATIC_FALLBACK = [
   { date: '05 Sep 2026', type: 'Sale', reference: 'INV-0012', name: 'Nimesh Pathak', amount: '₹ 24,500', status: 'Paid', statusColor: 'bg-[#E5F7ED] text-[#1E7445]' },
@@ -88,6 +89,12 @@ export const RecentTransactionsTable = () => {
 
 
 
+  const handleExportPDF = () => {
+    const headers = ['Date', 'Type', 'Reference', 'Name', 'Amount', 'Status'];
+    const rows = transactions.map(t => [t.date, t.type, t.reference, t.name, t.amount, t.status]);
+    exportTableToPDF('Recent Transactions Register', headers, rows);
+  };
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">
       
@@ -96,8 +103,13 @@ export const RecentTransactionsTable = () => {
         <h3 className="font-serif font-bold text-base sm:text-lg text-[#141A17]">
           Recent Transactions
         </h3>
-        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors">
-          View All
+        <button 
+          onClick={handleExportPDF}
+          className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors flex items-center gap-1"
+          title="Export Recent Transactions PDF"
+        >
+          <Download className="w-3 h-3 text-[#2D4A3E]" />
+          <span>Export PDF</span>
         </button>
       </div>
 

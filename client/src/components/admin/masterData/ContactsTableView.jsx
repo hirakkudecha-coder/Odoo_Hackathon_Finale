@@ -7,14 +7,21 @@ import {
   Download, 
   MoreVertical, 
   ChevronLeft, 
-  ChevronRight,
-  ArrowUpDown
+  ChevronRight, 
+  ArrowUpDown 
 } from 'lucide-react';
+import { exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const ContactsTableView = ({ onCreateContact }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All'); // 'All' | 'Customers' | 'Vendors' | 'Others'
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['Name', 'Type', 'Email', 'Phone', 'City', 'Status'];
+    const rows = filteredContacts.map(c => [c.name, c.type, c.email, c.phone, c.city, c.status]);
+    exportTableToPDF('Contacts Master Directory', headers, rows);
+  };
 
   const rawContacts = [
     {
@@ -193,9 +200,13 @@ export const ContactsTableView = ({ onCreateContact }) => {
             <span>Filter</span>
           </button>
 
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+          <button 
+            onClick={handleExportPDF}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+            title="Export Contacts Directory PDF"
+          >
             <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>

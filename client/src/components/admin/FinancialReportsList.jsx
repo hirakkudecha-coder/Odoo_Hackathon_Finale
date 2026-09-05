@@ -5,8 +5,10 @@ import {
   Clock, 
   DollarSign, 
   ChevronRight,
-  Receipt
+  Receipt,
+  Download
 } from 'lucide-react';
+import { generateFinancialReportPDF } from '../../utils/pdfGenerator';
 
 export const FinancialReportsList = ({ onSelectReport }) => {
   const reports = [
@@ -52,6 +54,17 @@ export const FinancialReportsList = ({ onSelectReport }) => {
     },
   ];
 
+  const handleReportClick = (rep) => {
+    if (onSelectReport) {
+      onSelectReport(rep.id);
+    }
+    generateFinancialReportPDF(rep.title);
+  };
+
+  const handleViewAll = () => {
+    generateFinancialReportPDF('Consolidated Financial Summary');
+  };
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">
       
@@ -60,8 +73,13 @@ export const FinancialReportsList = ({ onSelectReport }) => {
         <h3 className="font-serif font-bold text-base sm:text-lg text-[#141A17]">
           Reports
         </h3>
-        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors">
-          View All
+        <button 
+          onClick={handleViewAll}
+          className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors flex items-center gap-1"
+          title="Download Consolidated Financial Summary PDF"
+        >
+          <Download className="w-3 h-3 text-[#2D4A3E]" />
+          <span>Export All</span>
         </button>
       </div>
 
@@ -72,8 +90,9 @@ export const FinancialReportsList = ({ onSelectReport }) => {
           return (
             <button
               key={rep.id}
-              onClick={() => onSelectReport && onSelectReport(rep.id)}
+              onClick={() => handleReportClick(rep)}
               className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF6F0] hover:border hover:border-[#E8E1D5]/60 hover:shadow-2xs transition-all duration-200 cursor-pointer group text-left"
+              title={`Download ${rep.title} PDF Statement`}
             >
               <div className="flex items-center gap-3">
                 <div className={`w-8 h-8 rounded-lg ${rep.iconBg} ${rep.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200 shadow-2xs`}>
@@ -89,7 +108,10 @@ export const FinancialReportsList = ({ onSelectReport }) => {
                 </div>
               </div>
 
-              <ChevronRight className="w-4 h-4 text-[#A1B0A8] group-hover:text-[#2D4A3E] group-hover:translate-x-1 transition-all duration-200" />
+              <div className="flex items-center gap-1 text-[#A1B0A8] group-hover:text-[#2D4A3E] transition-colors">
+                <span className="text-[10px] font-semibold opacity-0 group-hover:opacity-100 transition-opacity">PDF</span>
+                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
+              </div>
             </button>
           );
         })}

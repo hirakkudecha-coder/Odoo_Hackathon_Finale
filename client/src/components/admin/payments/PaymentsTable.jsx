@@ -9,8 +9,10 @@ import {
   ChevronLeft, 
   ChevronRight,
   Calendar,
-  ArrowUpDown
+  ArrowUpDown,
+  FileText
 } from 'lucide-react';
+import { generatePaymentReceiptPDF, exportTableToPDF } from '../../../utils/pdfGenerator';
 
 export const PaymentsTable = ({ onRecordPayment }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,6 +21,16 @@ export const PaymentsTable = ({ onRecordPayment }) => {
   const [contactFilter, setContactFilter] = useState('All Contacts');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const handleExportPDF = () => {
+    const headers = ['Payment ID', 'Date', 'Type', 'Contact', 'Mode', 'Amount', 'Status', 'Reference'];
+    const rows = filteredPayments.map(p => [p.paymentId, p.date, p.type, p.contact, p.mode, p.amount, p.status, p.reference]);
+    exportTableToPDF('Payments Register', headers, rows);
+  };
+
+  const handleDownloadReceipt = (payment) => {
+    generatePaymentReceiptPDF(payment);
+  };
 
   const rawPayments = [
     {
@@ -271,10 +283,13 @@ export const PaymentsTable = ({ onRecordPayment }) => {
         </button>
 
         {/* Export Button */}
-        <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
+        <button 
+          onClick={handleExportPDF}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#1C3A2F] active:scale-95 transition-all cursor-pointer shadow-2xs"
+          title="Export Payments Register PDF"
+        >
           <Download className="w-3.5 h-3.5 text-[#7A8881]" />
-          <span>Export</span>
-          <ChevronDown className="w-3.5 h-3.5 text-[#7A8881]" />
+          <span>Export PDF</span>
         </button>
       </div>
 
@@ -407,12 +422,25 @@ export const PaymentsTable = ({ onRecordPayment }) => {
 
                     {/* Actions Button */}
                     <td className="py-3.5 px-4 text-right">
-                      <button 
-                        className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
-                        title="More Options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDownloadReceipt(p);
+                          }}
+                          className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE3D6] hover:text-[#141A17] active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                          title={`Download Receipt for ${p.paymentId}`}
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="text-[10px] font-semibold hidden md:inline">Receipt</span>
+                        </button>
+                        <button 
+                          className="p-1.5 rounded-lg text-[#85988F] hover:text-[#141A17] hover:bg-[#EFE9DF] transition-colors cursor-pointer"
+                          title="More Options"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

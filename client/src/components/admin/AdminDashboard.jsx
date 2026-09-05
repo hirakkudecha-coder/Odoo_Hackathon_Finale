@@ -14,6 +14,7 @@ import { FinancialReportsList } from './FinancialReportsList';
 import { MasterDataPage } from './masterData/MasterDataPage';
 import { PurchasePage } from './purchase/PurchasePage';
 import { SalesPage } from './sales/SalesPage';
+import { PaymentsPage } from './payments/PaymentsPage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -69,6 +70,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
             <PurchasePage onNavigateTab={handleSelectMenu} />
           ) : activeMenu === 'sales' ? (
             <SalesPage onNavigateTab={handleSelectMenu} onOpenCreateUser={onOpenCreateUser} />
+          ) : activeMenu === 'payments' ? (
+            <PaymentsPage onNavigateTab={handleSelectMenu} onRecordPayment={onOpenCreateUser} />
           ) : (
             <>
               {/* Greeting & Motivational Banner */}

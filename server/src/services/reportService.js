@@ -1,6 +1,9 @@
 const Account = require('../models/Account');
 const JournalEntry = require('../models/JournalEntry');
 const Budget = require('../models/Budget');
+const Product = require('../models/Product');
+const GoodsReceipt = require('../models/GoodsReceipt');
+const SalesReceipt = require('../models/SalesReceipt');
 
 /**
  * Calculate Profit & Loss Report dynamically from accounts & posted journal items
@@ -210,8 +213,82 @@ const getBudgetReport = async ({ period } = {}) => {
   };
 };
 
+/**
+ * Calculate Stock / Inventory Valuation & Movement Ledger
+ */
+const getStockValuationReport = async () => {
+  const products = await Product.find({ status: 'active' });
+  const goodsReceipts = await GoodsReceipt.find({ status: 'received' });
+  const salesReceipts = await SalesReceipt.find({ status: 'delivered' });
+
+  // Compute inward quantities
+  const inwardMap = {};
+  for (const gr of goodsReceipts) {
+    for (const it of gr.items) {
+      const pId = (it.product?._id || it.product).toString();
+      inwardMap[pId] = (inwardMap[pId] || 0) + (Number(it.quantity) || 0);
+    }
+  }
+
+  // Compute outward quantities
+  const outwardMap = {};
+  for (const sr of salesReceipts) {
+    for (const it of sr.items) {
+      const pId = (it.product?._id || it.product).toString();
+      outwardMap[pId] = (outwardMap[pId] || 0) + (Number(it.quantity) || 0);
+    }
+  }
+
+  let totalInventoryValuation = 0;
+  let totalSalesPotential = 0;
+  let totalUnitsOnHand = 0;
+
+  const stockItems = products.map((p) => {
+    const pId = p._id.toString();
+    const inward = inwardMap[pId] || 0;
+    const outward = outwardMap[pId] || 0;
+    const onHand = Math.max(0, inward - outward);
+    const valuation = Math.round(onHand * (p.costPrice || 0) * 100) / 100;
+    const salesValue = Math.round(onHand * (p.salesPrice || 0) * 100) / 100;
+
+    totalUnitsOnHand += onHand;
+    totalInventoryValuation += valuation;
+    totalSalesPotential += salesValue;
+
+    let stockStatus = 'In Stock';
+    if (onHand === 0) stockStatus = 'Out of Stock';
+    else if (onHand < 5) stockStatus = 'Low Stock';
+
+    return {
+      productId: p._id,
+      name: p.name,
+      type: p.type,
+      category: p.category,
+      costPrice: p.costPrice,
+      salesPrice: p.salesPrice,
+      inwardQty: inward,
+      outwardQty: outward,
+      onHandQty: onHand,
+      valuation,
+      salesValue,
+      status: stockStatus
+    };
+  });
+
+  return {
+    totalProducts: products.length,
+    totalUnitsOnHand,
+    totalInventoryValuation: Math.round(totalInventoryValuation * 100) / 100,
+    totalSalesPotential: Math.round(totalSalesPotential * 100) / 100,
+    potentialGrossProfit: Math.round((totalSalesPotential - totalInventoryValuation) * 100) / 100,
+    items: stockItems,
+    generatedAt: new Date().toISOString()
+  };
+};
+
 module.exports = {
   getProfitAndLossReport,
   getBalanceSheetReport,
-  getBudgetReport
+  getBudgetReport,
+  getStockValuationReport
 };

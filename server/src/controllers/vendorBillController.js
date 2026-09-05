@@ -31,7 +31,12 @@ const getVendorBills = async (req, res, next) => {
     const { vendor, status, search } = req.query;
     const filter = {};
 
-    if (vendor) filter.vendor = vendor;
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      filter.vendor = req.user.contactId;
+    } else if (vendor) {
+      filter.vendor = vendor;
+    }
+
     if (status) filter.status = status;
     if (search) filter.billNumber = { $regex: search, $options: 'i' };
 

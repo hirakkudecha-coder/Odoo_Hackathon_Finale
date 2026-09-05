@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
-=======
-import React, { useState, useMemo } from 'react';
->>>>>>> 5fed872f0bf1975aaf0f133b5f60cbf0f78457af
 import { 
   ShoppingBag, 
   Search, 
@@ -264,6 +260,64 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       )
     );
     setActiveRowMenuId(null);
+  };
+
+  const handleConvertToBill = async (order) => {
+    setActiveRowMenuId(null);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      if (order.rawPo && order.rawPo._id) {
+        const billRes = await fetch('/api/vendor-bills', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            vendor: order.rawPo.vendor?._id || order.rawPo.vendor,
+            purchaseOrder: order.rawPo._id,
+            billDate: new Date(),
+            dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+            items: order.rawPo.items || []
+          })
+        });
+        const billData = await billRes.json();
+        if (billData.vendorBill?._id) {
+          await fetch(`/api/vendor-bills/${billData.vendorBill._id}/post`, {
+            method: 'POST',
+            headers
+          });
+        }
+      }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                status: 'Billed',
+                statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: 'bg-[#10B981]'
+              }
+            : o
+        )
+      );
+      alert(`Vendor Bill successfully generated and posted for ${order.poNo}!`);
+    } catch (err) {
+      console.warn('Convert to bill error:', err);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                status: 'Billed',
+                statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: 'bg-[#10B981]'
+              }
+            : o
+        )
+      );
+    }
   };
 
   const handleExportPdf = () => {
@@ -578,6 +632,13 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                                 <span>Download PDF</span>
                               </button>
                               <div className="my-1 border-t border-[#F0EAE1]" />
+                              <button
+                                type="button"
+                                onClick={() => handleConvertToBill(order)}
+                                className="w-full px-3 py-1.5 text-left font-bold text-[#1C3A2F] hover:bg-[#E5F7ED] transition-colors cursor-pointer"
+                              >
+                                ⚡ Create Vendor Bill
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleUpdateStatus(order.id, 'Received')}

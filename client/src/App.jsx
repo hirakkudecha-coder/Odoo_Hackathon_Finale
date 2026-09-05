@@ -22,6 +22,7 @@ import { AccountantDashboard } from './components/accountant/AccountantDashboard
 import { PartnerHelpdeskPage } from './components/common/PartnerHelpdeskPage';
 import { AtelierAboutPage } from './components/common/AtelierAboutPage';
 import { ShowroomsPage } from './components/common/ShowroomsPage';
+import { ContactPortal } from './components/portal/ContactPortal';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -92,6 +93,12 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleNavigatePortal = () => {
+    window.history.pushState(null, '', '/portal');
+    setCurrentPath('/portal');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const handleAuthSuccess = (authData) => {
     const user = authData?.user;
     const token = authData?.token;
@@ -105,6 +112,8 @@ export const App = () => {
     
     if (user?.role === 'accountant') {
       handleNavigateAccountant();
+    } else if (user?.role === 'contact') {
+      handleNavigatePortal();
     } else {
       handleNavigateDashboard();
     }
@@ -124,6 +133,32 @@ export const App = () => {
   const handleCloseCreateUser = () => {
     setCreateUserModalOpen(false);
   };
+
+  // FULL SCREEN CONTACT SELF-SERVICE PORTAL: Accessible at /portal, /my-invoices
+  if (
+    currentPath === '/portal' ||
+    currentPath.startsWith('/portal') ||
+    currentPath === '/my-invoices' ||
+    window.location.hash === '#portal'
+  ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
+    return (
+      <ContactPortal
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onNavigateHome={handleNavigateHome}
+      />
+    );
+  }
 
   // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible only after authentication
   if (
@@ -284,7 +319,7 @@ export const App = () => {
       <Navbar 
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
-        onOpenDashboard={currentUser ? handleNavigateDashboard : () => handleOpenAuth('login')}
+        onOpenDashboard={currentUser ? (currentUser.role === 'contact' ? handleNavigatePortal : currentUser.role === 'accountant' ? handleNavigateAccountant : handleNavigateDashboard) : () => handleOpenAuth('login')}
         onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
         currentUser={currentUser}
         onLogout={handleLogout}

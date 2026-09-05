@@ -393,7 +393,47 @@ async function runAllTests() {
       totalVariance: br.totalVariance
     });
 
-    console.log('\n=== All Phase 1 through 7 Tests Completed Successfully! ===\n');
+    // 7.4 Stock / Inventory Valuation Report
+    const stockRepRes = await fetch(`${BASE_URL}/api/reports/stock`, {
+      headers: adminHeaders
+    });
+    const stockRepData = await stockRepRes.json();
+    const sr = stockRepData.report;
+    console.log('[Test 7.4] GET /api/reports/stock:', stockRepRes.status === 200 && sr.totalUnitsOnHand !== undefined ? 'PASS' : 'FAIL', {
+      totalProducts: sr.totalProducts,
+      totalUnitsOnHand: sr.totalUnitsOnHand,
+      totalInventoryValuation: sr.totalInventoryValuation
+    });
+
+    // --- PHASE 8 TESTS: CONTACT SELF-SERVICE PORTAL & PROVISIONING ---
+    console.log('\n--- Phase 8: Contact Self-Service Portal Tests ---');
+    const portalCustRes = await fetch(`${BASE_URL}/api/contacts`, {
+      method: 'POST',
+      headers: adminHeaders,
+      body: JSON.stringify({
+        name: 'Portal Test Customer',
+        type: 'Customer',
+        email: 'portal_customer@urbanfurniture.in',
+        createPortalUser: true,
+        portalPassword: 'PortalCustomer@2026'
+      })
+    });
+    const portalCustData = await portalCustRes.json();
+    console.log('[Test 8.1] Create Contact with Portal User Credentials:', portalCustRes.status === 201 && portalCustData.portalUserCreated === true ? 'PASS' : 'FAIL');
+
+    // Login as the created contact user
+    const contactLoginRes = await fetch(`${BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'portal_customer@urbanfurniture.in',
+        password: 'PortalCustomer@2026'
+      })
+    });
+    const contactLoginData = await contactLoginRes.json();
+    console.log('[Test 8.2] Login as Contact Role User:', contactLoginRes.status === 200 && contactLoginData.user.role === 'contact' ? 'PASS' : 'FAIL');
+
+    console.log('\n=== All Phase 1 through 8 Tests Completed Successfully! ===\n');
   } finally {
     server.close();
     await mongoose.connection.close();

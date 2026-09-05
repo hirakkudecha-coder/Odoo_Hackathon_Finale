@@ -4,7 +4,7 @@ import { ExternalLink } from 'lucide-react';
 export const RecentTransactionsTable = () => {
   const transactions = [
     {
-      date: '02 Sep 2025',
+      date: '05 Sep 2026',
       type: 'Sale',
       reference: 'INV-0012',
       name: 'Nimesh Pathak',
@@ -13,7 +13,7 @@ export const RecentTransactionsTable = () => {
       statusColor: 'bg-[#E5F7ED] text-[#1E7445]',
     },
     {
-      date: '01 Sep 2025',
+      date: '04 Sep 2026',
       type: 'Purchase',
       reference: 'PO-0034',
       name: 'Azure Furnitures',
@@ -22,7 +22,7 @@ export const RecentTransactionsTable = () => {
       statusColor: 'bg-[#FEF3EB] text-[#D65D33]',
     },
     {
-      date: '31 Aug 2025',
+      date: '03 Sep 2026',
       type: 'Payment',
       reference: 'PAY-0045',
       name: 'DesignHub Interiors',
@@ -31,7 +31,7 @@ export const RecentTransactionsTable = () => {
       statusColor: 'bg-[#E5F7ED] text-[#1E7445]',
     },
     {
-      date: '30 Aug 2025',
+      date: '02 Sep 2026',
       type: 'Sale',
       reference: 'INV-0011',
       name: 'Meera & Co.',
@@ -40,7 +40,7 @@ export const RecentTransactionsTable = () => {
       statusColor: 'bg-[#FDECE7] text-[#C95426]',
     },
     {
-      date: '29 Aug 2025',
+      date: '01 Sep 2026',
       type: 'Purchase',
       reference: 'BILL-0021',
       name: 'Woodland Supplies',

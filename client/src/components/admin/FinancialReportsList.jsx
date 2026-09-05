@@ -53,30 +53,30 @@ export const FinancialReportsList = ({ onSelectReport }) => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs text-left h-full flex flex-col justify-between">
+    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#F0EAE1]">
         <h3 className="font-serif font-bold text-base sm:text-lg text-[#141A17]">
           Reports
         </h3>
-        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer">
+        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors">
           View All
         </button>
       </div>
 
       {/* Reports List */}
-      <div className="space-y-2.5 my-auto">
+      <div className="space-y-2 my-auto">
         {reports.map((rep) => {
           const Icon = rep.icon;
           return (
             <button
               key={rep.id}
               onClick={() => onSelectReport && onSelectReport(rep.id)}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-[#FAF8F5] transition-colors cursor-pointer group text-left"
+              className="w-full flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF6F0] hover:border hover:border-[#E8E1D5]/60 hover:shadow-2xs transition-all duration-200 cursor-pointer group text-left"
             >
               <div className="flex items-center gap-3">
-                <div className={`w-8 h-8 rounded-lg ${rep.iconBg} ${rep.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+                <div className={`w-8 h-8 rounded-lg ${rep.iconBg} ${rep.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-200 shadow-2xs`}>
                   <Icon className="w-4 h-4" />
                 </div>
                 <div>
@@ -89,7 +89,7 @@ export const FinancialReportsList = ({ onSelectReport }) => {
                 </div>
               </div>
 
-              <ChevronRight className="w-4 h-4 text-[#A1B0A8] group-hover:text-[#2D4A3E] group-hover:translate-x-0.5 transition-all" />
+              <ChevronRight className="w-4 h-4 text-[#A1B0A8] group-hover:text-[#2D4A3E] group-hover:translate-x-1 transition-all duration-200" />
             </button>
           );
         })}

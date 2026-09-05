@@ -28,15 +28,11 @@ export const AdminSidebar = ({
   isOpen = true,
   onClose
 }) => {
-  const [openSubmenus, setOpenSubmenus] = useState({
-    masterData: true,
-    purchase: false,
-    sales: false,
-    accounting: false,
-  });
+  // Accordion state: only one section open at a time; opening one closes the previous one
+  const [openSubmenu, setOpenSubmenu] = useState('masterData');
 
-  const toggleSubmenu = (menu) => {
-    setOpenSubmenus((prev) => ({ ...prev, [menu]: !prev[menu] }));
+  const toggleSubmenu = (menuId) => {
+    setOpenSubmenu((prev) => (prev === menuId ? null : menuId));
   };
 
   const handleItemClick = (id) => {
@@ -174,7 +170,7 @@ export const AdminSidebar = ({
               const Icon = item.icon;
               const isSingle = item.single;
               const isActive = activeMenu === item.id;
-              const isMenuOpen = openSubmenus[item.id];
+              const isMenuOpen = openSubmenu === item.id;
 
               if (!isOpen) {
                 // Collapsed Icon-Only Mode with Hover Tooltip

@@ -51,14 +51,14 @@ export const RecentTransactionsTable = () => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs text-left h-full flex flex-col justify-between">
+    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#F0EAE1]">
         <h3 className="font-serif font-bold text-base sm:text-lg text-[#141A17]">
           Recent Transactions
         </h3>
-        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer">
+        <button className="text-xs font-semibold text-[#2D4A3E] hover:text-[#183327] hover:underline cursor-pointer transition-colors">
           View All
         </button>
       </div>
@@ -78,17 +78,17 @@ export const RecentTransactionsTable = () => {
           </thead>
           <tbody className="divide-y divide-[#F6F2EC]">
             {transactions.map((tx, idx) => (
-              <tr key={idx} className="hover:bg-[#FAF8F5] transition-colors">
-                <td className="py-3 text-[#5A6862] text-[11px] font-medium">
+              <tr key={idx} className="hover:bg-[#FAF6F0] transition-colors duration-150 cursor-pointer group">
+                <td className="py-3 text-[#5A6862] text-[11px] font-medium group-hover:text-[#141A17]">
                   {tx.date}
                 </td>
                 <td className="py-3 text-[#141A17] font-medium">
                   {tx.type}
                 </td>
-                <td className="py-3 text-[#2D4A3E] font-mono text-[11px] font-bold">
+                <td className="py-3 text-[#2D4A3E] font-mono text-[11px] font-bold group-hover:underline">
                   {tx.reference}
                 </td>
-                <td className="py-3 text-[#141A17] font-semibold">
+                <td className="py-3 text-[#141A17] font-semibold group-hover:text-[#2D4A3E]">
                   {tx.name}
                 </td>
                 <td className="py-3 text-right font-serif font-bold text-[#141A17]">

@@ -83,9 +83,9 @@ export const QuickActionsGrid = ({ onActionClick }) => {
             <button
               key={act.id}
               onClick={() => onActionClick && onActionClick(act.id)}
-              className="flex items-center gap-3 p-3.5 rounded-xl border border-[#EBE4D8] bg-[#FAF8F5]/60 hover:bg-white hover:border-[#2D4A3E]/30 hover:shadow-xs transition-all duration-200 cursor-pointer group text-left"
+              className="flex items-center gap-3 p-3.5 rounded-xl border border-[#EBE4D8] bg-[#FAF8F5]/80 hover:bg-white hover:border-[#2D4A3E]/40 hover:shadow-md hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer group text-left"
             >
-              <div className={`w-8 h-8 rounded-lg ${act.iconBg} ${act.iconColor} flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform`}>
+              <div className={`w-8 h-8 rounded-lg ${act.iconBg} ${act.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-200 shadow-2xs`}>
                 <Icon className="w-4 h-4" />
               </div>
               <span className="text-xs font-semibold text-[#1A2420] group-hover:text-[#2D4A3E] transition-colors">

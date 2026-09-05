@@ -4,7 +4,7 @@ import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen }) => {
   return (
-    <header className="bg-[#FAF8F5] border-b border-[#E8E1D5] px-4 sm:px-6 py-3 flex items-center justify-between gap-4 select-none sticky top-0 z-30 shadow-2xs shrink-0">
+    <header className="bg-[#FAF8F5] border-b border-[#E8E1D5] px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4 select-none sticky top-0 z-30 shadow-2xs shrink-0">
       
       {/* Left: Hamburger & Search Input & Brand if Collapsed */}
       <div className="flex items-center gap-3.5 w-full md:w-auto">

@@ -350,7 +350,7 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
                     </td>
 
                     {/* Balance */}
-                    <td className="py-3.5 px-4 font-serif font-bold text-[#141A17] text-xs">
+                    <td className="py-3.5 px-4 font-numeric font-bold text-[#141A17] text-xs">
                       {a.balance}
                     </td>
 

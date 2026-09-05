@@ -78,7 +78,7 @@ export const CoreModulesSection = ({ onOpenAuth }) => {
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <span className="font-serif-luxury font-bold text-3xl text-[#2D4A3E]/40 group-hover:text-[#2D4A3E] transition-colors">
+                    <span className="font-numeric font-bold text-3xl text-[#2D4A3E]/40 group-hover:text-[#2D4A3E] transition-colors">
                       {mod.num}
                     </span>
                     <div className="w-10 h-10 rounded-2xl bg-[#F4EFEA] text-[#2D4A3E] flex items-center justify-center group-hover:bg-[#2D4A3E] group-hover:text-[#FAF8F5] transition-colors">
@@ -114,7 +114,7 @@ export const CoreModulesSection = ({ onOpenAuth }) => {
           <div className="p-7 rounded-3xl bg-[#2D4A3E] text-[#FAF8F5] shadow-md flex flex-col justify-between group reveal reveal-scale delay-500">
             <div>
               <div className="flex items-center justify-between mb-6">
-                <span className="font-serif-luxury font-bold text-3xl text-[#FAF8F5]/40">
+                <span className="font-numeric font-bold text-3xl text-[#FAF8F5]/40">
                   06
                 </span>
                 <div className="w-10 h-10 rounded-2xl bg-[#3D5E50] text-[#FAF8F5] flex items-center justify-center">

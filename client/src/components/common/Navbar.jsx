@@ -209,7 +209,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                     }`}
                   >
                     <span className="flex items-center gap-2">
-                      <span className={`text-[10px] ${isActive ? 'text-[#FAF8F5]/70' : 'text-[#8E9B95]'}`}>
+                      <span className={`text-[10px] font-numeric font-bold ${isActive ? 'text-[#FAF8F5]/70' : 'text-[#8E9B95]'}`}>
                         0{idx + 1}
                       </span>
                       <span>{link.name}</span>

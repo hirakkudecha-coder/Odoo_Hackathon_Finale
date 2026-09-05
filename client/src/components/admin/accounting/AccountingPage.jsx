@@ -128,10 +128,10 @@ export const AccountingPage = ({ onNavigateTab, onAddAccount }) => {
                   <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider block">
                     {kpi.title}
                   </span>
-                  <span className="font-serif font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
+                  <span className="font-numeric font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
                     {kpi.value}
                   </span>
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-[#1E7445] mt-0.5">
+                  <div className="flex items-center gap-1 text-[10px] font-bold font-numeric text-[#1E7445] mt-0.5">
                     <ArrowUp className="w-3 h-3" />
                     <span>{kpi.change}</span>
                   </div>

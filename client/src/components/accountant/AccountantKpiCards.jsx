@@ -16,13 +16,13 @@ export const AccountantKpiCards = () => {
               <span className="text-[11.5px] font-semibold text-[#5A6E63] uppercase tracking-wide">
                 Sales Today
               </span>
-              <div className="text-xl sm:text-2xl font-bold font-serif text-[#141A17] tracking-tight mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
                 ₹ 48,000
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 bg-[#D5EFE0] text-[#1D603A] text-[11px] font-bold px-2 py-0.5 rounded-full shadow-2xs">
+          <div className="flex items-center gap-1 bg-[#D5EFE0] text-[#1D603A] text-[11px] font-bold font-numeric px-2 py-0.5 rounded-full shadow-2xs">
             <span>↑ 12%</span>
           </div>
         </div>
@@ -52,13 +52,13 @@ export const AccountantKpiCards = () => {
               <span className="text-[11.5px] font-semibold text-[#8B6450] uppercase tracking-wide">
                 Purchases Today
               </span>
-              <div className="text-xl sm:text-2xl font-bold font-serif text-[#141A17] tracking-tight mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
                 ₹ 22,500
               </div>
             </div>
           </div>
           
-          <div className="flex items-center gap-1 text-[#C86D3B] text-[11px] font-bold px-1.5 py-0.5">
+          <div className="flex items-center gap-1 text-[#C86D3B] text-[11px] font-bold font-numeric px-1.5 py-0.5">
             <span>↓ 8%</span>
           </div>
         </div>
@@ -88,7 +88,7 @@ export const AccountantKpiCards = () => {
               <span className="text-[11.5px] font-semibold text-[#66706B] uppercase tracking-wide">
                 Pending Invoices
               </span>
-              <div className="text-xl sm:text-2xl font-bold font-serif text-[#141A17] tracking-tight mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
                 ₹ 1,24,000
               </div>
             </div>
@@ -96,7 +96,7 @@ export const AccountantKpiCards = () => {
         </div>
 
         <div className="flex items-center justify-between mt-3">
-          <span className="text-[11px] font-medium text-[#7A8A82]">
+          <span className="text-[11px] font-medium font-numeric text-[#7A8A82]">
             12 invoices
           </span>
           <div className="h-6 w-24">
@@ -124,7 +124,7 @@ export const AccountantKpiCards = () => {
               <span className="text-[11.5px] font-semibold text-[#66706B] uppercase tracking-wide">
                 Pending Bills
               </span>
-              <div className="text-xl sm:text-2xl font-bold font-serif text-[#141A17] tracking-tight mt-0.5">
+              <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
                 ₹ 76,500
               </div>
             </div>

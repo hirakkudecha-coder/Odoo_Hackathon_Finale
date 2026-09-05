@@ -1,11 +1,25 @@
 @import "tailwindcss";
 
+/* --------------------------------------------------------------------------
+   Automatic Numerical Font Mapping via Unicode-Range
+   Intercepts all digits 0-9, currency symbols (₹, $), %, +, -, commas, decimals
+   and renders them with high-precision modern Space Grotesk / JetBrains Mono
+   -------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'NumericGrotesk';
+  src: local('Space Grotesk'), local('SpaceGrotesk-Regular'),
+       url('https://fonts.gstatic.com/s/spacegrotesk/v16/V8mDoQDjQSkFtoMM3T5rPz3WCsbW4ACE-HQ.woff2') format('woff2');
+  font-weight: 300 800;
+  font-display: swap;
+  unicode-range: U+0030-0039, U+20B9, U+0024, U+0025, U+002B, U+002D, U+002C, U+002E, U+002F, U+003A, U+0028, U+0029, U+2013, U+2014;
+}
+
 @layer base {
   :root {
-    --font-serif: 'Playfair Display', Georgia, serif;
-    --font-editorial: 'Cormorant Garamond', Georgia, serif;
-    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    --font-numeric: 'Space Grotesk', 'JetBrains Mono', sans-serif;
+    --font-serif: 'NumericGrotesk', 'Playfair Display', Georgia, serif;
+    --font-editorial: 'NumericGrotesk', 'Cormorant Garamond', Georgia, serif;
+    --font-sans: 'NumericGrotesk', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-numeric: 'Space Grotesk', 'JetBrains Mono', 'Plus Jakarta Sans', sans-serif;
     --font-mono: 'JetBrains Mono', monospace;
   }
 
@@ -20,7 +34,8 @@
     color: #1A1F1D;
     max-width: 100%;
     overflow-x: clip;
-    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-feature-settings: "tnum" 1, "cv02", "cv03", "cv04", "cv11";
+    font-variant-numeric: tabular-nums;
   }
 
   /* Custom Smooth Luxury Scrollbars */
@@ -39,12 +54,22 @@
     background: #A1B3AB;
   }
 
-  h1, h2, h3, .font-serif-title {
+  h1, h2, h3, h4, h5, h6, .font-serif-title, .font-serif, .font-serif-luxury {
     font-family: var(--font-serif);
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
   }
 
-  .font-editorial {
+  .font-editorial, .font-editorial-luxury {
     font-family: var(--font-editorial);
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Ensure all table data, inputs, badges, and figures render with crisp numerical precision */
+  table td, table th, input, select, textarea, button, .tabular-nums {
+    font-feature-settings: "tnum" 1;
+    font-variant-numeric: tabular-nums;
   }
 
   /* Universal High-Precision Numerical & Amount Font Rules */
@@ -54,7 +79,7 @@
     font-variant-numeric: tabular-nums;
   }
 
-  .font-numeric, .font-numbers, .font-amount, .font-price, .font-stat, .font-kpi {
+  .font-numeric, .font-numbers, .font-amount, .font-price, .font-stat, .font-kpi, .price, .amount {
     font-family: 'Space Grotesk', 'JetBrains Mono', sans-serif !important;
     font-feature-settings: "tnum" 1;
     font-variant-numeric: tabular-nums;
@@ -64,11 +89,11 @@
 
 /* Custom editorial aesthetics & utility classes */
 .font-serif-luxury {
-  font-family: 'Playfair Display', Georgia, serif;
+  font-family: 'NumericGrotesk', 'Playfair Display', Georgia, serif;
 }
 
 .font-editorial-luxury {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-family: 'NumericGrotesk', 'Cormorant Garamond', Georgia, serif;
 }
 
 .font-numeric {

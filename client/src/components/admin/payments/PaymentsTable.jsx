@@ -366,7 +366,7 @@ export const PaymentsTable = ({ onRecordPayment }) => {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-4 text-[#5A6963] font-medium text-[11.5px]">
+                    <td className="py-3.5 px-4 text-[#5A6963] font-medium text-[11.5px] font-numeric">
                       {p.date}
                     </td>
 
@@ -388,7 +388,7 @@ export const PaymentsTable = ({ onRecordPayment }) => {
                     </td>
 
                     {/* Amount */}
-                    <td className="py-3.5 px-4 font-serif font-bold text-[#141A17] text-xs">
+                    <td className="py-3.5 px-4 font-numeric font-bold text-[#141A17] text-xs">
                       {p.amount}
                     </td>
 

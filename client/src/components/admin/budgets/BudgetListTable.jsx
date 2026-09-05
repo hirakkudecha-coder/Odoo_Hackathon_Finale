@@ -240,17 +240,17 @@ export const BudgetListTable = ({ onCreateBudget }) => {
                     </td>
 
                     {/* Budget Amount */}
-                    <td className="py-3.5 px-4 font-medium text-[#4A5952]">
+                    <td className="py-3.5 px-4 font-numeric font-medium text-[#4A5952]">
                       {b.budgetAmount}
                     </td>
 
                     {/* Actual Amount */}
-                    <td className="py-3.5 px-4 font-medium text-[#4A5952]">
+                    <td className="py-3.5 px-4 font-numeric font-medium text-[#4A5952]">
                       {b.actualAmount}
                     </td>
 
                     {/* Variance */}
-                    <td className="py-3.5 px-4 font-medium text-[#4A5952]">
+                    <td className="py-3.5 px-4 font-numeric font-medium text-[#4A5952]">
                       {b.variance}
                     </td>
 
@@ -265,7 +265,7 @@ export const BudgetListTable = ({ onCreateBudget }) => {
                             }`}
                           />
                         </div>
-                        <span className="font-semibold text-xs text-[#141A17] min-w-[32px]">
+                        <span className="font-semibold text-xs text-[#141A17] font-numeric min-w-[32px]">
                           {b.utilization}%
                         </span>
                       </div>

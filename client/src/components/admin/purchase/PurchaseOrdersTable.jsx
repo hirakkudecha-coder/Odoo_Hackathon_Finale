@@ -294,7 +294,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                     </td>
 
                     {/* Date */}
-                    <td className="py-3.5 px-4 text-[#5A6963] font-medium text-[11.5px]">
+                    <td className="py-3.5 px-4 text-[#5A6963] font-medium text-[11.5px] font-numeric">
                       {o.date}
                     </td>
 
@@ -311,12 +311,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                     </td>
 
                     {/* Items */}
-                    <td className="py-3.5 px-4 text-[#5A6963] font-medium">
+                    <td className="py-3.5 px-4 text-[#5A6963] font-medium font-numeric">
                       {o.items}
                     </td>
 
                     {/* Total Amount */}
-                    <td className="py-3.5 px-4 font-serif font-bold text-[#141A17] text-xs">
+                    <td className="py-3.5 px-4 font-numeric font-bold text-[#141A17] text-xs">
                       {o.totalAmount}
                     </td>
 

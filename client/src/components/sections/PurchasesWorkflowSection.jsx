@@ -34,7 +34,7 @@ export const PurchasesWorkflowSection = ({ onOpenAuth }) => {
                     <span className="text-lg">🪵</span>
                     <div>
                       <p className="font-semibold text-[#141A17]">Teak Wood Frames (Grade A)</p>
-                      <p className="text-[10px] text-[#6A7670]">Qty: 50 Sets • Unit: ₹1,200</p>
+                      <p className="text-[10px] text-[#6A7670] font-numeric">Qty: 50 Sets • Unit: ₹1,200</p>
                     </div>
                   </div>
                   <span className="font-mono font-bold text-[#141A17]">₹60,000</span>
@@ -45,7 +45,7 @@ export const PurchasesWorkflowSection = ({ onOpenAuth }) => {
                     <span className="text-lg">🧵</span>
                     <div>
                       <p className="font-semibold text-[#141A17]">Belgian Linen Upholstery (Meters)</p>
-                      <p className="text-[10px] text-[#6A7670]">Qty: 100m • Unit: ₹450</p>
+                      <p className="text-[10px] text-[#6A7670] font-numeric">Qty: 100m • Unit: ₹450</p>
                     </div>
                   </div>
                   <span className="font-mono font-bold text-[#141A17]">₹45,000</span>
@@ -72,7 +72,7 @@ export const PurchasesWorkflowSection = ({ onOpenAuth }) => {
               <div className="mt-5 p-3 rounded-xl bg-[#FDF0EB] border border-[#F5CDBF] flex items-center justify-between text-[11px]">
                 <div className="flex items-center gap-2 text-[#8B341B] font-semibold">
                   <CheckCircle2 className="w-4 h-4 text-[#E86034]" />
-                  <span>Inventory Stock Value Increased: ₹1,05,000</span>
+                  <span>Inventory Stock Value Increased: <span className="font-numeric font-bold">₹1,05,000</span></span>
                 </div>
                 <span className="font-mono text-[#8B341B] font-bold">Dr. Assets</span>
               </div>

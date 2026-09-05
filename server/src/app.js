@@ -5,6 +5,7 @@ const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 
 // Route imports
 const healthRoutes = require('./routes/healthRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
@@ -34,6 +35,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/health', healthRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

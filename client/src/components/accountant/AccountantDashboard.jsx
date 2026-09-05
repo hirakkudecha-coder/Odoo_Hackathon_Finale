@@ -18,7 +18,7 @@ import { ContactsPage } from './contacts/ContactsPage';
 import { ProductsPage } from './products/ProductsPage';
 import { JournalEntriesPage } from './journals/JournalEntriesPage';
 
-export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard }) => {
+export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, currentUser, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -41,6 +41,8 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard }
         <AccountantHeader 
           onNavigateHome={onNavigateHome}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          currentUser={currentUser}
+          onLogout={onLogout}
         />
 
         {/* Scrollable Dashboard Body */}

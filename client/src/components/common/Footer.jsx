@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowUpRight, Send, Mail, Phone, MapPin, Check } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 import blueSofa from '../../assets/images/blue_sofa.png';
 
 export const Footer = ({ onOpenAuth }) => {
@@ -16,7 +17,7 @@ export const Footer = ({ onOpenAuth }) => {
   };
 
   return (
-    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden">
+    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24">
 
       {/* Subtle background glow */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#2D4A3E]/30 rounded-full blur-3xl pointer-events-none"></div>
@@ -30,17 +31,7 @@ export const Footer = ({ onOpenAuth }) => {
           <div className="lg:col-span-5 space-y-6">
 
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#2D4A3E] text-[#FAF8F5] flex items-center justify-center font-serif font-bold text-xl border border-white/10 shadow-sm">
-                UF
-              </div>
-              <div className="flex flex-col">
-                <span className="font-serif-luxury font-bold text-2xl tracking-tight text-white">
-                  Urban Furniture
-                </span>
-                <span className="text-[10px] tracking-widest uppercase font-semibold text-[#8EABA0]">
-                  Accounting System
-                </span>
-              </div>
+              <BrandLogo light={true} />
             </div>
 
             <p className="text-xs text-[#A1B8AF] leading-relaxed max-w-sm">

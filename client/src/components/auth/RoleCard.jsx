@@ -1,7 +1,14 @@
 import React from 'react';
-import { ShieldCheck, FileSpreadsheet, UserCheck, Check } from 'lucide-react';
+import { ShieldCheck, FileSpreadsheet, UserCheck, Check, Crown } from 'lucide-react';
 
 export const ROLE_DEFINITIONS = [
+  {
+    id: 'superadmin',
+    label: 'Super Admin / Administrator',
+    shortLabel: 'Super Admin',
+    description: 'System-wide management, multi-organization control, users, roles, and global analytics.',
+    icon: Crown,
+  },
   {
     id: 'admin',
     label: 'Admin / Business Owner',

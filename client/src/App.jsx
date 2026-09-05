@@ -19,6 +19,7 @@ import { AuthLayout } from './components/auth/AuthLayout';
 import { CreateUserModal } from './components/admin/CreateUserModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AccountantDashboard } from './components/accountant/AccountantDashboard';
+import { SuperAdminDashboard } from './components/superadmin/SuperAdminDashboard';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -57,6 +58,12 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleNavigateSuperAdmin = () => {
+    window.history.pushState(null, '', '/superadmin');
+    setCurrentPath('/superadmin');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const handleNavigateDashboard = () => {
     window.history.pushState(null, '', '/dashboard');
     setCurrentPath('/dashboard');
@@ -80,7 +87,9 @@ export const App = () => {
       localStorage.setItem('token', token);
     }
     
-    if (user?.role === 'accountant') {
+    if (user?.role === 'superadmin') {
+      handleNavigateSuperAdmin();
+    } else if (user?.role === 'accountant') {
       handleNavigateAccountant();
     } else {
       handleNavigateDashboard();
@@ -101,6 +110,35 @@ export const App = () => {
   const handleCloseCreateUser = () => {
     setCreateUserModalOpen(false);
   };
+
+  // FULL SCREEN SUPER ADMIN DASHBOARD: Accessible at /superadmin
+  if (
+    currentPath === '/superadmin' ||
+    currentPath === '/super-admin' ||
+    currentPath.endsWith('/superadmin') ||
+    currentPath.endsWith('/super-admin') ||
+    window.location.hash === '#superadmin'
+  ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
+    return (
+      <SuperAdminDashboard
+        onNavigateHome={handleNavigateHome}
+        onNavigateAdmin={handleNavigateDashboard}
+        onNavigateAccountant={handleNavigateAccountant}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible only after authentication
   if (
@@ -197,7 +235,15 @@ export const App = () => {
       <Navbar 
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
-        onOpenDashboard={currentUser ? handleNavigateDashboard : () => handleOpenAuth('login')}
+        onOpenDashboard={
+          currentUser 
+            ? (currentUser.role === 'superadmin' 
+                ? handleNavigateSuperAdmin 
+                : currentUser.role === 'accountant' 
+                ? handleNavigateAccountant 
+                : handleNavigateDashboard)
+            : () => handleOpenAuth('login')
+        }
         onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
         currentUser={currentUser}
         onLogout={handleLogout}

@@ -13,11 +13,11 @@ const createBudget = async (req, res, next) => {
     }
 
     const budget = await Budget.create(req.body);
-    const populated = await Budget.findById(budget._id).populate('analyticAccount', 'name code type');
+    await budget.populate('analyticAccount', 'name code type');
     res.status(201).json({
       success: true,
       message: 'Budget created successfully',
-      budget: populated
+      budget
     });
   } catch (error) {
     next(error);
@@ -33,13 +33,23 @@ const getBudgets = async (req, res, next) => {
     if (period) filter.period = period;
     if (status) filter.status = status;
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Budget.countDocuments(filter);
     const budgets = await Budget.find(filter)
       .populate('analyticAccount', 'name code type')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: budgets.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       budgets
     });
   } catch (error) {

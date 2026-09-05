@@ -37,13 +37,78 @@ export const App = () => {
     }
   });
 
-  // Sync route on popstate (browser back/forward)
+  // Sync route on popstate (browser back/forward) & hashchange
   useEffect(() => {
     const handleLocationChange = () => {
       setCurrentPath(window.location.pathname);
+      if (window.location.hash) {
+        const targetId = window.location.hash.replace('#', '');
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }
     };
     window.addEventListener('popstate', handleLocationChange);
-    return () => window.removeEventListener('popstate', handleLocationChange);
+    window.addEventListener('hashchange', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('hashchange', handleLocationChange);
+    };
+  }, []);
+
+  // Global SPA link interceptor: prevents hard reloads on internal <a> links throughout the app
+  useEffect(() => {
+    const handleGlobalLinkClick = (e) => {
+      const anchor = e.target.closest('a');
+      if (!anchor) return;
+
+      // Respect modifier keys (Ctrl/Cmd/Shift/Alt) or middle clicks to allow opening in new tabs
+      if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+      if (anchor.target && anchor.target !== '_self') return;
+      if (anchor.hasAttribute('download')) return;
+
+      const href = anchor.getAttribute('href');
+      if (!href || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('javascript:')) return;
+
+      // Only intercept internal application paths
+      const url = new URL(anchor.href, window.location.origin);
+      if (url.origin !== window.location.origin) return;
+
+      e.preventDefault();
+
+      if (url.pathname === window.location.pathname) {
+        if (url.hash) {
+          window.history.pushState(null, '', url.pathname + url.search + url.hash);
+          const targetId = url.hash.replace('#', '');
+          const element = document.getElementById(targetId);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      } else {
+        window.history.pushState(null, '', url.pathname + url.search + url.hash);
+        setCurrentPath(url.pathname);
+        if (url.hash) {
+          setTimeout(() => {
+            const targetId = url.hash.replace('#', '');
+            const element = document.getElementById(targetId);
+            if (element) {
+              element.scrollIntoView({ behavior: 'smooth' });
+            } else {
+              window.scrollTo({ top: 0, behavior: 'instant' });
+            }
+          }, 80);
+        } else {
+          window.scrollTo({ top: 0, behavior: 'instant' });
+        }
+      }
+    };
+
+    document.addEventListener('click', handleGlobalLinkClick);
+    return () => document.removeEventListener('click', handleGlobalLinkClick);
   }, []);
 
   // Trigger formal editorial scroll entrance animations whenever currentPath changes

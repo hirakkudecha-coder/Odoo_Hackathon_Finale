@@ -111,6 +111,11 @@ vendorBillSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+vendorBillSchema.index({ billNumber: 1 }, { unique: true, sparse: true });
+vendorBillSchema.index({ vendor: 1, status: 1 });
+vendorBillSchema.index({ billDate: -1, status: 1 });
+
 const VendorBill = mongoose.model('VendorBill', vendorBillSchema);
 
 module.exports = VendorBill;

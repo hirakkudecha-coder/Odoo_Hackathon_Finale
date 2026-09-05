@@ -75,6 +75,11 @@ paymentSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+paymentSchema.index({ paymentNumber: 1 }, { unique: true, sparse: true });
+paymentSchema.index({ partner: 1, paymentType: 1 });
+paymentSchema.index({ paymentDate: -1, status: 1 });
+
 const Payment = mongoose.model('Payment', paymentSchema);
 
 module.exports = Payment;

@@ -19,7 +19,7 @@ router.route('/')
 router.route('/:id')
   .get(getCustomerInvoiceById)
   .put(authorize('admin', 'accountant'), updateCustomerInvoice)
-  .delete(authorize('admin', 'accountant'), deleteCustomerInvoice);
+  .delete(authorize('admin'), deleteCustomerInvoice);
 
 router.post('/:id/post', authorize('admin', 'accountant'), postCustomerInvoice);
 

@@ -49,6 +49,11 @@ const productSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for query performance and filtering
+productSchema.index({ name: 1 });
+productSchema.index({ type: 1, category: 1 });
+productSchema.index({ status: 1 });
+
 const Product = mongoose.model('Product', productSchema);
 
 module.exports = Product;

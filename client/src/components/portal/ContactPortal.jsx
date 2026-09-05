@@ -23,11 +23,33 @@ import { DocumentPdfModal } from '../accountant/DocumentPdfModal';
 import { createCustomerInvoicePdfData, createVendorBillPdfData, downloadDirectPdf } from '../../utils/pdfGenerator';
 
 export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
-  const [activeTab, setActiveTab] = useState('invoices'); // 'invoices' | 'bills' | 'orders'
+  const [activeTab, setActiveTab] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash.replace('#', '');
+    return params.get('tab') || hash || 'invoices';
+  });
   const [invoices, setInvoices] = useState([]);
   const [bills, setBills] = useState([]);
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Synchronize browser history when tab changes
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    const targetUrl = tabId === 'invoices' ? '/portal' : `/portal?tab=${tabId}`;
+    window.history.pushState(null, '', targetUrl);
+  };
+
+  // Sync state on browser back/forward buttons
+  useEffect(() => {
+    const onLocationChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.replace('#', '');
+      setActiveTab(params.get('tab') || hash || 'invoices');
+    };
+    window.addEventListener('popstate', onLocationChange);
+    return () => window.removeEventListener('popstate', onLocationChange);
+  }, []);
   
   // Payment settlement modal state
   const [settleModalOpen, setSettleModalOpen] = useState(false);
@@ -227,7 +249,21 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
       <header className="sticky top-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#2D4A3E]/15 py-3 px-4 sm:px-8 shadow-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <BrandLogo />
+            <button 
+              type="button" 
+              onClick={(e) => {
+                e.preventDefault();
+                if (onNavigateHome) onNavigateHome();
+                else {
+                  window.history.pushState(null, '', '/');
+                  window.dispatchEvent(new PopStateEvent('popstate'));
+                }
+              }}
+              className="cursor-pointer text-left group"
+              title="Return to Public Storefront"
+            >
+              <BrandLogo />
+            </button>
             <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full bg-[#1C3A2F] text-[#FAF8F5] text-[10px] font-bold uppercase tracking-widest">
               Partner Portal
             </span>
@@ -302,7 +338,7 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
         <div className="flex items-center gap-2 border-b border-[#E8E1D5] pb-2">
           <button
             type="button"
-            onClick={() => setActiveTab('invoices')}
+            onClick={() => handleTabChange('invoices')}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'invoices'
                 ? 'bg-[#1C3A2F] text-[#FAF8F5] shadow-xs'
@@ -315,7 +351,7 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
 
           <button
             type="button"
-            onClick={() => setActiveTab('bills')}
+            onClick={() => handleTabChange('bills')}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'bills'
                 ? 'bg-[#1C3A2F] text-[#FAF8F5] shadow-xs'
@@ -328,7 +364,7 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
 
           <button
             type="button"
-            onClick={() => setActiveTab('orders')}
+            onClick={() => handleTabChange('orders')}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'orders'
                 ? 'bg-[#1C3A2F] text-[#FAF8F5] shadow-xs'

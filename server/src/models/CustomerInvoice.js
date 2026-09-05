@@ -140,6 +140,11 @@ customerInvoiceSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+customerInvoiceSchema.index({ invoiceNumber: 1 }, { unique: true, sparse: true });
+customerInvoiceSchema.index({ customer: 1, status: 1 });
+customerInvoiceSchema.index({ invoiceDate: -1, status: 1 });
+
 const CustomerInvoice = mongoose.model('CustomerInvoice', customerInvoiceSchema);
 
 module.exports = CustomerInvoice;

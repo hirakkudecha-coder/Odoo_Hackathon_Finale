@@ -62,6 +62,9 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 // Generate JWT token
 userSchema.methods.generateAuthToken = function () {
+  if (!process.env.JWT_SECRET) {
+    throw new Error('FATAL CONFIGURATION ERROR: JWT_SECRET environment variable is missing.');
+  }
   const payload = {
     id: this._id,
     name: this.name,
@@ -70,7 +73,7 @@ userSchema.methods.generateAuthToken = function () {
     contactId: this.contactId
   };
 
-  const secret = process.env.JWT_SECRET || 'urban_furniture_super_secret_jwt_key_2026';
+  const secret = process.env.JWT_SECRET;
   const expiresIn = process.env.JWT_EXPIRES_IN || '7d';
 
   return jwt.sign(payload, secret, { expiresIn });

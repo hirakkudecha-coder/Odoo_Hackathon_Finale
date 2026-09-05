@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
+const { securityHeaders, enforceHttps } = require('./middleware/securityMiddleware');
 
 // Route imports
 const healthRoutes = require('./routes/healthRoutes');
@@ -28,11 +29,41 @@ const helpdeskRoutes = require('./routes/helpdeskRoutes');
 
 const app = express();
 
-// Middleware
-app.use(cors({
-  origin: process.env.CORS_ORIGIN || '*',
-  credentials: true
-}));
+// Reverse Proxy Configuration: trust X-Forwarded-* headers from upstream reverse proxy
+app.set('trust proxy', process.env.TRUST_PROXY ? (process.env.TRUST_PROXY === 'true' ? true : parseInt(process.env.TRUST_PROXY, 10)) : 1);
+
+// Prevent server fingerprinting
+app.disable('x-powered-by');
+
+// TLS & Security Headers Middleware
+app.use(enforceHttps);
+app.use(securityHeaders);
+
+// Strict CORS Allow-List Configuration
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(s => s.trim()) : []),
+  ...(process.env.CORS_ORIGIN && process.env.CORS_ORIGIN !== '*' ? process.env.CORS_ORIGIN.split(',').map(s => s.trim()) : [])
+];
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server, curl, and test tools without Origin header
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked: Origin '${origin}' is not authorized.`));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

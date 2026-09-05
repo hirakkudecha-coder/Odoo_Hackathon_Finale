@@ -106,6 +106,12 @@ goodsReceiptSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+goodsReceiptSchema.index({ receiptNumber: 1 }, { unique: true, sparse: true });
+goodsReceiptSchema.index({ purchaseOrder: 1 });
+goodsReceiptSchema.index({ vendor: 1, status: 1 });
+goodsReceiptSchema.index({ receiptDate: -1 });
+
 const GoodsReceipt = mongoose.model('GoodsReceipt', goodsReceiptSchema);
 
 module.exports = GoodsReceipt;

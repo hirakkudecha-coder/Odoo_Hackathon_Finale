@@ -19,9 +19,10 @@ async function testAll() {
   const authHeader = token ? { 'Authorization': `Bearer ${token}` } : {};
 
   const tests = [
-    { name: 'GET /api/showrooms', url: 'http://localhost:5000/api/showrooms' },
+    // Public endpoints
+    { name: 'GET /api/showrooms (Public)', url: 'http://localhost:5000/api/showrooms' },
     { 
-      name: 'POST /api/showrooms/book-tour', 
+      name: 'POST /api/showrooms/book-tour (Public)', 
       url: 'http://localhost:5000/api/showrooms/book-tour',
       method: 'POST',
       body: {
@@ -35,10 +36,21 @@ async function testAll() {
         notes: 'Interested in bespoke dining collection'
       }
     },
-    { name: 'GET /api/showrooms/bookings', url: 'http://localhost:5000/api/showrooms/bookings' },
-    { name: 'GET /api/helpdesk/tickets', url: 'http://localhost:5000/api/helpdesk/tickets' },
+    // Anonymous checks on protected routes (Expected 401)
+    { name: 'GET /api/showrooms/bookings (Anonymous -> 401)', url: 'http://localhost:5000/api/showrooms/bookings', expectedStatus: 401 },
+    { name: 'GET /api/helpdesk/tickets (Anonymous -> 401)', url: 'http://localhost:5000/api/helpdesk/tickets', expectedStatus: 401 },
+    { name: 'GET /api/partners (Anonymous -> 401)', url: 'http://localhost:5000/api/partners', expectedStatus: 401 },
+    { name: 'GET /api/inquiries/designer (Anonymous -> 401)', url: 'http://localhost:5000/api/inquiries/designer', expectedStatus: 401 },
+
+    // Authenticated access on protected routes (Expected 200)
+    { name: 'GET /api/showrooms/bookings (Authenticated)', url: 'http://localhost:5000/api/showrooms/bookings', headers: authHeader },
+    { name: 'GET /api/helpdesk/tickets (Authenticated)', url: 'http://localhost:5000/api/helpdesk/tickets', headers: authHeader },
+    { name: 'GET /api/partners (Authenticated)', url: 'http://localhost:5000/api/partners', headers: authHeader },
+    { name: 'GET /api/inquiries/designer (Authenticated)', url: 'http://localhost:5000/api/inquiries/designer', headers: authHeader },
+
+    // Public submissions
     {
-      name: 'POST /api/helpdesk/tickets',
+      name: 'POST /api/helpdesk/tickets (Public)',
       url: 'http://localhost:5000/api/helpdesk/tickets',
       method: 'POST',
       body: {
@@ -52,7 +64,7 @@ async function testAll() {
       }
     },
     {
-      name: 'POST /api/partners/apply',
+      name: 'POST /api/partners/apply (Public)',
       url: 'http://localhost:5000/api/partners/apply',
       method: 'POST',
       body: {
@@ -65,9 +77,8 @@ async function testAll() {
         procurementVolume: 3500000
       }
     },
-    { name: 'GET /api/partners', url: 'http://localhost:5000/api/partners' },
     {
-      name: 'POST /api/inquiries/designer',
+      name: 'POST /api/inquiries/designer (Public)',
       url: 'http://localhost:5000/api/inquiries/designer',
       method: 'POST',
       body: {
@@ -79,7 +90,6 @@ async function testAll() {
         message: 'Penthouse conference suite design'
       }
     },
-    { name: 'GET /api/inquiries/designer', url: 'http://localhost:5000/api/inquiries/designer' },
     { name: 'GET /api/reports/budget (Authenticated)', url: 'http://localhost:5000/api/reports/budget', headers: authHeader },
     { name: 'GET /api/budgets (Authenticated)', url: 'http://localhost:5000/api/budgets', headers: authHeader }
   ];
@@ -93,8 +103,8 @@ async function testAll() {
         body: t.body ? JSON.stringify(t.body) : undefined
       });
       const data = await res.json();
-      const ok = res.status >= 200 && res.status < 300;
-      console.log(`[${ok ? 'OK' : 'FAIL'} ${res.status}] ${t.name}`);
+      const ok = t.expectedStatus ? (res.status === t.expectedStatus) : (res.status >= 200 && res.status < 300);
+      console.log(`[${ok ? 'PASS' : 'FAIL'} ${res.status}] ${t.name}`);
       if (ok) passed++;
       else console.log('Response error:', data);
     } catch (e) {

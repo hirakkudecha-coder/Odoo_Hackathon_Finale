@@ -1,17 +1,19 @@
 const PurchaseOrder = require('../models/PurchaseOrder');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Purchase Order
 const createPurchaseOrder = async (req, res, next) => {
   try {
     const po = await PurchaseOrder.create(req.body);
-    const populated = await PurchaseOrder.findById(po._id)
-      .populate('vendor', 'name email mobile address')
-      .populate('items.product', 'name salesPrice costPrice');
+    await po.populate([
+      { path: 'vendor', select: 'name email mobile address' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Purchase Order created successfully',
-      purchaseOrder: populated
+      purchaseOrder: po
     });
   } catch (error) {
     next(error);
@@ -26,16 +28,26 @@ const getPurchaseOrders = async (req, res, next) => {
 
     if (vendor) filter.vendor = vendor;
     if (status) filter.status = status;
-    if (search) filter.orderNumber = { $regex: search, $options: 'i' };
+    if (search) filter.orderNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await PurchaseOrder.countDocuments(filter);
     const purchaseOrders = await PurchaseOrder.find(filter)
       .populate('vendor', 'name email mobile address')
       .populate('items.product', 'name salesPrice costPrice')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: purchaseOrders.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       purchaseOrders
     });
   } catch (error) {
@@ -79,15 +91,15 @@ const updatePurchaseOrder = async (req, res, next) => {
     if (req.body.notes !== undefined) po.notes = req.body.notes;
 
     await po.save();
-
-    const populated = await PurchaseOrder.findById(po._id)
-      .populate('vendor', 'name email mobile address')
-      .populate('items.product', 'name salesPrice costPrice');
+    await po.populate([
+      { path: 'vendor', select: 'name email mobile address' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Purchase Order updated successfully',
-      purchaseOrder: populated
+      purchaseOrder: po
     });
   } catch (error) {
     next(error);
@@ -100,6 +112,13 @@ const confirmPurchaseOrder = async (req, res, next) => {
     const po = await PurchaseOrder.findById(req.params.id);
     if (!po) {
       return res.status(404).json({ success: false, message: 'Purchase Order not found' });
+    }
+
+    if (po.status !== 'draft') {
+      return res.status(400).json({
+        success: false,
+        message: `Only draft Purchase Orders can be confirmed. Current status: '${po.status}'`
+      });
     }
 
     po.status = 'confirmed';

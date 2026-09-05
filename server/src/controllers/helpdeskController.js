@@ -73,15 +73,10 @@ const createTicket = async (req, res, next) => {
   }
 };
 
-// Get all helpdesk tickets (auto-seed default tickets if empty)
+// Get all helpdesk tickets
 const getTickets = async (req, res, next) => {
   try {
-    let tickets = await HelpdeskTicket.find().sort({ createdAt: -1 });
-
-    if (tickets.length === 0) {
-      await HelpdeskTicket.insertMany(INITIAL_TICKETS);
-      tickets = await HelpdeskTicket.find().sort({ createdAt: -1 });
-    }
+    const tickets = await HelpdeskTicket.find().sort({ createdAt: -1 });
 
     res.status(200).json({
       success: true,

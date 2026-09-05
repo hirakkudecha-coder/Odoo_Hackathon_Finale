@@ -51,6 +51,11 @@ const contactSchema = new mongoose.Schema(
   }
 );
 
+// Indexes for query performance and search
+contactSchema.index({ email: 1 });
+contactSchema.index({ type: 1, status: 1 });
+contactSchema.index({ name: 1 });
+
 const Contact = mongoose.model('Contact', contactSchema);
 
 module.exports = Contact;

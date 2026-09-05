@@ -3,22 +3,68 @@ const SalesOrder = require('../models/SalesOrder');
 const Journal = require('../models/Journal');
 const Account = require('../models/Account');
 const { createAndPostEntry } = require('../services/accountingEngine');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Customer Invoice
 const createCustomerInvoice = async (req, res, next) => {
   try {
-    const invoice = await CustomerInvoice.create(req.body);
-    const populated = await CustomerInvoice.findById(invoice._id)
-      .populate('customer', 'name email mobile address')
-      .populate('salesOrder', 'orderNumber status totalAmount')
-      .populate('items.product', 'name salesPrice costPrice')
-      .populate('items.account', 'name code type')
-      .populate('items.analyticAccount', 'name code type');
+    const { customer, items, paidAmount, status } = req.body;
+
+    if (!customer) {
+      return res.status(400).json({ success: false, message: 'Customer is required.' });
+    }
+
+    if (req.body.invoiceDate && isNaN(new Date(req.body.invoiceDate).getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid invoiceDate format.' });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one item is required in Customer Invoice.' });
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.product) {
+        return res.status(400).json({ success: false, message: `Product is required for item at index ${i}.` });
+      }
+      const qty = Number(item.quantity);
+      if (!qty || qty <= 0) {
+        return res.status(400).json({ success: false, message: `Quantity must be greater than 0 for item at index ${i}.` });
+      }
+      const price = Number(item.unitPrice);
+      if (price === undefined || isNaN(price) || price < 0) {
+        return res.status(400).json({ success: false, message: `Unit price must be non-negative for item at index ${i}.` });
+      }
+      if (item.taxPercent !== undefined && (isNaN(Number(item.taxPercent)) || Number(item.taxPercent) < 0)) {
+        return res.status(400).json({ success: false, message: `Tax percent must be non-negative for item at index ${i}.` });
+      }
+    }
+
+    if (paidAmount !== undefined && Number(paidAmount) > 0) {
+      return res.status(400).json({ success: false, message: 'Cannot set paidAmount upon customer invoice creation.' });
+    }
+
+    if (status !== undefined && status !== 'draft') {
+      return res.status(400).json({ success: false, message: "New customer invoices must be created in 'draft' status." });
+    }
+
+    const invoice = new CustomerInvoice(req.body);
+    invoice.status = 'draft';
+    invoice.paidAmount = 0;
+    await invoice.save();
+
+    await invoice.populate([
+      { path: 'customer', select: 'name email mobile address' },
+      { path: 'salesOrder', select: 'orderNumber status totalAmount' },
+      { path: 'items.product', select: 'name salesPrice costPrice' },
+      { path: 'items.account', select: 'name code type' },
+      { path: 'items.analyticAccount', select: 'name code type' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Customer Invoice created successfully',
-      customerInvoice: populated
+      customerInvoice: invoice
     });
   } catch (error) {
     next(error);
@@ -38,18 +84,28 @@ const getCustomerInvoices = async (req, res, next) => {
     }
 
     if (status) filter.status = status;
-    if (search) filter.invoiceNumber = { $regex: search, $options: 'i' };
+    if (search) filter.invoiceNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await CustomerInvoice.countDocuments(filter);
     const invoices = await CustomerInvoice.find(filter)
       .populate('customer', 'name email mobile address')
       .populate('salesOrder', 'orderNumber status totalAmount')
       .populate('items.product', 'name salesPrice costPrice')
       .populate('journalEntry', 'entryNumber totalDebit totalCredit status')
-      .sort({ invoiceDate: -1, createdAt: -1 });
+      .sort({ invoiceDate: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: invoices.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       customerInvoices: invoices
     });
   } catch (error) {
@@ -175,7 +231,13 @@ const postCustomerInvoice = async (req, res, next) => {
     if (invoice.taxAmount && invoice.taxAmount > 0) {
       let taxAccount = await Account.findOne({ name: 'Tax Payable' });
       if (!taxAccount) {
-        taxAccount = await Account.findOne({ type: 'Liability' }) || debtorsAccount;
+        taxAccount = await Account.findOne({ type: 'Liability' });
+      }
+      if (!taxAccount) {
+        return res.status(400).json({
+          success: false,
+          message: 'Tax Payable account not configured in Chart of Accounts.'
+        });
       }
       journalItems.push({
         account: taxAccount._id,
@@ -204,20 +266,18 @@ const postCustomerInvoice = async (req, res, next) => {
       await SalesOrder.findByIdAndUpdate(invoice.salesOrder, { status: 'invoiced' });
     }
 
-    const populated = await CustomerInvoice.findById(invoice._id)
-      .populate('customer', 'name email mobile')
-      .populate('journalEntry');
+    await invoice.populate([
+      { path: 'customer', select: 'name email mobile' },
+      { path: 'journalEntry' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Customer Invoice posted successfully. Balanced double-entry journal created and ledger updated.',
-      customerInvoice: populated
+      customerInvoice: invoice
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 

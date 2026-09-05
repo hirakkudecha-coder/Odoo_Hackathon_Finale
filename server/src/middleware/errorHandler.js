@@ -7,9 +7,9 @@ const notFoundHandler = (req, res, next) => {
 };
 
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode;
+  let statusCode = err.statusCode || err.status || (res.statusCode && res.statusCode !== 200 ? res.statusCode : null);
 
-  if (statusCode === 200 || !statusCode) {
+  if (!statusCode) {
     if (
       err.name === 'ValidationError' ||
       err.name === 'CastError' ||
@@ -19,11 +19,19 @@ const errorHandler = (err, req, res, next) => {
         err.message.includes('Double-entry') ||
         err.message.includes('Unbalanced Journal Entry') ||
         err.message.includes('greater than zero') ||
-        err.message.includes('already exists')
+        err.message.includes('already exists') ||
+        err.message.includes('already posted') ||
+        err.message.includes('Cannot post') ||
+        err.message.includes('Cannot cancel') ||
+        err.message.includes('Cannot modify') ||
+        err.message.includes('Cannot delete') ||
+        err.message.includes('must be') ||
+        err.message.includes('required') ||
+        err.message.includes('exceeds')
       ))
     ) {
       statusCode = 400;
-    } else if (err.message && err.message.includes('not found')) {
+    } else if (err.message && err.message.toLowerCase().includes('not found')) {
       statusCode = 404;
     } else {
       statusCode = 500;

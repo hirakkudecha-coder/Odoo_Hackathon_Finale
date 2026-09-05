@@ -212,9 +212,13 @@ export const ShowroomsPage = ({
               <span>Back to Atelier</span>
             </button>
             <div className="hidden sm:block h-5 w-[1px] bg-[#D4CEBF]"></div>
-            <div className="hidden sm:block">
+            <button
+              onClick={handleBackHome}
+              className="hidden sm:block cursor-pointer text-left"
+              title="Return to Atelier Home"
+            >
               <BrandLogo />
-            </div>
+            </button>
           </div>
 
           <div className="flex items-center gap-3">

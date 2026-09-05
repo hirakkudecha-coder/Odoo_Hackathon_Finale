@@ -1,4 +1,5 @@
 const Account = require('../models/Account');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create account
 const createAccount = async (req, res, next) => {
@@ -30,9 +31,10 @@ const getAccounts = async (req, res, next) => {
     else filter.status = 'active';
 
     if (search) {
+      const cleanSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { code: { $regex: search, $options: 'i' } }
+        { name: { $regex: cleanSearch, $options: 'i' } },
+        { code: { $regex: cleanSearch, $options: 'i' } }
       ];
     }
 

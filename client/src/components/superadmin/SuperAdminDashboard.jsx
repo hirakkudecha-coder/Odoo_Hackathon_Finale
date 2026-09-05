@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SuperAdminSidebar } from './SuperAdminSidebar';
 import { SuperAdminHeader } from './SuperAdminHeader';
 import { SuperAdminGreetingBanner } from './SuperAdminGreetingBanner';
@@ -26,12 +26,30 @@ export const SuperAdminDashboard = ({
   currentUser, 
   onLogout 
 }) => {
-  const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [activeMenu, setActiveMenu] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash.replace('#', '');
+    return params.get('tab') || hash || 'dashboard';
+  });
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Synchronize browser history when tab changes
   const handleSelectMenu = (menuId) => {
     setActiveMenu(menuId);
+    const targetUrl = menuId === 'dashboard' ? '/superadmin' : `/superadmin?tab=${menuId}`;
+    window.history.pushState(null, '', targetUrl);
   };
+
+  // Sync state on browser back/forward buttons
+  useEffect(() => {
+    const onLocationChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.replace('#', '');
+      setActiveMenu(params.get('tab') || hash || 'dashboard');
+    };
+    window.addEventListener('popstate', onLocationChange);
+    return () => window.removeEventListener('popstate', onLocationChange);
+  }, []);
 
   return (
     <div className="h-screen w-full bg-[#F5F1EA] flex text-[#141A17] font-sans selection:bg-[#2D4A3E] selection:text-[#FAF8F5] relative overflow-hidden">

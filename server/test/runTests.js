@@ -40,7 +40,7 @@ async function runAllTests() {
     console.log('\n--- Phase 2: Authentication & RBAC Tests ---');
     await User.deleteMany({ email: { $in: ['testadmin@urbanfurniture.com', 'testacct@urbanfurniture.com'] } });
 
-    // Register Admin
+    // Register with requested role 'admin' on public endpoint
     const regAdminRes = await fetch(`${BASE_URL}/api/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,8 +52,17 @@ async function runAllTests() {
       })
     });
     const regAdminData = await regAdminRes.json();
-    const adminToken = regAdminData.token;
-    console.log('[Test 2.1] Register Admin User:', regAdminRes.status === 201 && adminToken ? 'PASS' : 'FAIL');
+    // Verify that public registration correctly forced a non-admin role ('accountant')
+    const preventedAdminPrivilegeEscalation = regAdminData.user && regAdminData.user.role === 'accountant';
+    console.log('[Test 2.1] Register User (Public Role Hardening - Non-Admin Assigned):', regAdminRes.status === 201 && preventedAdminPrivilegeEscalation ? 'PASS' : 'FAIL');
+
+    // For subsequent admin-restricted test suites, promote testadmin to admin and generate valid adminToken
+    const adminUser = await User.findOneAndUpdate(
+      { email: 'testadmin@urbanfurniture.com' },
+      { role: 'admin' },
+      { new: true }
+    );
+    const adminToken = adminUser.generateAuthToken();
 
     // Register Accountant
     const regAcctRes = await fetch(`${BASE_URL}/api/auth/register`, {

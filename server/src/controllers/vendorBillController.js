@@ -3,22 +3,65 @@ const PurchaseOrder = require('../models/PurchaseOrder');
 const Journal = require('../models/Journal');
 const Account = require('../models/Account');
 const { createAndPostEntry } = require('../services/accountingEngine');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Vendor Bill
 const createVendorBill = async (req, res, next) => {
   try {
-    const bill = await VendorBill.create(req.body);
-    const populated = await VendorBill.findById(bill._id)
-      .populate('vendor', 'name email mobile address')
-      .populate('purchaseOrder', 'orderNumber status totalAmount')
-      .populate('items.product', 'name salesPrice costPrice')
-      .populate('items.account', 'name code type')
-      .populate('items.analyticAccount', 'name code type');
+    const { vendor, items, paidAmount, status } = req.body;
+
+    if (!vendor) {
+      return res.status(400).json({ success: false, message: 'Vendor is required.' });
+    }
+
+    if (req.body.billDate && isNaN(new Date(req.body.billDate).getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid billDate format.' });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one item is required in Vendor Bill.' });
+    }
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (!item.product) {
+        return res.status(400).json({ success: false, message: `Product is required for item at index ${i}.` });
+      }
+      const qty = Number(item.quantity);
+      if (!qty || qty <= 0) {
+        return res.status(400).json({ success: false, message: `Quantity must be greater than 0 for item at index ${i}.` });
+      }
+      const price = Number(item.unitPrice);
+      if (price === undefined || isNaN(price) || price < 0) {
+        return res.status(400).json({ success: false, message: `Unit price must be non-negative for item at index ${i}.` });
+      }
+    }
+
+    if (paidAmount !== undefined && Number(paidAmount) > 0) {
+      return res.status(400).json({ success: false, message: 'Cannot set paidAmount upon vendor bill creation.' });
+    }
+
+    if (status !== undefined && status !== 'draft') {
+      return res.status(400).json({ success: false, message: "New vendor bills must be created in 'draft' status." });
+    }
+
+    const bill = new VendorBill(req.body);
+    bill.status = 'draft';
+    bill.paidAmount = 0;
+    await bill.save();
+
+    await bill.populate([
+      { path: 'vendor', select: 'name email mobile address' },
+      { path: 'purchaseOrder', select: 'orderNumber status totalAmount' },
+      { path: 'items.product', select: 'name salesPrice costPrice' },
+      { path: 'items.account', select: 'name code type' },
+      { path: 'items.analyticAccount', select: 'name code type' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Vendor Bill created successfully',
-      vendorBill: populated
+      vendorBill: bill
     });
   } catch (error) {
     next(error);
@@ -38,18 +81,28 @@ const getVendorBills = async (req, res, next) => {
     }
 
     if (status) filter.status = status;
-    if (search) filter.billNumber = { $regex: search, $options: 'i' };
+    if (search) filter.billNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await VendorBill.countDocuments(filter);
     const bills = await VendorBill.find(filter)
       .populate('vendor', 'name email mobile address')
       .populate('purchaseOrder', 'orderNumber status totalAmount')
       .populate('items.product', 'name salesPrice costPrice')
       .populate('journalEntry', 'entryNumber totalDebit totalCredit status')
-      .sort({ billDate: -1, createdAt: -1 });
+      .sort({ billDate: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: bills.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       vendorBills: bills
     });
   } catch (error) {
@@ -193,20 +246,18 @@ const postVendorBill = async (req, res, next) => {
       await PurchaseOrder.findByIdAndUpdate(bill.purchaseOrder, { status: 'billed' });
     }
 
-    const populated = await VendorBill.findById(bill._id)
-      .populate('vendor', 'name email mobile')
-      .populate('journalEntry');
+    await bill.populate([
+      { path: 'vendor', select: 'name email mobile' },
+      { path: 'journalEntry' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Vendor Bill posted successfully. Balanced double-entry journal created and ledger updated.',
-      vendorBill: populated
+      vendorBill: bill
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 

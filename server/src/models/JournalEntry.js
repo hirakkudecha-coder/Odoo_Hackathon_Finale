@@ -101,11 +101,18 @@ journalEntrySchema.pre('save', function (next) {
 
   if (!this.entryNumber) {
     const timestamp = Date.now().toString().slice(-6);
-    this.entryNumber = `JE/${new Date().getFullYear()}/${timestamp}`;
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    this.entryNumber = `JE/${new Date().getFullYear()}/${timestamp}${random}`;
   }
 
   next();
 });
+
+// Indexes for query performance and integrity
+journalEntrySchema.index({ entryNumber: 1 }, { unique: true, sparse: true });
+journalEntrySchema.index({ journal: 1, status: 1 });
+journalEntrySchema.index({ date: -1, status: 1 });
+journalEntrySchema.index({ 'items.account': 1 });
 
 const JournalEntry = mongoose.model('JournalEntry', journalEntrySchema);
 

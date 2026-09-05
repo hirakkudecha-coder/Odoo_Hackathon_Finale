@@ -182,7 +182,8 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
                     } else {
                       localStorage.removeItem('token');
                       localStorage.removeItem('user');
-                      window.location.href = '/login';
+                      window.history.pushState(null, '', '/login');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
                     }
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#DC2626] hover:bg-[#FEE2E2]/50 transition-colors cursor-pointer text-left font-semibold"

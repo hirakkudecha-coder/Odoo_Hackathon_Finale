@@ -9,8 +9,50 @@ const SalesReceipt = require('../models/SalesReceipt');
  * Calculate Profit & Loss Report dynamically from accounts & posted journal items
  */
 const getProfitAndLossReport = async ({ startDate, endDate } = {}) => {
-  // Query all Income and Expense accounts
-  const accounts = await Account.find({ type: { $in: ['Income', 'Expense'] } });
+  const currentYear = new Date().getFullYear();
+  const effectiveStart = startDate ? new Date(startDate) : new Date(`${currentYear}-01-01T00:00:00.000Z`);
+  const effectiveEnd = endDate ? new Date(endDate) : new Date(`${currentYear}-12-31T23:59:59.999Z`);
+
+  // Build MongoDB aggregation pipeline on JournalEntry
+  const matchStage = {
+    status: 'posted',
+    date: { $gte: effectiveStart, $lte: effectiveEnd }
+  };
+
+  const aggregatedJournalItems = await JournalEntry.aggregate([
+    { $match: matchStage },
+    { $unwind: '$items' },
+    {
+      $lookup: {
+        from: 'accounts',
+        localField: 'items.account',
+        foreignField: '_id',
+        as: 'accountDetails'
+      }
+    },
+    { $unwind: '$accountDetails' },
+    {
+      $match: {
+        'accountDetails.type': { $in: ['Income', 'Expense'] }
+      }
+    },
+    {
+      $group: {
+        _id: '$accountDetails._id',
+        code: { $first: '$accountDetails.code' },
+        name: { $first: '$accountDetails.name' },
+        type: { $first: '$accountDetails.type' },
+        totalDebit: { $sum: '$items.debit' },
+        totalCredit: { $sum: '$items.credit' }
+      }
+    }
+  ]);
+
+  const allPnlAccounts = await Account.find({ type: { $in: ['Income', 'Expense'] } });
+  const aggMap = {};
+  for (const item of aggregatedJournalItems) {
+    aggMap[item._id.toString()] = item;
+  }
 
   let salesIncomeTotal = 0;
   const incomeDetails = [];
@@ -19,26 +61,41 @@ const getProfitAndLossReport = async ({ startDate, endDate } = {}) => {
   let otherExpensesTotal = 0;
   const expenseDetails = [];
 
-  for (const acc of accounts) {
+  for (const acc of allPnlAccounts) {
+    const agg = aggMap[acc._id.toString()];
+    let periodBalance = 0;
+
+    if (agg) {
+      if (acc.type === 'Income') {
+        // Income is credit normal: credit increases, debit decreases
+        periodBalance = (agg.totalCredit || 0) - (agg.totalDebit || 0);
+      } else if (acc.type === 'Expense') {
+        // Expense is debit normal: debit increases, credit decreases
+        periodBalance = (agg.totalDebit || 0) - (agg.totalCredit || 0);
+      }
+    }
+
+    periodBalance = Math.round(periodBalance * 100) / 100;
+
     if (acc.type === 'Income') {
-      salesIncomeTotal += acc.balance;
+      salesIncomeTotal += periodBalance;
       incomeDetails.push({
         accountId: acc._id,
         code: acc.code,
         name: acc.name,
-        balance: acc.balance
+        balance: periodBalance
       });
     } else if (acc.type === 'Expense') {
       if (acc.name === 'Purchases Expense' || acc.code === '5001') {
-        purchasesExpenseTotal += acc.balance;
+        purchasesExpenseTotal += periodBalance;
       } else {
-        otherExpensesTotal += acc.balance;
+        otherExpensesTotal += periodBalance;
       }
       expenseDetails.push({
         accountId: acc._id,
         code: acc.code,
         name: acc.name,
-        balance: acc.balance
+        balance: periodBalance
       });
     }
   }
@@ -49,8 +106,8 @@ const getProfitAndLossReport = async ({ startDate, endDate } = {}) => {
 
   return {
     period: {
-      startDate: startDate || 'Beginning',
-      endDate: endDate || new Date().toISOString()
+      startDate: effectiveStart.toISOString(),
+      endDate: effectiveEnd.toISOString()
     },
     income: {
       total: Math.round(salesIncomeTotal * 100) / 100,
@@ -151,7 +208,7 @@ const getBalanceSheetReport = async ({ date } = {}) => {
 };
 
 /**
- * Calculate Budget Report dynamically from Budgets and posted Journal Items
+ * Calculate Budget Report dynamically from Budgets and posted Journal Items using MongoDB aggregation
  */
 const getBudgetReport = async ({ period } = {}) => {
   const filter = {};
@@ -159,20 +216,25 @@ const getBudgetReport = async ({ period } = {}) => {
 
   const budgets = await Budget.find(filter).populate('analyticAccount', 'name code type');
 
-  // Find all posted journal entries with analytic accounts
-  const postedEntries = await JournalEntry.find({ status: 'posted' });
-
-  // Map actual spending/earnings per analytic account
-  const actualsMap = {};
-  for (const entry of postedEntries) {
-    for (const item of entry.items) {
-      if (item.analyticAccount) {
-        const key = item.analyticAccount.toString();
-        if (!actualsMap[key]) actualsMap[key] = 0;
-        // If debit, it's expense (+debit), if credit, it's income
-        const amount = (Number(item.debit) || 0) + (Number(item.credit) || 0);
-        actualsMap[key] += amount;
+  // Aggregation pipeline: compute actual amounts per analytic account in database
+  const actualsAgg = await JournalEntry.aggregate([
+    { $match: { status: 'posted' } },
+    { $unwind: '$items' },
+    { $match: { 'items.analyticAccount': { $ne: null } } },
+    {
+      $group: {
+        _id: '$items.analyticAccount',
+        totalActual: {
+          $sum: { $add: [{ $ifNull: ['$items.debit', 0] }, { $ifNull: ['$items.credit', 0] }] }
+        }
       }
+    }
+  ]);
+
+  const actualsMap = {};
+  for (const item of actualsAgg) {
+    if (item._id) {
+      actualsMap[item._id.toString()] = item.totalActual || 0;
     }
   }
 
@@ -214,29 +276,43 @@ const getBudgetReport = async ({ period } = {}) => {
 };
 
 /**
- * Calculate Stock / Inventory Valuation & Movement Ledger
+ * Calculate Stock / Inventory Valuation & Movement Ledger using MongoDB aggregation
  */
 const getStockValuationReport = async () => {
   const products = await Product.find({ status: 'active' });
-  const goodsReceipts = await GoodsReceipt.find({ status: 'received' });
-  const salesReceipts = await SalesReceipt.find({ status: 'delivered' });
 
-  // Compute inward quantities
-  const inwardMap = {};
-  for (const gr of goodsReceipts) {
-    for (const it of gr.items) {
-      const pId = (it.product?._id || it.product).toString();
-      inwardMap[pId] = (inwardMap[pId] || 0) + (Number(it.quantity) || 0);
+  // MongoDB aggregation pipeline for inward quantities
+  const inwardAgg = await GoodsReceipt.aggregate([
+    { $match: { status: 'received' } },
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: '$items.product',
+        totalInward: { $sum: '$items.quantity' }
+      }
     }
+  ]);
+
+  // MongoDB aggregation pipeline for outward quantities
+  const outwardAgg = await SalesReceipt.aggregate([
+    { $match: { status: 'delivered' } },
+    { $unwind: '$items' },
+    {
+      $group: {
+        _id: '$items.product',
+        totalOutward: { $sum: '$items.quantity' }
+      }
+    }
+  ]);
+
+  const inwardMap = {};
+  for (const item of inwardAgg) {
+    if (item._id) inwardMap[item._id.toString()] = item.totalInward || 0;
   }
 
-  // Compute outward quantities
   const outwardMap = {};
-  for (const sr of salesReceipts) {
-    for (const it of sr.items) {
-      const pId = (it.product?._id || it.product).toString();
-      outwardMap[pId] = (outwardMap[pId] || 0) + (Number(it.quantity) || 0);
-    }
+  for (const item of outwardAgg) {
+    if (item._id) outwardMap[item._id.toString()] = item.totalOutward || 0;
   }
 
   let totalInventoryValuation = 0;

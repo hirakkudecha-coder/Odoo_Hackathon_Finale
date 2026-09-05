@@ -58,6 +58,23 @@ export const Navbar = ({
   const handleNavClick = (e, href) => {
     e.preventDefault();
     setMobileMenuOpen(false);
+
+    // If currently on another page (e.g. /showrooms, /about, /partner-helpdesk), navigate home first
+    if (window.location.pathname !== '/') {
+      window.history.pushState(null, '', `/${href}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      setTimeout(() => {
+        const targetId = href.replace('#', '');
+        const element = document.getElementById(targetId);
+        if (element) {
+          const yOffset = -80;
+          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: 'smooth' });
+        }
+      }, 100);
+      return;
+    }
+
     const targetId = href.replace('#', '');
     const element = document.getElementById(targetId);
     if (element) {
@@ -81,12 +98,17 @@ export const Navbar = ({
             {/* Left Column: Brand Logo */}
             <div className="flex items-center justify-start shrink-0">
               <a 
-                href="#" 
+                href="/" 
                 onClick={(e) => {
                   e.preventDefault();
+                  if (window.location.pathname !== '/') {
+                    window.history.pushState(null, '', '/');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="group shrink-0 flex items-center"
+                className="group shrink-0 flex items-center cursor-pointer"
+                title="Urban Furniture Atelier"
               >
                 <BrandLogo />
               </a>
@@ -112,6 +134,63 @@ export const Navbar = ({
                     </a>
                   );
                 })}
+
+                {/* Direct SPA luxury page shortcuts */}
+                <div className="h-3.5 w-px bg-[#2D4A3E]/20 mx-1" />
+                <a
+                  href="/showrooms"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigateShowrooms) onNavigateShowrooms();
+                    else {
+                      window.history.pushState(null, '', '/showrooms');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+                    window.location.pathname === '/showrooms'
+                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
+                      : 'text-[#2D4A3E] hover:bg-white/60'
+                  }`}
+                >
+                  Showrooms
+                </a>
+                <a
+                  href="/about#story"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigateAbout) onNavigateAbout('story');
+                    else {
+                      window.history.pushState(null, '', '/about#story');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+                    window.location.pathname === '/about'
+                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
+                      : 'text-[#2D4A3E] hover:bg-white/60'
+                  }`}
+                >
+                  Our Story
+                </a>
+                <a
+                  href="/partner-helpdesk"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigatePartnerHelpdesk) onNavigatePartnerHelpdesk('helpdesk');
+                    else {
+                      window.history.pushState(null, '', '/partner-helpdesk');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+                    window.location.pathname === '/partner-helpdesk'
+                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
+                      : 'text-[#2D4A3E] hover:bg-white/60'
+                  }`}
+                >
+                  Helpdesk & Trade
+                </a>
               </nav>
             </div>
 

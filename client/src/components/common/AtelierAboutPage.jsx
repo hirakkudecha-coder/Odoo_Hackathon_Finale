@@ -114,9 +114,13 @@ export const AtelierAboutPage = ({
               <span>Back to Atelier</span>
             </button>
             <div className="hidden sm:block h-4 w-px bg-[#D4CEBF]" />
-            <div className="hidden sm:block">
+            <button
+              onClick={onNavigateHome}
+              className="hidden sm:block cursor-pointer text-left"
+              title="Return to Atelier Home"
+            >
               <BrandLogo />
-            </div>
+            </button>
           </div>
 
           {/* Tab Navigation Pill Bar matching Luxury Editorial Style */}

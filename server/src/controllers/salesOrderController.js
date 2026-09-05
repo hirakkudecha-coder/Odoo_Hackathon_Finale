@@ -1,17 +1,19 @@
 const SalesOrder = require('../models/SalesOrder');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Sales Order
 const createSalesOrder = async (req, res, next) => {
   try {
     const so = await SalesOrder.create(req.body);
-    const populated = await SalesOrder.findById(so._id)
-      .populate('customer', 'name email mobile address')
-      .populate('items.product', 'name salesPrice costPrice');
+    await so.populate([
+      { path: 'customer', select: 'name email mobile address' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Sales Order created successfully',
-      salesOrder: populated
+      salesOrder: so
     });
   } catch (error) {
     next(error);
@@ -26,16 +28,26 @@ const getSalesOrders = async (req, res, next) => {
 
     if (customer) filter.customer = customer;
     if (status) filter.status = status;
-    if (search) filter.orderNumber = { $regex: search, $options: 'i' };
+    if (search) filter.orderNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await SalesOrder.countDocuments(filter);
     const salesOrders = await SalesOrder.find(filter)
       .populate('customer', 'name email mobile address')
       .populate('items.product', 'name salesPrice costPrice')
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: salesOrders.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       salesOrders
     });
   } catch (error) {
@@ -79,15 +91,15 @@ const updateSalesOrder = async (req, res, next) => {
     if (req.body.notes !== undefined) so.notes = req.body.notes;
 
     await so.save();
-
-    const populated = await SalesOrder.findById(so._id)
-      .populate('customer', 'name email mobile address')
-      .populate('items.product', 'name salesPrice costPrice');
+    await so.populate([
+      { path: 'customer', select: 'name email mobile address' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Sales Order updated successfully',
-      salesOrder: populated
+      salesOrder: so
     });
   } catch (error) {
     next(error);
@@ -100,6 +112,13 @@ const confirmSalesOrder = async (req, res, next) => {
     const so = await SalesOrder.findById(req.params.id);
     if (!so) {
       return res.status(404).json({ success: false, message: 'Sales Order not found' });
+    }
+
+    if (so.status !== 'draft') {
+      return res.status(400).json({
+        success: false,
+        message: `Only draft Sales Orders can be confirmed. Current status: '${so.status}'`
+      });
     }
 
     so.status = 'confirmed';

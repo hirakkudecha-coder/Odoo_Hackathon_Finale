@@ -1,6 +1,7 @@
 const ShowroomTour = require('../models/ShowroomTour');
+const Showroom = require('../models/Showroom');
 
-// Static showroom master metadata
+// Static showroom master metadata used for seeding
 const SHOWROOMS = [
   {
     id: 'mumbai',
@@ -61,13 +62,18 @@ const SHOWROOMS = [
   }
 ];
 
-// Get list of all showrooms
-const getShowrooms = (req, res) => {
-  res.status(200).json({
-    success: true,
-    count: SHOWROOMS.length,
-    showrooms: SHOWROOMS
-  });
+// Get list of all showrooms from MongoDB
+const getShowrooms = async (req, res, next) => {
+  try {
+    const showrooms = await Showroom.find().sort({ createdAt: 1 });
+    res.status(200).json({
+      success: true,
+      count: showrooms.length,
+      showrooms
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 // Book a private atelier tour

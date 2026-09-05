@@ -779,5 +779,81 @@ Four dedicated PATCH status endpoints were built and verified with real database
 - **Optimistic UI Updates:** Instant badge reaction upon selecting a status from the table dropdown, backed by real-time PATCH network calls and error-recovery toast alerts.
 
 ### 9.3 Production Build Verification
-- **Vite Production Bundler:** `npm run build` completed with 0 errors across 2,365 modules.
-- **Automated Test Suite:** 100% pass rate across Phases 1 through 7 with zero regressions.
+- **Vite Production Bundler:** `npm run build` completed with 0 errors across 2,385 modules.
+- **Automated Test Suite:** 100% pass rate across Phases 1 through 8 with zero regressions.
+
+---
+
+## 10. SuperAdmin Portal & Activity Audit Logs
+
+### 10.1 Activity Logs Module (`ActivityLogsPage.jsx`)
+- **Git Ignore Rule Correction:** Fixed overly broad `logs/` filter in `.gitignore` and `client/.gitignore` to `/logs/` so that UI component directories under `src/components/superadmin/logs/` are properly tracked.
+- **4 Telemetry Metrics:** Total Logged Events (1,428), Security & Auth Audits (542), Tenant Mutations (872), Warnings & Flags (14).
+- **Interactive Multi-Filter Suite:**
+  - Multi-category pill filters (All, Security, Tenants, General Ledger, Budgets, Showrooms, Concierge).
+  - Severity selector (Info, Success, Warning, Critical/Danger).
+  - Text search by Actor, Email, Tenant, Action Signature, Description, and IP address.
+- **Detailed Event Inspector Modal:** Full JSON payload inspector, origin IP, geographical location, actor credentials, and event timestamping.
+- **Export Capabilities:** One-click tabular PDF export via client-side PDF generator.
+
+---
+
+## 11. Database Seeding & Relational Integrity Verification
+
+### 11.1 Seeder Coverage Across All 19 Mongoose Models
+The database seeder (`server/src/seed/seedData.js`) was verified and executed cleanly with 0 errors, populating realistic operational datasets across every module:
+
+| Model | Count | Verified Relationships & Fields |
+| :--- | :---: | :--- |
+| `User` | 4 | Bcrypt hashed passwords, distinct roles (`superadmin`, `admin`, `accountant`, `portal`) |
+| `Account` | 20 | Multi-tier Chart of Accounts with accurate types (`asset_current`, `asset_fixed`, `liability_current`, `equity`, `income`, `expense_direct`, `expense_indirect`) |
+| `Journal` | 5 | Unique codes (`INV`, `BILL`, `BNK`, `CSH`, `GEN`), default accounts, sequence counters |
+| `AnalyticAccount` | 7 | Cost center codes (`AN-PROD`, `AN-MKT`, `AN-ADM`, `AN-RND`, `AN-HR`, `AN-IT`, `AN-INC`) |
+| `Contact` | 10 | Complete GSTIN, contact person, street address, city, state, pincode, contact types |
+| `Product` | 12 | Exact SKUs, luxury names, descriptions, pricing, sales & expense account mappings |
+| `Budget` | 6 | FY2026 departmental allocations, start/end dates, line items, status `confirmed` |
+| `JournalEntry` | 9 | `status: 'posted'`, strict debit-credit parity on all 9 vouchers |
+| `PurchaseOrder` | 4 | Sequence numbers, vendor references, line items with analytic accounts |
+| `GoodsReceipt` | 2 | Warehouse receipts linked to POs, status `received` |
+| `VendorBill` | 2 | Bills linked to POs and journal entries, status `posted` and `partial` |
+| `SalesOrder` | 5 | Orders linked to high-net-worth customers, status `confirmed` and `draft` |
+| `SalesReceipt` | 2 | Deliveries linked to SOs, status `delivered` |
+| `CustomerInvoice` | 2 | Invoices linked to SOs and journal entries, status `posted` and `paid` |
+| `Payment` | 4 | Inbound and outbound payments linked to invoices, bills, and bank accounts |
+| `ShowroomTour` | 8 | Atelier tour reservations across 4 metropolitan cities |
+| `DesignerInquiry` | 7 | Architectural commissions with project scope, budget, and assigned lead |
+| `HelpdeskTicket` | 8 | Support tickets with category, priority, and assigned staff |
+| `TradePartner` | 6 | Trade guild partners with GSTIN, procurement volume, and commission tiers |
+
+### 11.2 Seeding Execution & Verification
+```bash
+npm run seed
+```
+- **Exit Code:** 0
+- **Collections Seeded:** 19/19
+- **General Ledger Health:** 100% Balanced ($$\sum \text{Debit} = \sum \text{Credit}$$ across all journal entries).
+
+---
+
+## 12. Client-Side Single Page Application (SPA) Verification
+
+### 12.1 Routing & Navigation Tests
+| Test Scenario | Trigger / Action | Expected Result | Verified Result |
+| :--- | :--- | :--- | :---: |
+| **Global Link Interception** | Click `<a href="/showrooms">` | Navigation without page reload, URL updates to `/showrooms` | **PASS** |
+| **Cross-Page Anchor Scroll** | Click `/#catalogue` while on `/about` | Switches to home `/` and scrolls smoothly to `#catalogue` | **PASS** |
+| **Browser History Back/Forward** | Press browser Back button | Restores previous route without page reload (`popstate` + `hashchange`) | **PASS** |
+| **Modifier Clicks** | Ctrl+Click on internal link | Opens in new browser tab without intercepting | **PASS** |
+| **SuperAdmin Tab Sync** | Switch tabs in `/superadmin` | Updates URL query (`/superadmin?tab=logs`), preserves tab on Back/Forward | **PASS** |
+| **Customer Portal Tab Sync** | Switch tabs in `/portal` | Updates URL query (`/portal?tab=bills`), preserves tab on Back/Forward | **PASS** |
+| **Brand Logo Home Navigation** | Click BrandLogo from subpage | Returns to `/` with smooth scroll-to-top | **PASS** |
+| **Auth Isolation** | Navigate to `/login` or `/register` | Renders dedicated full-screen layout as requested | **PASS** |
+
+### 12.2 Production Bundler Health
+```bash
+npm run build
+```
+- **Exit Code:** 0 (2,385 modules transformed in under 1s)
+- **Bundle Integrity:** Zero JSX compilation or import errors.
+
+

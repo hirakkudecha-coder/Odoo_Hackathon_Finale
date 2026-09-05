@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const JournalEntry = require('../models/JournalEntry');
 const Account = require('../models/Account');
 
@@ -26,12 +27,14 @@ const validateDoubleEntry = (items) => {
 };
 
 /**
- * Update Account balance according to normal accounting rules:
+ * Update Account balance atomically using $inc according to normal accounting rules:
  * - Asset / Expense: Normal Debit (+Debit, -Credit)
  * - Liability / Income / Capital: Normal Credit (+Credit, -Debit)
  */
-const updateAccountBalance = async (accountId, debit, credit, isReversal = false) => {
-  const account = await Account.findById(accountId);
+const updateAccountBalance = async (accountId, debit, credit, isReversal = false, session = null) => {
+  const query = Account.findById(accountId);
+  if (session) query.session(session);
+  const account = await query;
   if (!account) {
     throw new Error(`Account with ID ${accountId} not found.`);
   }
@@ -51,16 +54,25 @@ const updateAccountBalance = async (accountId, debit, credit, isReversal = false
     delta = -delta;
   }
 
-  account.balance = Math.round((account.balance + delta) * 100) / 100;
-  await account.save();
-  return account;
+  delta = Math.round(delta * 100) / 100;
+
+  const updateOpts = { new: true };
+  if (session) updateOpts.session = session;
+
+  const updatedAccount = await Account.findByIdAndUpdate(
+    accountId,
+    { $inc: { balance: delta } },
+    updateOpts
+  );
+
+  return updatedAccount;
 };
 
-/**
- * Post a Journal Entry and update account ledger balances
- */
-const postJournalEntry = async (entryId, userId = null) => {
-  const entry = await JournalEntry.findById(entryId);
+const _executePost = async (entryId, userId, session) => {
+  const query = JournalEntry.findById(entryId);
+  if (session) query.session(session);
+  const entry = await query;
+
   if (!entry) {
     throw new Error('Journal entry not found.');
   }
@@ -76,9 +88,9 @@ const postJournalEntry = async (entryId, userId = null) => {
   // Validate Debit = Credit
   const { totalDebit, totalCredit } = validateDoubleEntry(entry.items);
 
-  // Update Account balances
+  // Update Account balances atomically
   for (const item of entry.items) {
-    await updateAccountBalance(item.account, item.debit, item.credit, false);
+    await updateAccountBalance(item.account, item.debit, item.credit, false, session);
   }
 
   entry.totalDebit = totalDebit;
@@ -87,37 +99,98 @@ const postJournalEntry = async (entryId, userId = null) => {
   entry.postedAt = new Date();
   if (userId) entry.postedBy = userId;
 
-  await entry.save();
+  const saveOpts = session ? { session } : {};
+  await entry.save(saveOpts);
   return entry;
 };
 
-/**
- * Cancel a posted Journal Entry and reverse ledger impacts
- */
-const cancelJournalEntry = async (entryId, userId = null) => {
-  const entry = await JournalEntry.findById(entryId);
+const _executeCancel = async (entryId, userId, session) => {
+  const query = JournalEntry.findById(entryId);
+  if (session) query.session(session);
+  const entry = await query;
+
   if (!entry) {
     throw new Error('Journal entry not found.');
   }
 
   if (entry.status !== 'posted') {
     entry.status = 'cancelled';
-    await entry.save();
+    const saveOpts = session ? { session } : {};
+    await entry.save(saveOpts);
     return entry;
   }
 
-  // Reverse account balances
+  // Reverse account balances atomically
   for (const item of entry.items) {
-    await updateAccountBalance(item.account, item.debit, item.credit, true);
+    await updateAccountBalance(item.account, item.debit, item.credit, true, session);
   }
 
   entry.status = 'cancelled';
-  await entry.save();
+  const saveOpts = session ? { session } : {};
+  await entry.save(saveOpts);
   return entry;
 };
 
 /**
- * Helper to create and immediately post a Journal Entry (used by Bills, Invoices, Payments)
+ * Executes a function within a MongoDB session/transaction if supported by the MongoDB topology,
+ * or directly if running on a standalone mongod instance.
+ */
+const runInTransaction = async (workFn) => {
+  const isReplicaSet = Boolean(
+    mongoose.connection.client?.topology?.description?.type === 'ReplicaSetWithPrimary' ||
+    mongoose.connection.client?.topology?.description?.type === 'Sharded' ||
+    mongoose.connection.client?.topology?.description?.servers?.size > 1
+  );
+
+  if (!isReplicaSet) {
+    return await workFn(null);
+  }
+
+  const session = await mongoose.startSession();
+  try {
+    let result;
+    await session.withTransaction(async () => {
+      result = await workFn(session);
+    });
+    return result;
+  } catch (err) {
+    if (err.message && err.message.includes('Transaction numbers are only allowed on a replica set member')) {
+      return await workFn(null);
+    }
+    throw err;
+  } finally {
+    await session.endSession();
+  }
+};
+
+/**
+ * Post a Journal Entry in an ACID transaction
+ */
+const postJournalEntry = async (entryId, userId = null, existingSession = null) => {
+  if (existingSession) {
+    return await _executePost(entryId, userId, existingSession);
+  }
+
+  return await runInTransaction(async (session) => {
+    return await _executePost(entryId, userId, session);
+  });
+};
+
+/**
+ * Cancel a posted Journal Entry in an ACID transaction
+ */
+const cancelJournalEntry = async (entryId, userId = null, existingSession = null) => {
+  if (existingSession) {
+    return await _executeCancel(entryId, userId, existingSession);
+  }
+
+  return await runInTransaction(async (session) => {
+    return await _executeCancel(entryId, userId, session);
+  });
+};
+
+/**
+ * Helper to create and immediately post a Journal Entry in a single transaction
  */
 const createAndPostEntry = async ({
   journalId,
@@ -125,26 +198,36 @@ const createAndPostEntry = async ({
   reference = '',
   partnerId = null,
   items = [],
-  userId = null
+  userId = null,
+  existingSession = null
 }) => {
-  // Validate Debit = Credit first
   const { totalDebit, totalCredit } = validateDoubleEntry(items);
 
-  const entry = new JournalEntry({
-    journal: journalId,
-    date,
-    reference,
-    partner: partnerId,
-    items,
-    totalDebit,
-    totalCredit,
-    status: 'draft'
+  const runner = async (session) => {
+    const entry = new JournalEntry({
+      journal: journalId,
+      date,
+      reference,
+      partner: partnerId,
+      items,
+      totalDebit,
+      totalCredit,
+      status: 'draft'
+    });
+
+    const saveOpts = session ? { session } : {};
+    await entry.save(saveOpts);
+
+    return await _executePost(entry._id, userId, session);
+  };
+
+  if (existingSession) {
+    return await runner(existingSession);
+  }
+
+  return await runInTransaction(async (session) => {
+    return await runner(session);
   });
-
-  await entry.save();
-
-  // Post it
-  return await postJournalEntry(entry._id, userId);
 };
 
 module.exports = {

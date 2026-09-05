@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create product
 const createProduct = async (req, res, next) => {
@@ -26,16 +27,29 @@ const getProducts = async (req, res, next) => {
     else filter.status = 'active';
 
     if (search) {
+      const cleanSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { category: { $regex: search, $options: 'i' } }
+        { name: { $regex: cleanSearch, $options: 'i' } },
+        { category: { $regex: cleanSearch, $options: 'i' } }
       ];
     }
 
-    const products = await Product.find(filter).sort({ name: 1 });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit);
+
     res.status(200).json({
       success: true,
       count: products.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       products
     });
   } catch (error) {

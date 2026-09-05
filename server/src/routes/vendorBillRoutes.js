@@ -19,7 +19,7 @@ router.route('/')
 router.route('/:id')
   .get(getVendorBillById)
   .put(authorize('admin', 'accountant'), updateVendorBill)
-  .delete(authorize('admin', 'accountant'), deleteVendorBill);
+  .delete(authorize('admin'), deleteVendorBill);
 
 router.post('/:id/post', authorize('admin', 'accountant'), postVendorBill);
 

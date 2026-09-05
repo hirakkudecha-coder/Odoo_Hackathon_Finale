@@ -1,5 +1,6 @@
 const Contact = require('../models/Contact');
 const User = require('../models/User');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create contact
 const createContact = async (req, res, next) => {
@@ -43,11 +44,11 @@ const createContact = async (req, res, next) => {
             status: 'active'
           });
         } else {
-          existing.contactId = contact._id;
-          if (portalPassword || req.body.password) {
-            existing.password = portalPassword || req.body.password;
+          // Do NOT mutate or overwrite password of existing user!
+          if (!existing.contactId) {
+            existing.contactId = contact._id;
+            await existing.save();
           }
-          await existing.save();
           portalUser = existing;
         }
 
@@ -83,17 +84,30 @@ const getContacts = async (req, res, next) => {
     else filter.status = 'active';
 
     if (search) {
+      const cleanSearch = escapeRegex(search);
       filter.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } },
-        { mobile: { $regex: search, $options: 'i' } }
+        { name: { $regex: cleanSearch, $options: 'i' } },
+        { email: { $regex: cleanSearch, $options: 'i' } },
+        { mobile: { $regex: cleanSearch, $options: 'i' } }
       ];
     }
 
-    const contacts = await Contact.find(filter).sort({ name: 1 });
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Contact.countDocuments(filter);
+    const contacts = await Contact.find(filter)
+      .sort({ name: 1 })
+      .skip(skip)
+      .limit(limit);
+
     res.status(200).json({
       success: true,
       count: contacts.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       contacts
     });
   } catch (error) {

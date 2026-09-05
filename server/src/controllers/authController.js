@@ -1,6 +1,6 @@
 const User = require('../models/User');
 
-// Register User
+// Register User (Public: cannot assign admin or superadmin)
 const register = async (req, res, next) => {
   try {
     const { name, email, password, role, contactId } = req.body;
@@ -20,11 +20,14 @@ const register = async (req, res, next) => {
       });
     }
 
+    // Public registration strictly assigns 'accountant' or 'contact' role
+    const assignedRole = role === 'contact' ? 'contact' : 'accountant';
+
     const user = await User.create({
       name,
       email: email.toLowerCase(),
       password,
-      role: role || 'accountant',
+      role: assignedRole,
       contactId: contactId || null
     });
 
@@ -34,6 +37,53 @@ const register = async (req, res, next) => {
       success: true,
       message: 'User registered successfully.',
       token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        contactId: user.contactId
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Admin-only Create User (Can assign admin or superadmin)
+const createUserByAdmin = async (req, res, next) => {
+  try {
+    const { name, email, password, role, contactId } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email and password are required.'
+      });
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        message: 'A user with this email address already exists.'
+      });
+    }
+
+    const allowedRoles = ['superadmin', 'admin', 'accountant', 'contact'];
+    const assignedRole = allowedRoles.includes(role) ? role : 'accountant';
+
+    const user = await User.create({
+      name,
+      email: email.toLowerCase(),
+      password,
+      role: assignedRole,
+      contactId: contactId || null
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'User created successfully by administrator.',
       user: {
         _id: user._id,
         name: user.name,
@@ -125,6 +175,7 @@ const getUsers = async (req, res, next) => {
 
 module.exports = {
   register,
+  createUserByAdmin,
   login,
   getMe,
   getUsers

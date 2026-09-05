@@ -20,7 +20,7 @@ router.route('/')
 router.route('/:id')
   .get(getJournalEntryById)
   .put(authorize('admin', 'accountant'), updateJournalEntry)
-  .delete(authorize('admin', 'accountant'), deleteJournalEntry);
+  .delete(authorize('admin'), deleteJournalEntry);
 
 router.post('/:id/post', authorize('admin', 'accountant'), postEntry);
 router.post('/:id/cancel', authorize('admin', 'accountant'), cancelEntry);

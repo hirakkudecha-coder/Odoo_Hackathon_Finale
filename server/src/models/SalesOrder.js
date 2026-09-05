@@ -111,6 +111,11 @@ salesOrderSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+salesOrderSchema.index({ orderNumber: 1 }, { unique: true, sparse: true });
+salesOrderSchema.index({ customer: 1, status: 1 });
+salesOrderSchema.index({ orderDate: -1, status: 1 });
+
 const SalesOrder = mongoose.model('SalesOrder', salesOrderSchema);
 
 module.exports = SalesOrder;

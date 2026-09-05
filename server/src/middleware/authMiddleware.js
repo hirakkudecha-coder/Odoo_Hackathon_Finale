@@ -1,6 +1,10 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+if (!process.env.JWT_SECRET) {
+  throw new Error('FATAL CONFIGURATION ERROR: JWT_SECRET environment variable is missing.');
+}
+
 const authenticate = async (req, res, next) => {
   try {
     let token = null;
@@ -19,7 +23,7 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    const secret = process.env.JWT_SECRET || 'urban_furniture_super_secret_jwt_key_2026';
+    const secret = process.env.JWT_SECRET;
     const decoded = jwt.verify(token, secret);
 
     const user = await User.findById(decoded.id);
@@ -50,14 +54,15 @@ const authorize = (...allowedRoles) => {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `Forbidden: Role '${req.user.role}' is not authorized to access this resource. Allowed roles: ${allowedRoles.join(', ')}`
-      });
+    // superadmin automatically satisfies any admin role or authorized role check
+    if (req.user.role === 'superadmin' || allowedRoles.includes(req.user.role)) {
+      return next();
     }
 
-    next();
+    return res.status(403).json({
+      success: false,
+      message: `Forbidden: Role '${req.user.role}' is not authorized to access this resource. Allowed roles: ${allowedRoles.join(', ')}`
+    });
   };
 };
 
@@ -65,3 +70,4 @@ module.exports = {
   authenticate,
   authorize
 };
+

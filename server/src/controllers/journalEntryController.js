@@ -1,5 +1,6 @@
 const JournalEntry = require('../models/JournalEntry');
 const { postJournalEntry, cancelJournalEntry } = require('../services/accountingEngine');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Draft Journal Entry
 const createJournalEntry = async (req, res, next) => {
@@ -15,16 +16,17 @@ const createJournalEntry = async (req, res, next) => {
       status: 'draft'
     });
 
-    const populated = await JournalEntry.findById(entry._id)
-      .populate('journal', 'name code type')
-      .populate('partner', 'name type email')
-      .populate('items.account', 'name code type')
-      .populate('items.analyticAccount', 'name code type');
+    await entry.populate([
+      { path: 'journal', select: 'name code type' },
+      { path: 'partner', select: 'name type email' },
+      { path: 'items.account', select: 'name code type' },
+      { path: 'items.analyticAccount', select: 'name code type' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Draft journal entry created successfully',
-      journalEntry: populated
+      journalEntry: entry
     });
   } catch (error) {
     next(error);
@@ -48,22 +50,33 @@ const getJournalEntries = async (req, res, next) => {
     }
 
     if (search) {
+      const cleanSearch = escapeRegex(search);
       filter.$or = [
-        { entryNumber: { $regex: search, $options: 'i' } },
-        { reference: { $regex: search, $options: 'i' } }
+        { entryNumber: { $regex: cleanSearch, $options: 'i' } },
+        { reference: { $regex: cleanSearch, $options: 'i' } }
       ];
     }
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await JournalEntry.countDocuments(filter);
     const journalEntries = await JournalEntry.find(filter)
       .populate('journal', 'name code type')
       .populate('partner', 'name type email')
       .populate('items.account', 'name code type')
       .populate('items.analyticAccount', 'name code type')
-      .sort({ date: -1, createdAt: -1 });
+      .sort({ date: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: journalEntries.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       journalEntries
     });
   } catch (error) {
@@ -133,22 +146,20 @@ const updateJournalEntry = async (req, res, next) => {
 const postEntry = async (req, res, next) => {
   try {
     const postedEntry = await postJournalEntry(req.params.id, req.user?._id);
-    const populated = await JournalEntry.findById(postedEntry._id)
-      .populate('journal', 'name code type')
-      .populate('partner', 'name type email')
-      .populate('items.account', 'name code type')
-      .populate('postedBy', 'name email');
+    await postedEntry.populate([
+      { path: 'journal', select: 'name code type' },
+      { path: 'partner', select: 'name type email' },
+      { path: 'items.account', select: 'name code type' },
+      { path: 'postedBy', select: 'name email' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Journal entry posted successfully. Ledger updated.',
-      journalEntry: populated
+      journalEntry: postedEntry
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
@@ -162,10 +173,7 @@ const cancelEntry = async (req, res, next) => {
       journalEntry: cancelledEntry
     });
   } catch (error) {
-    res.status(400).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 

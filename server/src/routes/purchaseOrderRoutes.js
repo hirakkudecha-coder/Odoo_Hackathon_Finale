@@ -19,7 +19,7 @@ router.route('/')
 router.route('/:id')
   .get(getPurchaseOrderById)
   .put(authorize('admin', 'accountant'), updatePurchaseOrder)
-  .delete(authorize('admin', 'accountant'), deletePurchaseOrder);
+  .delete(authorize('admin'), deletePurchaseOrder);
 
 router.post('/:id/confirm', authorize('admin', 'accountant'), confirmPurchaseOrder);
 

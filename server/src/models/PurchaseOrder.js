@@ -82,6 +82,11 @@ purchaseOrderSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+purchaseOrderSchema.index({ orderNumber: 1 }, { unique: true, sparse: true });
+purchaseOrderSchema.index({ vendor: 1, status: 1 });
+purchaseOrderSchema.index({ orderDate: -1, status: 1 });
+
 const PurchaseOrder = mongoose.model('PurchaseOrder', purchaseOrderSchema);
 
 module.exports = PurchaseOrder;

@@ -4,6 +4,7 @@ const CustomerInvoice = require('../models/CustomerInvoice');
 const Journal = require('../models/Journal');
 const Account = require('../models/Account');
 const { createAndPostEntry } = require('../services/accountingEngine');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create & Process Payment
 const createPayment = async (req, res, next) => {
@@ -60,10 +61,19 @@ const createPayment = async (req, res, next) => {
         if (!targetDoc) {
           return res.status(404).json({ success: false, message: 'Vendor Bill not found.' });
         }
-        if (targetDoc.status === 'draft') {
-          return res.status(400).json({ success: false, message: 'Vendor Bill must be posted before registering payment.' });
+        if (!['posted', 'partial'].includes(targetDoc.status)) {
+          return res.status(400).json({
+            success: false,
+            message: `Payment can only be registered for Vendor Bills in 'posted' or 'partial' status. Current status: '${targetDoc.status}'`
+          });
         }
-        const outstanding = targetDoc.totalAmount - (targetDoc.paidAmount || 0);
+        const outstanding = Math.round((targetDoc.totalAmount - (targetDoc.paidAmount || 0)) * 100) / 100;
+        if (outstanding <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Vendor Bill is already fully paid.'
+          });
+        }
         if (payAmount > outstanding + 0.001) {
           return res.status(400).json({
             success: false,
@@ -102,10 +112,19 @@ const createPayment = async (req, res, next) => {
         if (!targetDoc) {
           return res.status(404).json({ success: false, message: 'Customer Invoice not found.' });
         }
-        if (targetDoc.status === 'draft') {
-          return res.status(400).json({ success: false, message: 'Customer Invoice must be posted before registering payment.' });
+        if (!['posted', 'partial'].includes(targetDoc.status)) {
+          return res.status(400).json({
+            success: false,
+            message: `Payment can only be registered for Customer Invoices in 'posted' or 'partial' status. Current status: '${targetDoc.status}'`
+          });
         }
-        const outstanding = targetDoc.totalAmount - (targetDoc.paidAmount || 0);
+        const outstanding = Math.round((targetDoc.totalAmount - (targetDoc.paidAmount || 0)) * 100) / 100;
+        if (outstanding <= 0) {
+          return res.status(400).json({
+            success: false,
+            message: 'Customer Invoice is already fully paid.'
+          });
+        }
         if (payAmount > outstanding + 0.001) {
           return res.status(400).json({
             success: false,
@@ -140,8 +159,13 @@ const createPayment = async (req, res, next) => {
       return res.status(400).json({ success: false, message: "Invalid paymentType. Must be 'send_money' or 'receive_money'." });
     }
 
-    // Create Payment record
+    // Create Payment record with pre-generated paymentNumber
+    const prefix = paymentType === 'send_money' ? 'PAY-OUT' : 'PAY-IN';
+    const timestamp = Date.now().toString().slice(-6);
+    const paymentNumber = `${prefix}/${new Date().getFullYear()}/${timestamp}`;
+
     const payment = new Payment({
+      paymentNumber,
       paymentType,
       partner: partner || targetDoc?.vendor || targetDoc?.customer,
       paymentDate: paymentDate || new Date(),
@@ -153,6 +177,8 @@ const createPayment = async (req, res, next) => {
       notes: notes || '',
       status: 'posted'
     });
+
+    await payment.save();
 
     // Post balanced double-entry accounting entry
     const postedEntry = await createAndPostEntry({
@@ -186,17 +212,18 @@ const createPayment = async (req, res, next) => {
       await targetDoc.save();
     }
 
-    const populated = await Payment.findById(payment._id)
-      .populate('partner', 'name email mobile')
-      .populate('journal', 'name code type')
-      .populate('journalEntry')
-      .populate('vendorBill', 'billNumber totalAmount paidAmount status')
-      .populate('customerInvoice', 'invoiceNumber totalAmount paidAmount status');
+    await payment.populate([
+      { path: 'partner', select: 'name email mobile' },
+      { path: 'journal', select: 'name code type' },
+      { path: 'journalEntry' },
+      { path: 'vendorBill', select: 'billNumber totalAmount paidAmount status' },
+      { path: 'customerInvoice', select: 'invoiceNumber totalAmount paidAmount status' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Payment registered and posted successfully. Balanced double-entry recorded and document updated.',
-      payment: populated
+      payment
     });
   } catch (error) {
     next(error);
@@ -218,19 +245,29 @@ const getPayments = async (req, res, next) => {
     if (paymentType) filter.paymentType = paymentType;
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (status) filter.status = status;
-    if (search) filter.paymentNumber = { $regex: search, $options: 'i' };
+    if (search) filter.paymentNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await Payment.countDocuments(filter);
     const payments = await Payment.find(filter)
       .populate('partner', 'name email mobile')
       .populate('journal', 'name code type')
       .populate('journalEntry')
       .populate('vendorBill', 'billNumber totalAmount paidAmount status')
       .populate('customerInvoice', 'invoiceNumber totalAmount paidAmount status')
-      .sort({ paymentDate: -1, createdAt: -1 });
+      .sort({ paymentDate: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: payments.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       payments
     });
   } catch (error) {

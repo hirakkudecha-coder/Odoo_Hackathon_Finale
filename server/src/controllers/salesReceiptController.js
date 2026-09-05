@@ -1,5 +1,6 @@
 const SalesReceipt = require('../models/SalesReceipt');
 const SalesOrder = require('../models/SalesOrder');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create Sales Receipt (Admin only as per permission requirement)
 const createSalesReceipt = async (req, res, next) => {
@@ -81,15 +82,16 @@ const createSalesReceipt = async (req, res, next) => {
       deliveredBy: req.user?._id
     });
 
-    const populated = await SalesReceipt.findById(receipt._id)
-      .populate('salesOrder', 'orderNumber status totalAmount')
-      .populate('customer', 'name email mobile')
-      .populate('items.product', 'name salesPrice costPrice');
+    await receipt.populate([
+      { path: 'salesOrder', select: 'orderNumber status totalAmount' },
+      { path: 'customer', select: 'name email mobile' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(201).json({
       success: true,
       message: 'Sales Receipt created successfully',
-      salesReceipt: populated
+      salesReceipt: receipt
     });
   } catch (error) {
     next(error);
@@ -105,18 +107,28 @@ const getSalesReceipts = async (req, res, next) => {
     if (customer) filter.customer = customer;
     if (salesOrder) filter.salesOrder = salesOrder;
     if (status) filter.status = status;
-    if (search) filter.receiptNumber = { $regex: search, $options: 'i' };
+    if (search) filter.receiptNumber = { $regex: escapeRegex(search), $options: 'i' };
 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);
+    const skip = (page - 1) * limit;
+
+    const totalCount = await SalesReceipt.countDocuments(filter);
     const receipts = await SalesReceipt.find(filter)
       .populate('salesOrder', 'orderNumber status totalAmount')
       .populate('customer', 'name email mobile')
       .populate('items.product', 'name salesPrice costPrice')
       .populate('deliveredBy', 'name email')
-      .sort({ receiptDate: -1, createdAt: -1 });
+      .sort({ receiptDate: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
 
     res.status(200).json({
       success: true,
       count: receipts.length,
+      totalCount,
+      page,
+      totalPages: Math.ceil(totalCount / limit) || 1,
       salesReceipts: receipts
     });
   } catch (error) {

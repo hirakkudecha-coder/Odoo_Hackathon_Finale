@@ -106,6 +106,12 @@ salesReceiptSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance and integrity
+salesReceiptSchema.index({ receiptNumber: 1 }, { unique: true, sparse: true });
+salesReceiptSchema.index({ salesOrder: 1 });
+salesReceiptSchema.index({ customer: 1, status: 1 });
+salesReceiptSchema.index({ receiptDate: -1 });
+
 const SalesReceipt = mongoose.model('SalesReceipt', salesReceiptSchema);
 
 module.exports = SalesReceipt;

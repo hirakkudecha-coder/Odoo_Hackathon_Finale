@@ -1,22 +1,10 @@
 import React, { useState } from 'react';
-import { Send, Check } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import blueSofa from '../../assets/images/blue_sofa.png';
 import { ComplianceModal } from './ComplianceModal';
 
 export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
   const [complianceModal, setComplianceModal] = useState({ isOpen: false, tab: 'privacy' });
-
-  const handleNewsletter = (e) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setTimeout(() => setSubscribed(false), 4000);
-      setEmail('');
-    }
-  };
 
   return (
     <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24 w-full">
@@ -39,29 +27,7 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
               The premier business operating workspace for furniture ateliers, bespoke fabricators, and design showrooms.
             </p>
 
-            {/* Newsletter input matching reference with terracotta submit button */}
-            <form onSubmit={handleNewsletter} className="relative max-w-md">
-              <div className="flex items-center bg-[#182B23] rounded-full p-1.5 border border-[#274438] focus-within:border-[#E86034] transition-colors">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email address"
-                  className="w-full bg-transparent px-4 text-xs text-white placeholder-[#688277] focus:outline-hidden"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-9 h-9 rounded-full bg-[#E86034] text-white flex items-center justify-center hover:bg-[#D55025] transition-all shrink-0 cursor-pointer shadow-sm"
-                  aria-label="Subscribe"
-                >
-                  {subscribed ? <Check className="w-4 h-4" /> : <Send className="w-4 h-4 ml-0.5" />}
-                </button>
-              </div>
-              {subscribed && (
-                <p className="text-[11px] text-emerald-400 mt-2 pl-4">Thank you for subscribing to Urban Furniture updates.</p>
-              )}
-            </form>
+
 
             <h3 className="font-serif-luxury text-2xl sm:text-3xl text-[#FAF8F5] tracking-tight pt-2 leading-snug">
               Redefine the way you <br />

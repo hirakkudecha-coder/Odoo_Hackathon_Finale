@@ -48,7 +48,7 @@ export const TopSellingProducts = () => {
   ];
 
   return (
-    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs text-left h-full flex flex-col justify-between">
+    <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-shadow duration-300 text-left h-full flex flex-col justify-between">
       
       {/* Header */}
       <div className="flex items-center justify-between mb-4 pb-2 border-b border-[#F0EAE1]">
@@ -56,32 +56,32 @@ export const TopSellingProducts = () => {
           Top Selling Products
         </h3>
 
-        <button className="flex items-center gap-1.5 text-[11px] font-semibold text-[#4A5550] bg-[#FAF8F5] border border-[#E4DCD0] px-2.5 py-1 rounded-lg hover:bg-[#F2ECE3] transition-colors cursor-pointer">
+        <button className="flex items-center gap-1.5 text-[11px] font-semibold text-[#4A5550] bg-[#FAF8F5] border border-[#E4DCD0] px-2.5 py-1 rounded-lg hover:bg-[#F2ECE3] hover:text-[#2D4A3E] transition-all cursor-pointer shadow-2xs">
           <span>{filter}</span>
           <ChevronDown className="w-3 h-3" />
         </button>
       </div>
 
       {/* Product Rows */}
-      <div className="space-y-2.5 my-auto">
+      <div className="space-y-2 my-auto">
         {products.map((item) => (
           <div 
             key={item.rank}
-            className="flex items-center justify-between p-2 rounded-xl hover:bg-[#FAF8F5] transition-colors text-xs"
+            className="flex items-center justify-between p-2.5 rounded-xl hover:bg-[#FAF6F0] hover:border hover:border-[#E8E1D5]/60 hover:shadow-2xs transition-all duration-200 text-xs cursor-pointer group"
           >
             {/* Rank & Image & Name */}
             <div className="flex items-center gap-3">
-              <span className="w-4 text-center font-bold text-[#8E9B95] text-[11px]">
+              <span className="w-4 text-center font-bold text-[#8E9B95] text-[11px] group-hover:text-[#2D4A3E] transition-colors">
                 {item.rank}
               </span>
-              <div className="w-9 h-9 rounded-lg bg-[#F5F1EA] p-1 flex items-center justify-center shrink-0 border border-[#E8E1D5]">
+              <div className="w-9 h-9 rounded-lg bg-[#F5F1EA] p-1 flex items-center justify-center shrink-0 border border-[#E8E1D5] overflow-hidden group-hover:border-[#2D4A3E]/30 shadow-2xs">
                 <img 
                   src={item.image} 
                   alt={item.name} 
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-contain group-hover:scale-115 transition-transform duration-300"
                 />
               </div>
-              <span className="font-semibold text-[#141A17] text-xs">
+              <span className="font-semibold text-[#141A17] text-xs group-hover:text-[#2D4A3E] transition-colors">
                 {item.name}
               </span>
             </div>
@@ -91,7 +91,7 @@ export const TopSellingProducts = () => {
               <span className="text-[#6D7D76] text-[11px]">
                 {item.units}
               </span>
-              <span className="font-serif font-bold text-[#141A17] w-20">
+              <span className="font-serif font-bold text-[#141A17] w-20 group-hover:text-[#2D4A3E] transition-colors">
                 {item.revenue}
               </span>
             </div>

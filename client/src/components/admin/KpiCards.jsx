@@ -56,16 +56,16 @@ export const KpiCards = () => {
         return (
           <div 
             key={idx}
-            className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md transition-all duration-300 flex flex-col justify-between"
+            className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-[#2D4A3E]/30 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
           >
             {/* Top row: Icon + Title + Trend Pill */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-full ${card.iconBg} ${card.iconColor} flex items-center justify-center shrink-0`}>
+                <div className={`w-10 h-10 rounded-full ${card.iconBg} ${card.iconColor} flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-2xs`}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="text-left">
-                  <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider block">
+                  <span className="text-[11px] font-semibold text-[#66756F] uppercase tracking-wider block group-hover:text-[#2D4A3E] transition-colors">
                     {card.title}
                   </span>
                   <span className="font-serif font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">

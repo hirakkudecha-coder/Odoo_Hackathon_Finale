@@ -51,10 +51,11 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
         <AdminHeader 
           onNavigateHome={onNavigateHome} 
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          sidebarOpen={sidebarOpen}
         />
 
-        {/* Dashboard Main Scrollable Body */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto w-full">
+        {/* Dashboard Main Scrollable Body with Unified Fluid Grid Padding */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 space-y-6 w-full">
           
           {/* Greeting & Motivational Banner */}
           <GreetingBanner />

@@ -165,11 +165,18 @@ export const BudgetListTable = ({ onCreateBudget }) => {
 
           {/* Select Year Dropdown */}
           <div className="relative">
-            <button className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs">
-              <Calendar className="w-3.5 h-3.5 text-[#7A8881]" />
-              <span>Select Year</span>
-              <ChevronDown className="w-3.5 h-3.5 text-[#7A8881]" />
-            </button>
+            <select
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+              className="appearance-none bg-white border border-[#E4DCD0] rounded-xl pl-8 pr-8 py-2 text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs focus:outline-hidden"
+            >
+              <option value="Select Year">Fiscal Year 2026</option>
+              <option value="2025">Fiscal Year 2025</option>
+              <option value="2024">Fiscal Year 2024</option>
+              <option value="All Years">All Fiscal Years</option>
+            </select>
+            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
           </div>
 
           <button 

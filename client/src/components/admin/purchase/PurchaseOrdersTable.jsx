@@ -144,17 +144,23 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     },
   ];
 
-  // Filter orders by search
+  // Filter purchase orders
   const filteredOrders = useMemo(() => {
-    if (!searchQuery.trim()) return rawOrders;
-    const q = searchQuery.toLowerCase();
-    return rawOrders.filter((order) =>
-      order.poNo.toLowerCase().includes(q) ||
-      order.supplier.toLowerCase().includes(q) ||
-      order.date.toLowerCase().includes(q) ||
-      order.status.toLowerCase().includes(q)
-    );
-  }, [searchQuery]);
+    return rawOrders.filter((order) => {
+      if (statusFilter !== 'All Status' && order.status !== statusFilter) return false;
+      if (activeTab === 'Suppliers' && !['HomeWorks Supplies', 'Sheetal Living', 'DesignCraft'].includes(order.supplier)) return false;
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        return (
+          order.poNo.toLowerCase().includes(q) ||
+          order.supplier.toLowerCase().includes(q) ||
+          order.date.toLowerCase().includes(q) ||
+          order.status.toLowerCase().includes(q)
+        );
+      }
+      return true;
+    });
+  }, [searchQuery, statusFilter, activeTab]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {
@@ -238,10 +244,22 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
         {/* Right Action Dropdowns: Filter & Export */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-          <button className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E4DCD0] bg-white text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-all cursor-pointer shadow-2xs">
-            <Filter className="w-3.5 h-3.5 text-[#7A8881]" />
-            <span>Filter</span>
-          </button>
+          {/* Status Filter Dropdown */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="appearance-none bg-white border border-[#E4DCD0] rounded-xl px-3.5 py-1.5 pr-8 text-xs font-semibold text-[#4A5550] hover:bg-[#FAF8F5] transition-all cursor-pointer shadow-2xs focus:outline-hidden"
+            >
+              <option>All Status</option>
+              <option>Received</option>
+              <option>Ordered</option>
+              <option>Partially Received</option>
+              <option>Pending</option>
+              <option>Cancelled</option>
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7A8881] pointer-events-none" />
+          </div>
 
           <button 
             onClick={handleExportPDF}

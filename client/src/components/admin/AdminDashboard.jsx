@@ -34,6 +34,10 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
       setActiveMenu('sales');
     } else if (actionId === 'newPurchase') {
       setActiveMenu('purchase');
+    } else if (actionId === 'registerPayment') {
+      setActiveMenu('payments');
+    } else if (actionId === 'journalEntry') {
+      setActiveMenu('accounting');
     } else if (actionId === 'addProduct') {
       setActiveMenu('masterData');
     } else {

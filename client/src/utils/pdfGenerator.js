@@ -1091,3 +1091,43 @@ export const createMasterRegisterPdfData = (title, headers, rows) => {
     tableData: { headers, rows },
   };
 };
+
+/**
+ * High-Level Export Functions for Direct Component Invocations
+ */
+export const generateTaxInvoicePDF = (order) => {
+  const data = createSalesOrderPdfData(order || {});
+  downloadDirectPdf(data);
+  return data;
+};
+
+export const generatePurchaseOrderPDF = (order) => {
+  const data = createPurchaseOrderPdfData(order || {});
+  downloadDirectPdf(data);
+  return data;
+};
+
+export const generatePaymentReceiptPDF = (payment) => {
+  const data = createPaymentReceiptPdfData(payment || {});
+  downloadDirectPdf(data);
+  return data;
+};
+
+export const generateFinancialReportPDF = (reportTitle = 'Financial Statement', reportRows = null, period = 'August & Q3 2025') => {
+  const data = createFinancialReportPdfData(reportTitle, period);
+  if (reportRows) {
+    data.tableData = {
+      headers: ['Financial Line Item / Head', 'Classification', 'Amount (Rs.)'],
+      rows: reportRows,
+    };
+  }
+  downloadDirectPdf(data);
+  return data;
+};
+
+export const exportTableToPDF = (title, headers, rows) => {
+  const data = createMasterRegisterPdfData(title, headers, rows);
+  downloadDirectPdf(data);
+  return data;
+};
+

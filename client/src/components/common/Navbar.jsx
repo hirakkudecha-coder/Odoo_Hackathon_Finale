@@ -16,6 +16,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
     { name: 'Accounting', href: '#accounting', id: 'accounting' },
     { name: 'Reports', href: '#reports', id: 'reports' },
     { name: 'About', href: '#about', id: 'about' },
+    { name: 'Contact', href:'#contact',id:'about'}
   ];
 
   // Scroll listener for elevation and active section tracking (Scroll Spy)

@@ -11,6 +11,8 @@ import { QuickActionsGrid } from './QuickActionsGrid';
 import { TopSellingProducts } from './TopSellingProducts';
 import { SalesByCategoryChart } from './SalesByCategoryChart';
 import { FinancialReportsList } from './FinancialReportsList';
+import { MasterDataPage } from './masterData/MasterDataPage';
+import { PurchasePage } from './purchase/PurchasePage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -18,15 +20,15 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
 
   const handleSelectMenu = (menuId) => {
     setActiveMenu(menuId);
-    // If user clicks contacts/createUser, we can trigger corresponding modal or view
-    if (menuId === 'contacts' && onOpenCreateUser) {
-      onOpenCreateUser();
-    }
   };
 
   const handleQuickAction = (actionId) => {
     if (actionId === 'addContact' && onOpenCreateUser) {
       onOpenCreateUser();
+    } else if (actionId === 'newPurchase') {
+      setActiveMenu('purchase');
+    } else if (actionId === 'newSale' || actionId === 'addProduct') {
+      setActiveMenu('masterData');
     } else {
       console.log(`Triggered quick action: ${actionId}`);
     }
@@ -57,82 +59,91 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
         {/* Dashboard Main Scrollable Body with Unified Fluid Grid Padding */}
         <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 space-y-6 w-full">
           
-          {/* Greeting & Motivational Banner */}
-          <GreetingBanner />
+          {/* Conditional Views */}
+          {activeMenu === 'masterData' || activeMenu === 'contacts' ? (
+            <MasterDataPage onOpenCreateUser={onOpenCreateUser} />
+          ) : activeMenu === 'purchase' ? (
+            <PurchasePage onNavigateTab={handleSelectMenu} />
+          ) : (
+            <>
+              {/* Greeting & Motivational Banner */}
+              <GreetingBanner />
 
-          {/* 4 Financial KPI Summary Cards */}
-          <KpiCards />
+              {/* 4 Financial KPI Summary Cards */}
+              <KpiCards />
 
-          {/* Middle Row 1: Charts & Financial Health */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            
-            {/* Sales vs Purchases Bar Chart (6 cols) */}
-            <div className="lg:col-span-6 flex">
-              <div className="w-full">
-                <SalesPurchasesChart />
+              {/* Middle Row 1: Charts & Financial Health */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                
+                {/* Sales vs Purchases Bar Chart (6 cols) */}
+                <div className="lg:col-span-6 flex">
+                  <div className="w-full">
+                    <SalesPurchasesChart />
+                  </div>
+                </div>
+
+                {/* Profit & Loss Overview (3 cols) */}
+                <div className="lg:col-span-3 flex">
+                  <div className="w-full">
+                    <ProfitLossCard />
+                  </div>
+                </div>
+
+                {/* Budget Snapshot (3 cols) */}
+                <div className="lg:col-span-3 flex">
+                  <div className="w-full">
+                    <BudgetSnapshotCard />
+                  </div>
+                </div>
+
               </div>
-            </div>
 
-            {/* Profit & Loss Overview (3 cols) */}
-            <div className="lg:col-span-3 flex">
-              <div className="w-full">
-                <ProfitLossCard />
+              {/* Middle Row 2: Transactions & Quick Actions */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                
+                {/* Recent Transactions Table (7 cols) */}
+                <div className="lg:col-span-7 flex">
+                  <div className="w-full">
+                    <RecentTransactionsTable />
+                  </div>
+                </div>
+
+                {/* Quick Actions Grid (5 cols) */}
+                <div className="lg:col-span-5 flex">
+                  <div className="w-full">
+                    <QuickActionsGrid onActionClick={handleQuickAction} />
+                  </div>
+                </div>
+
               </div>
-            </div>
 
-            {/* Budget Snapshot (3 cols) */}
-            <div className="lg:col-span-3 flex">
-              <div className="w-full">
-                <BudgetSnapshotCard />
+              {/* Lower Row 3: Product Performance, Category Distribution & Report Links */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+                
+                {/* Top Selling Products (4 cols) */}
+                <div className="lg:col-span-4 flex">
+                  <div className="w-full">
+                    <TopSellingProducts />
+                  </div>
+                </div>
+
+                {/* Sales by Category Donut Chart (4.5 cols) */}
+                <div className="lg:col-span-5 flex">
+                  <div className="w-full">
+                    <SalesByCategoryChart />
+                  </div>
+                </div>
+
+                {/* Reports List (3.5 cols) */}
+                <div className="lg:col-span-3 flex">
+                  <div className="w-full">
+                    <FinancialReportsList />
+                  </div>
+                </div>
+
               </div>
-            </div>
-
-          </div>
-
-          {/* Middle Row 2: Transactions & Quick Actions */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            
-            {/* Recent Transactions Table (7 cols) */}
-            <div className="lg:col-span-7 flex">
-              <div className="w-full">
-                <RecentTransactionsTable />
-              </div>
-            </div>
-
-            {/* Quick Actions Grid (5 cols) */}
-            <div className="lg:col-span-5 flex">
-              <div className="w-full">
-                <QuickActionsGrid onActionClick={handleQuickAction} />
-              </div>
-            </div>
-
-          </div>
-
-          {/* Lower Row 3: Product Performance, Category Distribution & Report Links */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            
-            {/* Top Selling Products (4 cols) */}
-            <div className="lg:col-span-4 flex">
-              <div className="w-full">
-                <TopSellingProducts />
-              </div>
-            </div>
-
-            {/* Sales by Category Donut Chart (4.5 cols) */}
-            <div className="lg:col-span-5 flex">
-              <div className="w-full">
-                <SalesByCategoryChart />
-              </div>
-            </div>
-
-            {/* Reports List (3.5 cols) */}
-            <div className="lg:col-span-3 flex">
-              <div className="w-full">
-                <FinancialReportsList />
-              </div>
-            </div>
-
-          </div>
+            </>
+          )}
 
         </main>
       </div>

@@ -7,11 +7,17 @@
     --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
+  html {
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
   body {
     font-family: var(--font-sans);
     background-color: #FAF8F5;
     color: #1A1F1D;
-    overflow-x: hidden;
+    max-width: 100%;
+    overflow-x: clip;
   }
 
   /* Custom Smooth Luxury Scrollbars */
@@ -181,4 +187,75 @@
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #2D4A3E;
+}
+
+/* ==========================================================================
+   Stacking Cards View-Timeline & Sticky Architecture
+   ========================================================================== */
+:root {
+  --header-offset: 76px;
+  --card-height: 210px;
+  --card-margin: 12px;
+  --card-top-offset: 14px;
+  --numcards: 4;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --header-offset: 84px;
+    --card-height: 255px;
+    --card-margin: 16px;
+    --card-top-offset: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-offset: 92px;
+    --card-height: 295px;
+    --card-margin: 20px;
+    --card-top-offset: 24px;
+  }
+}
+
+#cards-deck {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(var(--numcards), var(--card-height));
+  gap: var(--card-margin);
+  padding-bottom: 0;
+  margin-bottom: 0;
+  view-timeline-name: --cards-element-scrolls-in-body;
+}
+
+.stacking-card {
+  position: sticky;
+  top: calc(var(--header-offset) + calc((var(--index) - 1) * var(--card-top-offset)));
+  height: var(--card-height);
+  padding-top: 0;
+  touch-action: pan-y;
+}
+
+.stacking-card-inner {
+  height: 100%;
+}
+
+@supports (animation-timeline: view()) {
+  @keyframes stack-scale {
+    to {
+      transform: scale(calc(1 - 0.035 * (var(--numcards) - var(--index))));
+      filter: brightness(calc(1 - 0.05 * (var(--numcards) - var(--index))));
+    }
+  }
+
+  .stacking-card-inner {
+    transform-origin: 50% 0%;
+    will-change: transform, filter;
+    animation: linear stack-scale both;
+    animation-timeline: --cards-element-scrolls-in-body;
+    animation-range: exit-crossing calc((var(--index) - 1) * 100% / var(--numcards)) exit-crossing calc(var(--index) * 100% / var(--numcards));
+  }
 }

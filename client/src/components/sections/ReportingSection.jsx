@@ -23,10 +23,10 @@ export const ReportingSection = ({ onOpenAuth }) => {
         </div>
 
         {/* 3 Luxury Report Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           
           {/* Card 1: Profit & Loss */}
-          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all reveal reveal-scale delay-100">
+          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all reveal reveal-scale delay-100 overflow-hidden">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-[#EAE3D8] mb-5">
                 <div className="flex items-center gap-2.5">
@@ -74,7 +74,7 @@ export const ReportingSection = ({ onOpenAuth }) => {
           </div>
 
           {/* Card 2: Balance Sheet */}
-          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all reveal reveal-scale delay-200">
+          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all reveal reveal-scale delay-200 overflow-hidden">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-[#EAE3D8] mb-5">
                 <div className="flex items-center gap-2.5">
@@ -122,7 +122,7 @@ export const ReportingSection = ({ onOpenAuth }) => {
           </div>
 
           {/* Card 3: Budget vs Actual */}
-          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all">
+          <div className="rounded-3xl bg-white p-6 sm:p-7 border border-[#E6DFD4] shadow-xs flex flex-col justify-between hover:shadow-lg transition-all sm:col-span-2 lg:col-span-1 overflow-hidden">
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-[#EAE3D8] mb-5">
                 <div className="flex items-center gap-2.5">

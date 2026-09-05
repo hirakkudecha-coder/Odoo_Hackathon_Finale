@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, Send, Mail, Phone, MapPin, Check } from 'lucide-react';
+import { Send, Check } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 import blueSofa from '../../assets/images/blue_sofa.png';
+import { ComplianceModal } from './ComplianceModal';
 
-export const Footer = ({ onOpenAuth }) => {
+export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [complianceModal, setComplianceModal] = useState({ isOpen: false, tab: 'privacy' });
 
   const handleNewsletter = (e) => {
     e.preventDefault();
@@ -17,19 +19,18 @@ export const Footer = ({ onOpenAuth }) => {
   };
 
   return (
-    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24">
-
+    <footer id="about" className="bg-[#101C17] text-[#FAF8F5] pt-20 pb-10 border-t border-[#1C2E26] relative overflow-hidden scroll-mt-24 w-full">
       {/* Subtle background glow */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-[#2D4A3E]/30 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* Edge-to-edge container without restricting max-w */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 relative z-10">
 
         {/* Top Section: Brand + Newsletter + Center Blue Sofa Showcase matching Reference */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 pb-16 border-b border-[#1E332A] items-center">
 
           {/* Left: Brand & Newsletter */}
           <div className="lg:col-span-5 space-y-6">
-
             <div className="flex items-center gap-3">
               <BrandLogo light={true} />
             </div>
@@ -66,7 +67,6 @@ export const Footer = ({ onOpenAuth }) => {
               Redefine the way you <br />
               <span className="italic font-normal text-[#D2E7A4]">Live at Home & Run your Business.</span>
             </h3>
-
           </div>
 
           {/* Center/Right: Deep Blue Modern Sofa image matching reference */}
@@ -94,15 +94,53 @@ export const Footer = ({ onOpenAuth }) => {
 
         </div>
 
-        {/* Middle Navigation Columns matching Reference */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 py-14 border-b border-[#1E332A] text-xs">
 
+        {/* Middle Navigation Columns matching Reference */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 py-14 border-b border-[#1E332A] text-xs">
           {/* Col 1 */}
           <div className="space-y-3">
             <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Company</h4>
             <ul className="space-y-2 text-[#A1B8AF]">
-              <li><a href="#about" className="hover:text-white transition-colors">Help Desk</a></li>
-              <li><a href="#features" className="hover:text-white transition-colors">Partner Program</a></li>
+              <li>
+                <a
+                  href="/partner-helpdesk#helpdesk"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigatePartnerHelpdesk) {
+                      onNavigatePartnerHelpdesk('helpdesk');
+                    } else {
+                      window.history.pushState(null, '', '/partner-helpdesk#helpdesk');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer flex items-center justify-between group max-w-[140px]"
+                >
+                  <span>Help Desk</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#D2E7A4] border border-[#274438] group-hover:border-[#E86034] transition-colors">
+                    24/7
+                  </span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/partner-helpdesk#partner"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (onNavigatePartnerHelpdesk) {
+                      onNavigatePartnerHelpdesk('partner');
+                    } else {
+                      window.history.pushState(null, '', '/partner-helpdesk#partner');
+                      window.dispatchEvent(new PopStateEvent('popstate'));
+                    }
+                  }}
+                  className="hover:text-white transition-colors cursor-pointer flex items-center justify-between group max-w-[140px]"
+                >
+                  <span>Partner Program</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#E8C547] border border-[#274438] group-hover:border-[#E8C547] transition-colors">
+                    Trade
+                  </span>
+                </a>
+              </li>
               <li><a href="#catalogue" className="hover:text-white transition-colors">Categories</a></li>
               <li><a href="#about" className="hover:text-white transition-colors">Showroom Locator</a></li>
             </ul>
@@ -142,20 +180,18 @@ export const Footer = ({ onOpenAuth }) => {
           </div>
 
           {/* Col 5: Contact */}
-          <div className="col-span-2 md:col-span-1 space-y-3">
+          <div className="col-span-2 md:col-span-3 lg:col-span-1 space-y-3">
             <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Contact</h4>
             <div className="space-y-2 text-[#A1B8AF]">
-              <p className="text-white font-medium">concierge@urbanfurniture.com</p>
+              <p className="text-white font-medium break-all sm:break-normal">concierge@urbanfurniture.com</p>
               <p>+91 (022) 4890-1200</p>
               <p className="text-[11px] text-[#7E968D]">Atelier HQ: Nariman Point, Mumbai</p>
             </div>
           </div>
-
         </div>
 
         {/* Bottom Bar: Copyright, Social Icons, Privacy Policy matching Reference */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[#7E968D]">
-
+        <div className="pt-8 flex flex-col sm:flex-row flex-wrap items-center justify-between gap-4 text-xs text-[#7E968D]">
           <div>
             © 2026 Urban Furniture Accounting System. All rights reserved.
           </div>
@@ -177,14 +213,36 @@ export const Footer = ({ onOpenAuth }) => {
           </div>
 
           <div className="flex items-center space-x-6 text-[11px]">
-            <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            <a href="#" className="hover:text-white transition-colors">Security</a>
+            <button
+              onClick={() => setComplianceModal({ isOpen: true, tab: 'privacy' })}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Privacy Policy
+            </button>
+            <button
+              onClick={() => setComplianceModal({ isOpen: true, tab: 'terms' })}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Terms of Service
+            </button>
+            <button
+              onClick={() => setComplianceModal({ isOpen: true, tab: 'security' })}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Security
+            </button>
           </div>
-
         </div>
-
       </div>
+
+      {/* Interactive Compliance Modal Dialog */}
+      <ComplianceModal
+        isOpen={complianceModal.isOpen}
+        initialTab={complianceModal.tab}
+        onClose={() => setComplianceModal({ isOpen: false, tab: 'privacy' })}
+      />
     </footer>
   );
 };
+
+export default Footer;

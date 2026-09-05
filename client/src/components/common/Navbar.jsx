@@ -201,7 +201,6 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                 </button>
               </div>
             </div>
-
           </div>
 
           {/* Mobile / Tablet Navigation Drawer */}
@@ -218,8 +217,8 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                     href={link.href}
                     onClick={(e) => handleNavClick(e, link.href)}
                     className={`flex items-center justify-between text-xs font-semibold uppercase tracking-wider py-2.5 px-3 rounded-xl transition-all ${
-                      isActive 
-                        ? 'bg-[#2D4A3E] text-[#FAF8F5]' 
+                      isActive
+                        ? 'bg-[#2D4A3E] text-[#FAF8F5]'
                         : 'text-[#3D4542] hover:text-[#2D4A3E] hover:bg-[#EAE4DC]/50'
                     }`}
                   >
@@ -288,7 +287,6 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
               </div>
             </div>
           )}
-
         </div>
       </div>
     </header>

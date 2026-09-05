@@ -5,7 +5,7 @@ import designerPortrait from '../../assets/images/designer_portrait.png';
 
 export const EditorialFeatureIntro = ({ onOpenAuth }) => {
   return (
-    <section id="features" className="py-20 bg-[#F5F1EA] border-y border-[#E8E1D5] relative">
+    <section id="features" className="pt-8 pb-16 md:py-20 bg-[#F5F1EA] border-y border-[#E8E1D5] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">

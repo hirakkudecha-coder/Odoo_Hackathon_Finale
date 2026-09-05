@@ -2,8 +2,10 @@
   "name": "odoo_hackathon_finale",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,5 +19,13 @@
   "bugs": {
     "url": "https://github.com/hirakkudecha-coder/Odoo_Hackathon_Finale/issues"
   },
-  "homepage": "https://github.com/hirakkudecha-coder/Odoo_Hackathon_Finale#readme"
+  "homepage": "https://github.com/hirakkudecha-coder/Odoo_Hackathon_Finale#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cours": "^1.0.0",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.9.5",
+    "nodemon": "^3.1.14"
+  }
 }

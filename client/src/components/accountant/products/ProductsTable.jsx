@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Package, 
   Search, 
@@ -91,8 +91,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
     },
   ];
 
-<<<<<<< HEAD
-  const [products, setProducts] = useState(rawProducts);
+  const [products, setProducts] = useState(initialProducts);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -137,9 +136,6 @@ export const ProductsTable = ({ onCreateProduct }) => {
     loadProducts();
     return () => { isMounted = false; };
   }, []);
-=======
-  const [products, setProducts] = useState(initialProducts);
->>>>>>> 5fed872f0bf1975aaf0f133b5f60cbf0f78457af
 
   const [newProductForm, setNewProductForm] = useState({
     sku: '',

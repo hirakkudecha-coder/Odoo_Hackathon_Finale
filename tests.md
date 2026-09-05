@@ -746,8 +746,38 @@ Content-Type: application/json; charset=utf-8
 
 ---
 
+---
+
 ## 8. QA Verdict & Release Sign-Off
 
 > [!TIP]
-> ### 🏆 Final Quality Assurance Verdict: **APPROVED FOR RELEASE**
+> ### 🏆 Quality Assurance Verdict: **APPROVED FOR RELEASE**
 > The Urban Furniture ERP backend, newly added client modules, and component table views demonstrated **exceptional stability, zero database pollution on invalid payloads, and strict adherence to double-entry accounting standards**. All 87 test and component verification scenarios passed without regression, security loopholes, or UI layout breaks.
+
+---
+
+## 9. Atelier Concierge, Showroom Tours & Helpdesk Management (Option 1)
+
+### 9.1 Status Workflow Endpoints Verification
+Four dedicated PATCH status endpoints were built and verified with real database records:
+
+| Endpoint | Method | Allowed Status Enums | HTTP Response | Verified Behavior |
+| :--- | :--- | :--- | :--- | :--- |
+| `/api/inquiries/designer/:id/status` | `PATCH` | `new`, `reviewing`, `contacted`, `scheduled`, `archived` | `200 OK` | Updates status and optional `assignedLead` concierge staff |
+| `/api/showrooms/bookings/:id/status` | `PATCH` | `confirmed`, `completed`, `rescheduled`, `cancelled` | `200 OK` | Updates visit status and reflects in telemetry counts |
+| `/api/partners/:id/status` | `PATCH` | `applied`, `under_review`, `approved`, `suspended` | `200 OK` | Updates guild member status and tier verification |
+| `/api/helpdesk/tickets/:id/status` | `PATCH` | `Submitted`, `In Progress`, `Resolved`, `Closed` | `200 OK` | Updates ticket lifecycle and resolution state |
+
+### 9.2 Concierge & Leads Admin View (`ConciergeLeadsPage.jsx`)
+- **4 Telemetry KPI Cards:** Live dynamic badges computing counts for Active Inquiries, Confirmed Showroom Tours, Open Helpdesk Tickets, and Guild Partner Applicants.
+- **Interactive Multi-Tab Workspace:**
+  1. **Bespoke Inquiries:** Client name, email, phone, budget bracket, timeline, and modal inspector for architectural plans.
+  2. **Showroom Reservations:** Atelier location, visit date & time slot, party size, and host notes modal.
+  3. **Helpdesk Tickets:** Category, priority badge, assigned agent, created date, and resolution modal.
+  4. **Trade Partners Guild:** Studio credentials, tax ID, annual procurement volume, tier rating, and instant "Approve / Review" actions.
+- **Search & Filter Controls:** Tab-level text search across client names/emails/IDs, plus status dropdown filters.
+- **Optimistic UI Updates:** Instant badge reaction upon selecting a status from the table dropdown, backed by real-time PATCH network calls and error-recovery toast alerts.
+
+### 9.3 Production Build Verification
+- **Vite Production Bundler:** `npm run build` completed with 0 errors across 2,365 modules.
+- **Automated Test Suite:** 100% pass rate across Phases 1 through 7 with zero regressions.

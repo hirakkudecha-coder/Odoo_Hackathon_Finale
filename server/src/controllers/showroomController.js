@@ -118,8 +118,37 @@ const getBookings = async (req, res, next) => {
   }
 };
 
+// Update booking status
+const updateBookingStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const booking = await ShowroomTour.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true, runValidators: true }
+    );
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Tour booking not found.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Tour booking status updated successfully.',
+      booking
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getShowrooms,
   bookTour,
-  getBookings
+  getBookings,
+  updateBookingStatus
 };
+

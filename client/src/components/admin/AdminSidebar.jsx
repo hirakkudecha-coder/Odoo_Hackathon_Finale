@@ -8,6 +8,7 @@ import {
   Scale, 
   Wallet, 
   FileText, 
+  MessageSquare,
   X, 
   ArrowUpRight 
 } from 'lucide-react';
@@ -46,6 +47,11 @@ export const AdminSidebar = ({
       id: 'sales',
       label: 'Sales',
       icon: ShoppingBag,
+    },
+    {
+      id: 'concierge',
+      label: 'Concierge & Leads',
+      icon: MessageSquare,
     },
     {
       id: 'payments',

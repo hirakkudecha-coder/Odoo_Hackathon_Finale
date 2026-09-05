@@ -71,7 +71,41 @@ const getTradePartners = async (req, res, next) => {
   }
 };
 
+// Update trade partner status and tier
+const updatePartnerStatus = async (req, res, next) => {
+  try {
+    const { status, tier, commissionRate } = req.body;
+    const updateFields = {};
+    if (status) updateFields.status = status;
+    if (tier) updateFields.tier = tier;
+    if (commissionRate) updateFields.commissionRate = commissionRate;
+
+    const partner = await TradePartner.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!partner) {
+      return res.status(404).json({
+        success: false,
+        message: 'Trade partner not found.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Trade partner status updated successfully.',
+      partner
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   applyTradePartner,
-  getTradePartners
+  getTradePartners,
+  updatePartnerStatus
 };
+

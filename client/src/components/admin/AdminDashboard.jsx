@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AdminSidebar } from './AdminSidebar';
 import { AdminHeader } from './AdminHeader';
 import { GreetingBanner } from './GreetingBanner';
@@ -18,6 +18,7 @@ import { PaymentsPage } from './payments/PaymentsPage';
 import { AccountingPage } from './accounting/AccountingPage';
 import { BudgetsPage } from './budgets/BudgetsPage';
 import { ReportsPage } from './reports/ReportsPage';
+import { ConciergeLeadsPage } from './concierge/ConciergeLeadsPage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState(() => {
@@ -97,6 +98,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
             <PurchasePage onNavigateTab={handleSelectMenu} onCreatePO={onOpenCreateUser} />
           ) : activeMenu === 'sales' ? (
             <SalesPage onNavigateTab={handleSelectMenu} onOpenCreateUser={onOpenCreateUser} />
+          ) : activeMenu === 'concierge' || activeMenu === 'leads' || activeMenu === 'inquiries' ? (
+            <ConciergeLeadsPage onNavigateTab={handleSelectMenu} />
           ) : activeMenu === 'payments' ? (
             <PaymentsPage onNavigateTab={handleSelectMenu} onRecordPayment={onOpenCreateUser} />
           ) : activeMenu === 'accounting' ? (

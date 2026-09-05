@@ -45,7 +45,40 @@ const getInquiries = async (req, res, next) => {
   }
 };
 
+// Update inquiry status and assigned lead
+const updateInquiryStatus = async (req, res, next) => {
+  try {
+    const { status, assignedLead } = req.body;
+    const updateFields = {};
+    if (status) updateFields.status = status;
+    if (assignedLead) updateFields.assignedLead = assignedLead;
+
+    const inquiry = await DesignerInquiry.findByIdAndUpdate(
+      req.params.id,
+      updateFields,
+      { new: true, runValidators: true }
+    );
+
+    if (!inquiry) {
+      return res.status(404).json({
+        success: false,
+        message: 'Designer inquiry not found.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Designer inquiry status updated successfully.',
+      inquiry
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createInquiry,
-  getInquiries
+  getInquiries,
+  updateInquiryStatus
 };
+

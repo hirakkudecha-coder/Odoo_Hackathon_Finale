@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, Menu, X, ChevronRight, UserPlus } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
 
-export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAccountant }) => {
+export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAccountant, currentUser, onLogout }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -16,7 +16,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
     { name: 'Accounting', href: '#accounting', id: 'accounting' },
     { name: 'Reports', href: '#reports', id: 'reports' },
     { name: 'About', href: '#about', id: 'about' },
-    { name: 'Contact', href:'#contact',id:'about'}
+    { name: 'Contact', href: '#contact', id: 'about' }
   ];
 
   // Scroll listener for elevation and active section tracking (Scroll Spy)
@@ -121,48 +121,45 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                   </button>
                 )}
 
-                {/* Login Button */}
-                <button
-                  type="button"
-                  onClick={() => onOpenAuth && onOpenAuth('login')}
-                  className="h-8 xl:h-8.5 flex items-center justify-center text-[10.5px] xl:text-[11px] font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-2 xl:px-2.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  Sign In
-                </button>
+                {/* If Logged In: Show Logged In User Pill */}
+                {currentUser ? (
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onOpenDashboard && onOpenDashboard()}
+                      className="h-8 xl:h-8.5 flex items-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-[10.5px] xl:text-[11px] font-semibold uppercase tracking-wider px-3 xl:px-3.5 rounded-full shadow-xs hover:shadow-md transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      <span>Dashboard ({currentUser.name?.split(' ')[0]}) ↗</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onLogout && onLogout()}
+                      className="h-8 xl:h-8.5 flex items-center justify-center text-[10.5px] xl:text-[11px] font-bold uppercase tracking-wider text-[#DC2626] hover:bg-[#FEE2E2] px-2.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Login Button */}
+                    <button
+                      type="button"
+                      onClick={() => onOpenAuth && onOpenAuth('login')}
+                      className="h-8 xl:h-8.5 flex items-center justify-center text-[10.5px] xl:text-[11px] font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-2 xl:px-2.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      Sign In
+                    </button>
 
-                {/* Primary CTA - Forest Green Pill Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onOpenDashboard) {
-                      onOpenDashboard();
-                    } else if (onOpenAuth) {
-                      onOpenAuth('signup');
-                    }
-                  }}
-                  className="h-8 xl:h-8.5 flex items-center justify-center gap-1 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-[10.5px] xl:text-[11px] font-semibold uppercase tracking-wider px-3 xl:px-3.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group whitespace-nowrap"
-                >
-                  <span>{onOpenDashboard ? 'Dashboard ↗' : 'Get Started'}</span>
-                  {!onOpenDashboard && (
-                    <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                  )}
-                </button>
-
-                {/* Accountant Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (onOpenAccountant) {
-                      onOpenAccountant();
-                    } else {
-                      window.history.pushState(null, '', '/accountant');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="h-8 xl:h-8.5 flex items-center justify-center gap-1 bg-[#C86D3B] hover:bg-[#B05B2D] text-[#FAF8F5] text-[10.5px] xl:text-[11px] font-semibold uppercase tracking-wider px-3 xl:px-3.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer whitespace-nowrap"
-                >
-                  <span>Accountant ↗</span>
-                </button>
+                    {/* Primary CTA - Opens Login/Signup to access dashboard */}
+                    <button
+                      type="button"
+                      onClick={() => onOpenAuth && onOpenAuth('login')}
+                      className="h-8 xl:h-8.5 flex items-center justify-center gap-1 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-[10.5px] xl:text-[11px] font-semibold uppercase tracking-wider px-3 xl:px-3.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group whitespace-nowrap"
+                    >
+                      <span>Login to Dashboard ↗</span>
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Mobile / Tablet Menu Button (Shown below XL) */}
@@ -247,44 +244,52 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard, onOpenAc
                     <span>Create User</span>
                   </button>
                 )}
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    onOpenAuth && onOpenAuth('login');
-                  }}
-                  className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#1A1F1D] border border-[#2D4A3E]/20 rounded-full"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onOpenDashboard) {
-                      onOpenDashboard();
-                    } else if (onOpenAuth) {
-                      onOpenAuth('signup');
-                    }
-                  }}
-                  className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-xs"
-                >
-                  <span>{onOpenDashboard ? 'Open Admin Workspace' : 'Get Started'}</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onOpenAccountant) {
-                      onOpenAccountant();
-                    } else {
-                      window.history.pushState(null, '', '/accountant');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#C86D3B] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-xs"
-                >
-                  <span>Open Accountant Workspace</span>
-                  <ArrowUpRight className="w-4 h-4" />
-                </button>
+                
+                {currentUser ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (onOpenDashboard) onOpenDashboard();
+                      }}
+                      className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <span>Dashboard ({currentUser.name?.split(' ')[0]})</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (onLogout) onLogout();
+                      }}
+                      className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#DC2626] border border-[#DC2626]/20 rounded-full"
+                    >
+                      Sign Out
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenAuth && onOpenAuth('login');
+                      }}
+                      className="w-full text-center py-2 text-sm font-semibold uppercase tracking-wider text-[#1A1F1D] border border-[#2D4A3E]/20 rounded-full"
+                    >
+                      Sign In
+                    </button>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenAuth && onOpenAuth('login');
+                      }}
+                      className="w-full text-center py-2.5 text-sm font-semibold uppercase tracking-wider bg-[#2D4A3E] text-[#FAF8F5] rounded-full flex items-center justify-center gap-1.5 shadow-xs"
+                    >
+                      <span>Login to Dashboard</span>
+                      <ArrowUpRight className="w-4 h-4" />
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           )}

@@ -9,6 +9,7 @@ const DEMO_ROLES = [
   {
     id: 'admin',
     label: 'Admin',
+    name: 'Nikita Sharma',
     fullRole: 'Admin / Business Owner',
     email: 'admin@urbanfurniture.com',
     password: 'admin123',
@@ -18,6 +19,7 @@ const DEMO_ROLES = [
   {
     id: 'accountant',
     label: 'Accountant',
+    name: 'Aarav Mehta',
     fullRole: 'Invoicing User / Accountant',
     email: 'accountant@urbanfurniture.com',
     password: 'accountant123',
@@ -27,6 +29,7 @@ const DEMO_ROLES = [
   {
     id: 'contact',
     label: 'Contact/Customer',
+    name: 'Rohan Kapoor',
     fullRole: 'Contact / Customer',
     email: 'contact@urbanfurniture.com',
     password: 'contact123',
@@ -87,9 +90,10 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
       setTimeout(() => {
         const demoUser = {
           id: `demo-${demoMatch ? demoMatch.id : selectedRole}-user`,
-          name: `${demoMatch ? demoMatch.fullRole : 'Demo User'}`,
+          name: demoMatch ? demoMatch.name : (email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())),
           email: email.trim(),
           role: demoMatch ? demoMatch.id : selectedRole,
+          fullRole: demoMatch ? demoMatch.fullRole : (selectedRole === 'admin' ? 'Admin / Business Owner' : selectedRole === 'accountant' ? 'Invoicing User / Accountant' : 'Contact / Customer'),
           isDemo: true,
         };
 
@@ -98,12 +102,12 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         localStorage.setItem('token', demoToken);
         localStorage.setItem('user', JSON.stringify(demoUser));
 
-        setSuccessMessage(`Demo ${demoMatch ? demoMatch.label : selectedRole} verified! Loading dashboard...`);
+        setSuccessMessage(`Welcome ${demoUser.name}! Loading dashboard...`);
         setLoading(false);
 
         setTimeout(() => {
           if (onSuccess) {
-            onSuccess({ token, user: demoUser });
+            onSuccess({ token: demoToken, user: demoUser });
           }
         }, 800);
       }, 500);

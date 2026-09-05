@@ -19,7 +19,7 @@ import { AccountingPage } from './accounting/AccountingPage';
 import { BudgetsPage } from './budgets/BudgetsPage';
 import { ReportsPage } from './reports/ReportsPage';
 
-export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
+export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, onLogout }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -61,6 +61,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
           onNavigateHome={onNavigateHome} 
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           sidebarOpen={sidebarOpen}
+          currentUser={currentUser}
+          onLogout={onLogout}
         />
 
         {/* Dashboard Main Scrollable Body with Unified Fluid Grid Padding */}
@@ -84,7 +86,7 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
           ) : (
             <>
               {/* Greeting & Motivational Banner */}
-              <GreetingBanner />
+              <GreetingBanner userName={currentUser?.name?.split(' ')[0]} />
 
               {/* 4 Financial KPI Summary Cards */}
               <KpiCards />

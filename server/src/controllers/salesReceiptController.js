@@ -1,0 +1,240 @@
+const SalesReceipt = require('../models/SalesReceipt');
+const SalesOrder = require('../models/SalesOrder');
+
+// Create Sales Receipt (Admin only as per permission requirement)
+const createSalesReceipt = async (req, res, next) => {
+  try {
+    const { receiptNumber, salesOrder, customer, receiptDate, items, notes } = req.body;
+
+    // Number Validation
+    if (!receiptNumber || typeof receiptNumber !== 'string' || receiptNumber.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Receipt Number validation failed: receiptNumber is required and must be a valid string.'
+      });
+    }
+
+    // Date Validation
+    if (!receiptDate || isNaN(new Date(receiptDate).getTime())) {
+      return res.status(400).json({
+        success: false,
+        message: 'Date validation failed: receiptDate is required and must be a valid date.'
+      });
+    }
+
+    // Items & Total Price Validation
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Items validation failed: Receipt must contain at least one item.'
+      });
+    }
+
+    let calculatedTotal = 0;
+    for (const item of items) {
+      if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Number validation failed: Item quantity must be a positive number.'
+        });
+      }
+      if (typeof item.unitPrice !== 'number' || item.unitPrice < 0) {
+        return res.status(400).json({
+          success: false,
+          message: 'Number validation failed: Item unit price must be non-negative.'
+        });
+      }
+
+      item.totalPrice = Math.round(item.quantity * item.unitPrice * 100) / 100;
+      calculatedTotal += item.totalPrice;
+    }
+
+    const receipt = await SalesReceipt.create({
+      receiptNumber: receiptNumber.trim(),
+      salesOrder,
+      customer,
+      receiptDate: new Date(receiptDate),
+      items,
+      totalAmount: Math.round(calculatedTotal * 100) / 100,
+      notes: notes || '',
+      status: 'draft',
+      deliveredBy: req.user?._id
+    });
+
+    const populated = await SalesReceipt.findById(receipt._id)
+      .populate('salesOrder', 'orderNumber status totalAmount')
+      .populate('customer', 'name email mobile')
+      .populate('items.product', 'name salesPrice costPrice');
+
+    res.status(201).json({
+      success: true,
+      message: 'Sales Receipt created successfully',
+      salesReceipt: populated
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get all Sales Receipts
+const getSalesReceipts = async (req, res, next) => {
+  try {
+    const { customer, salesOrder, status, search } = req.query;
+    const filter = {};
+
+    if (customer) filter.customer = customer;
+    if (salesOrder) filter.salesOrder = salesOrder;
+    if (status) filter.status = status;
+    if (search) filter.receiptNumber = { $regex: search, $options: 'i' };
+
+    const receipts = await SalesReceipt.find(filter)
+      .populate('salesOrder', 'orderNumber status totalAmount')
+      .populate('customer', 'name email mobile')
+      .populate('items.product', 'name salesPrice costPrice')
+      .populate('deliveredBy', 'name email')
+      .sort({ receiptDate: -1, createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: receipts.length,
+      salesReceipts: receipts
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get single Sales Receipt by ID
+const getSalesReceiptById = async (req, res, next) => {
+  try {
+    const receipt = await SalesReceipt.findById(req.params.id)
+      .populate('salesOrder', 'orderNumber status totalAmount')
+      .populate('customer', 'name email mobile')
+      .populate('items.product', 'name salesPrice costPrice')
+      .populate('deliveredBy', 'name email');
+
+    if (!receipt) {
+      return res.status(404).json({ success: false, message: 'Sales Receipt not found' });
+    }
+
+    res.status(200).json({ success: true, salesReceipt: receipt });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Update Sales Receipt (Admin only)
+const updateSalesReceipt = async (req, res, next) => {
+  try {
+    const receipt = await SalesReceipt.findById(req.params.id);
+    if (!receipt) {
+      return res.status(404).json({ success: false, message: 'Sales Receipt not found' });
+    }
+
+    if (receipt.status === 'delivered') {
+      return res.status(400).json({
+        success: false,
+        message: 'Cannot modify a confirmed/delivered sales receipt.'
+      });
+    }
+
+    if (req.body.receiptNumber) receipt.receiptNumber = req.body.receiptNumber.trim();
+    if (req.body.receiptDate) {
+      if (isNaN(new Date(req.body.receiptDate).getTime())) {
+        return res.status(400).json({ success: false, message: 'Invalid receipt date provided.' });
+      }
+      receipt.receiptDate = new Date(req.body.receiptDate);
+    }
+    if (req.body.items) {
+      let total = 0;
+      for (const item of req.body.items) {
+        if (typeof item.quantity !== 'number' || item.quantity <= 0) {
+          return res.status(400).json({ success: false, message: 'Quantity must be a positive number.' });
+        }
+        item.totalPrice = Math.round(item.quantity * item.unitPrice * 100) / 100;
+        total += item.totalPrice;
+      }
+      receipt.items = req.body.items;
+      receipt.totalAmount = Math.round(total * 100) / 100;
+    }
+    if (req.body.notes !== undefined) receipt.notes = req.body.notes;
+
+    await receipt.save();
+
+    const populated = await SalesReceipt.findById(receipt._id)
+      .populate('salesOrder', 'orderNumber status totalAmount')
+      .populate('customer', 'name email mobile')
+      .populate('items.product', 'name salesPrice costPrice');
+
+    res.status(200).json({
+      success: true,
+      message: 'Sales Receipt updated successfully',
+      salesReceipt: populated
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Confirm/Process Sales Receipt (Both Admin and Accountant can confirm!)
+const confirmSalesReceipt = async (req, res, next) => {
+  try {
+    const receipt = await SalesReceipt.findById(req.params.id);
+    if (!receipt) {
+      return res.status(404).json({ success: false, message: 'Sales Receipt not found' });
+    }
+
+    if (receipt.status === 'delivered') {
+      return res.status(400).json({ success: false, message: 'Sales Receipt is already confirmed/delivered.' });
+    }
+
+    receipt.status = 'delivered';
+    receipt.deliveredBy = req.user?._id;
+    await receipt.save();
+
+    // Update parent Sales Order status to 'delivered'
+    if (receipt.salesOrder) {
+      await SalesOrder.findByIdAndUpdate(receipt.salesOrder, { status: 'delivered' });
+    }
+
+    const populated = await SalesReceipt.findById(receipt._id)
+      .populate('salesOrder', 'orderNumber status totalAmount')
+      .populate('customer', 'name email mobile')
+      .populate('deliveredBy', 'name email');
+
+    res.status(200).json({
+      success: true,
+      message: 'Sales Receipt confirmed successfully. Sales order marked as delivered.',
+      salesReceipt: populated
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete Sales Receipt (Admin only)
+const deleteSalesReceipt = async (req, res, next) => {
+  try {
+    const receipt = await SalesReceipt.findById(req.params.id);
+    if (!receipt) {
+      return res.status(404).json({ success: false, message: 'Sales Receipt not found' });
+    }
+
+    await SalesReceipt.findByIdAndDelete(req.params.id);
+    res.status(200).json({
+      success: true,
+      message: 'Sales Receipt deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  createSalesReceipt,
+  getSalesReceipts,
+  getSalesReceiptById,
+  updateSalesReceipt,
+  confirmSalesReceipt,
+  deleteSalesReceipt
+};

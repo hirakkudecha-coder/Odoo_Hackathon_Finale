@@ -13,6 +13,7 @@ import { SalesByCategoryChart } from './SalesByCategoryChart';
 import { FinancialReportsList } from './FinancialReportsList';
 import { MasterDataPage } from './masterData/MasterDataPage';
 import { PurchasePage } from './purchase/PurchasePage';
+import { SalesPage } from './sales/SalesPage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const [activeMenu, setActiveMenu] = useState('dashboard');
@@ -25,9 +26,11 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
   const handleQuickAction = (actionId) => {
     if (actionId === 'addContact' && onOpenCreateUser) {
       onOpenCreateUser();
+    } else if (actionId === 'newSale') {
+      setActiveMenu('sales');
     } else if (actionId === 'newPurchase') {
       setActiveMenu('purchase');
-    } else if (actionId === 'newSale' || actionId === 'addProduct') {
+    } else if (actionId === 'addProduct') {
       setActiveMenu('masterData');
     } else {
       console.log(`Triggered quick action: ${actionId}`);
@@ -64,6 +67,8 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser }) => {
             <MasterDataPage onOpenCreateUser={onOpenCreateUser} />
           ) : activeMenu === 'purchase' ? (
             <PurchasePage onNavigateTab={handleSelectMenu} />
+          ) : activeMenu === 'sales' ? (
+            <SalesPage onNavigateTab={handleSelectMenu} onOpenCreateUser={onOpenCreateUser} />
           ) : (
             <>
               {/* Greeting & Motivational Banner */}

@@ -18,6 +18,7 @@ import { Footer } from './components/common/Footer';
 import { AuthLayout } from './components/auth/AuthLayout';
 import { CreateUserModal } from './components/admin/CreateUserModal';
 import { AdminDashboard } from './components/admin/AdminDashboard';
+import { AccountantDashboard } from './components/accountant/AccountantDashboard';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -54,6 +55,12 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleNavigateAccountant = () => {
+    window.history.pushState(null, '', '/accountant');
+    setCurrentPath('/accountant');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const handleOpenCreateUser = () => {
     setCreateUserModalOpen(true);
   };
@@ -61,6 +68,20 @@ export const App = () => {
   const handleCloseCreateUser = () => {
     setCreateUserModalOpen(false);
   };
+
+  // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible at /accountant or #accountant
+  if (
+    currentPath === '/accountant' ||
+    currentPath.endsWith('/accountant') ||
+    window.location.hash === '#accountant'
+  ) {
+    return (
+      <AccountantDashboard
+        onNavigateHome={handleNavigateHome}
+        onNavigateAdminDashboard={handleNavigateDashboard}
+      />
+    );
+  }
 
   // FULL SCREEN ADMIN DASHBOARD: Accessible at /dashboard or #dashboard
   if (
@@ -120,6 +141,7 @@ export const App = () => {
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
         onOpenDashboard={handleNavigateDashboard}
+        onOpenAccountant={handleNavigateAccountant}
       />
 
       {/* Main Long-Form Editorial Content */}

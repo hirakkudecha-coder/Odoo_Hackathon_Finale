@@ -65,11 +65,11 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
           ? 'bg-[#FAF8F5]/95 backdrop-blur-xl shadow-[0_12px_30px_-10px_rgba(20,30,25,0.12)] border-b border-[#2D4A3E]/20 py-2 sm:py-2.5' 
           : 'bg-[#FAF8F5]/90 backdrop-blur-md shadow-[0_4px_20px_-4px_rgba(20,30,25,0.06)] border-b border-[#2D4A3E]/12 py-2.5 sm:py-3'
       }`}>
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex xl:grid xl:grid-cols-[1fr_auto_1fr] items-center justify-between gap-4">
+        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             
             {/* Left Column: Brand Logo */}
-            <div className="flex items-center justify-start min-w-0">
+            <div className="flex-1 flex items-center justify-start shrink-0">
               <a 
                 href="#" 
                 onClick={(e) => {
@@ -82,8 +82,8 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
               </a>
             </div>
 
-            {/* Center Column: Desktop Navigation Links (Dead Center on XL+) */}
-            <div className="hidden xl:flex items-center justify-center justify-self-center shrink-0">
+            {/* Center Column: Desktop Navigation Links (Centered) */}
+            <div className="hidden xl:flex items-center justify-center shrink-0">
               <nav className="flex items-center justify-center bg-[#F2ECE4]/75 p-1 rounded-full border border-[#2D4A3E]/12 shadow-inner">
                 {navLinks.map((link) => {
                   const isActive = activeSection === link.id;
@@ -92,7 +92,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
                       key={link.name}
                       href={link.href}
                       onClick={(e) => handleNavClick(e, link.href)}
-                      className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
+                      className={`text-[10px] xl:text-[11px] 2xl:text-xs font-semibold uppercase tracking-wider px-2 xl:px-2.5 2xl:px-3 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
                         isActive 
                           ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs' 
                           : 'text-[#3D4542] hover:text-[#141A17] hover:bg-white/60'
@@ -106,14 +106,14 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
             </div>
 
             {/* Right Column: Action Items */}
-            <div className="flex items-center justify-end justify-self-end min-w-0">
-              <div className="hidden sm:flex items-center justify-end gap-2.5 shrink-0">
+            <div className="flex-1 flex items-center justify-end shrink-0">
+              <div className="hidden sm:flex items-center justify-end gap-2 xl:gap-2.5 shrink-0">
                 {/* Create User Button */}
                 {onOpenCreateUser && (
                   <button
                     type="button"
                     onClick={() => onOpenCreateUser()}
-                    className="h-9 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-3.5 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
+                    className="h-8.5 xl:h-9 flex items-center gap-1.5 text-[11px] xl:text-xs font-semibold uppercase tracking-wider text-[#2D4A3E] hover:bg-[#2D4A3E]/10 px-2.5 xl:px-3 rounded-full border border-[#2D4A3E]/20 transition-all cursor-pointer shadow-2xs whitespace-nowrap"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>Create User</span>
@@ -124,7 +124,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
                 <button
                   type="button"
                   onClick={() => onOpenAuth && onOpenAuth('login')}
-                  className="h-9 flex items-center justify-center text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-3.5 rounded-full transition-colors cursor-pointer whitespace-nowrap"
+                  className="h-8.5 xl:h-9 flex items-center justify-center text-[11px] xl:text-xs font-bold uppercase tracking-wider text-[#1A1F1D] hover:text-[#2D4A3E] px-2.5 xl:px-3 rounded-full transition-colors cursor-pointer whitespace-nowrap"
                 >
                   Sign In
                 </button>
@@ -139,7 +139,7 @@ export const Navbar = ({ onOpenAuth, onOpenCreateUser, onOpenDashboard }) => {
                       onOpenAuth('signup');
                     }
                   }}
-                  className="h-9 flex items-center justify-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider px-4.5 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group whitespace-nowrap"
+                  className="h-8.5 xl:h-9 flex items-center justify-center gap-1.5 bg-[#2D4A3E] hover:bg-[#1E332A] text-[#FAF8F5] text-[11px] xl:text-xs font-semibold uppercase tracking-wider px-3.5 xl:px-4 rounded-full shadow-xs hover:shadow-md transition-all duration-300 hover:scale-[1.02] cursor-pointer group whitespace-nowrap"
                 >
                   <span>{onOpenDashboard ? 'Dashboard ↗' : 'Get Started'}</span>
                   {!onOpenDashboard && (

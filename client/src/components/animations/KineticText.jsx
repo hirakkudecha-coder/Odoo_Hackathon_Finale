@@ -2,8 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 /**
- * KineticText — Fellou.ai-style organic staggered character reveals
- * Gives editorial headings a kinetic, weighted spring-damped entrance.
+ * KineticText — Staggered character animation with kinetic spring entrance
+ * Powered by Framer Motion.
  */
 export const KineticText = ({
   text = '',

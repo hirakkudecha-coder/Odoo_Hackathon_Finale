@@ -11,8 +11,8 @@ import botanicalPlant from '../../assets/images/botanical_plant.png';
 import oakCredenza from '../../assets/images/oak_credenza.png';
 
 /**
- * StackingCardsContainer — Scroll-driven stacking cards deck directly inspired by
- * https://scroll-driven-animations.style/demos/stacking-cards/css/
+ * StackingCardsContainer — Scroll-driven stacking cards deck
+ * Powered by Framer Motion.
  */
 export const StackingCardsContainer = () => {
   const cards = [

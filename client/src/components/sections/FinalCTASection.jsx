@@ -1,5 +1,6 @@
 import React from 'react';
 import { ArrowUpRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import orangeSofa from '../../assets/images/orange_sofa.png';
 
 export const FinalCTASection = ({ onOpenAuth }) => {
   return (
@@ -69,7 +70,7 @@ export const FinalCTASection = ({ onOpenAuth }) => {
               <div className="relative">
                 <div className="w-72 sm:w-80 h-72 sm:h-80 rounded-full bg-white/60 p-6 flex items-center justify-center shadow-lg border border-[#E6DFD4]">
                   <img
-                    src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=700&q=80"
+                    src={orangeSofa}
                     alt="Luxury Modern Couch"
                     className="w-72 h-48 object-cover rounded-2xl shadow-xl hover:scale-105 transition-transform duration-500"
                   />

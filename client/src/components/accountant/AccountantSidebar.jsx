@@ -9,6 +9,7 @@ import {
   Users, 
   Package, 
   FileText, 
+  PieChart,
   X
 } from 'lucide-react';
 import { BrandLogo } from '../common/BrandLogo';
@@ -26,6 +27,7 @@ export const AccountantSidebar = ({
     { id: 'sales', label: 'Sales', icon: ShoppingCart },
     { id: 'purchases', label: 'Purchases', icon: ShoppingBag },
     { id: 'payments', label: 'Payments', icon: CreditCard },
+    { id: 'budgets', label: 'Budgets & Analytics', icon: PieChart },
     { id: 'accounting', label: 'Accounting', icon: BookOpen },
     { id: 'reports', label: 'Reports', icon: BarChart3 },
     { id: 'contacts', label: 'Contacts', icon: Users },

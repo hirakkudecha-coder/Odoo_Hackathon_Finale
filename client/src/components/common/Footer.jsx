@@ -61,98 +61,101 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk }) => {
         </div>
 
 
-        {/* Middle Navigation Columns matching Reference */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 md:gap-8 py-14 border-b border-[#1E332A] text-xs">
-          {/* Col 1 */}
-          <div className="space-y-3">
-            <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Company</h4>
-            <ul className="space-y-2 text-[#A1B8AF]">
-              <li>
-                <a
-                  href="/partner-helpdesk#helpdesk"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavigatePartnerHelpdesk) {
-                      onNavigatePartnerHelpdesk('helpdesk');
-                    } else {
-                      window.history.pushState(null, '', '/partner-helpdesk#helpdesk');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center justify-between group max-w-[140px]"
-                >
-                  <span>Help Desk</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#D2E7A4] border border-[#274438] group-hover:border-[#E86034] transition-colors">
-                    24/7
-                  </span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/partner-helpdesk#partner"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavigatePartnerHelpdesk) {
-                      onNavigatePartnerHelpdesk('partner');
-                    } else {
-                      window.history.pushState(null, '', '/partner-helpdesk#partner');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="hover:text-white transition-colors cursor-pointer flex items-center justify-between group max-w-[140px]"
-                >
-                  <span>Partner Program</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#E8C547] border border-[#274438] group-hover:border-[#E8C547] transition-colors">
-                    Trade
-                  </span>
-                </a>
-              </li>
-              <li><a href="#catalogue" className="hover:text-white transition-colors">Categories</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Showroom Locator</a></li>
-            </ul>
-          </div>
-
-          {/* Col 2 */}
-          <div className="space-y-3">
-            <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Modules</h4>
-            <ul className="space-y-2 text-[#A1B8AF]">
-              <li><a href="#accounting" className="hover:text-white transition-colors">Double-Entry Ledger</a></li>
-              <li><a href="#sales" className="hover:text-white transition-colors">Sales & Invoicing</a></li>
-              <li><a href="#purchases" className="hover:text-white transition-colors">Purchase Orders & Bills</a></li>
-              <li><a href="#reports" className="hover:text-white transition-colors">P&L and Balance Sheet</a></li>
-            </ul>
-          </div>
-
-          {/* Col 3 */}
-          <div className="space-y-3">
-            <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">About Us</h4>
-            <ul className="space-y-2 text-[#A1B8AF]">
-              <li><a href="#about" className="hover:text-white transition-colors">Our Story</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Craftsmanship</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Editorial Reviews</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Contact Designers</a></li>
-            </ul>
-          </div>
-
-          {/* Col 4 */}
-          <div className="space-y-3">
-            <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Support</h4>
-            <ul className="space-y-2 text-[#A1B8AF]">
-              <li><a href="#about" className="hover:text-white transition-colors">Accounting Setup Guide</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Chart of Accounts Map</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">GST / Tax Configuration</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Data Export & Backup</a></li>
-            </ul>
-          </div>
-
-          {/* Col 5: Contact */}
-          <div className="col-span-2 md:col-span-3 lg:col-span-1 space-y-3">
-            <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Contact</h4>
-            <div className="space-y-2 text-[#A1B8AF]">
-              <p className="text-white font-medium break-all sm:break-normal">concierge@urbanfurniture.com</p>
-              <p>+91 (022) 4890-1200</p>
-              <p className="text-[11px] text-[#7E968D]">Atelier HQ: Nariman Point, Mumbai</p>
+        {/* Middle Navigation Columns: Sleek Minimalist Luxury Typography */}
+        <div className="py-14 border-b border-[#1E332A]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-20 max-w-4xl text-xs">
+            
+            {/* Col 1: Company */}
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Company</h4>
+              <ul className="space-y-2.5 text-[#A1B8AF]">
+                <li>
+                  <a
+                    href="/partner-helpdesk#helpdesk"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigatePartnerHelpdesk) {
+                        onNavigatePartnerHelpdesk('helpdesk');
+                      } else {
+                        window.history.pushState(null, '', '/partner-helpdesk#helpdesk');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-2 group"
+                  >
+                    <span>Help Desk</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#D2E7A4] border border-[#274438] group-hover:border-[#E86034] transition-colors">
+                      24/7
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/partner-helpdesk#partner"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigatePartnerHelpdesk) {
+                        onNavigatePartnerHelpdesk('partner');
+                      } else {
+                        window.history.pushState(null, '', '/partner-helpdesk#partner');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-2 group"
+                  >
+                    <span>Partner Program</span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#E8C547] border border-[#274438] group-hover:border-[#E8C547] transition-colors">
+                      Trade
+                    </span>
+                  </a>
+                </li>
+                <li>
+                  <a href="#catalogue" className="hover:text-white transition-colors block">
+                    Categories
+                  </a>
+                </li>
+                <li>
+                  <a href="#about" className="hover:text-white transition-colors block">
+                    Showroom Locator
+                  </a>
+                </li>
+              </ul>
             </div>
+
+            {/* Col 2: About Us */}
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">About Us</h4>
+              <ul className="space-y-2.5 text-[#A1B8AF]">
+                <li><a href="#about" className="hover:text-white transition-colors block">Our Story</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors block">Craftsmanship</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors block">Editorial Reviews</a></li>
+                <li><a href="#about" className="hover:text-white transition-colors block">Contact Designers</a></li>
+              </ul>
+            </div>
+
+            {/* Col 3: Contact */}
+            <div className="space-y-4">
+              <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Contact</h4>
+              <div className="space-y-2.5 text-[#A1B8AF]">
+                <a
+                  href="mailto:concierge@urbanfurniture.com"
+                  className="text-white hover:text-[#D2E7A4] transition-colors font-medium block"
+                >
+                  concierge@urbanfurniture.com
+                </a>
+                <a
+                  href="tel:+9102248901200"
+                  className="hover:text-white transition-colors block"
+                >
+                  +91 (022) 4890-1200
+                </a>
+                <div className="text-[11px] text-[#7E968D] pt-0.5 leading-relaxed">
+                  <p>Atelier HQ: Nariman Point, Mumbai</p>
+                  <p className="text-[10px] text-[#5D736A] mt-0.5">Mon – Sat · 09:00 to 20:00 IST</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
 

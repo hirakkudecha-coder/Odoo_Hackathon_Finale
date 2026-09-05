@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ShieldCheck, FileSpreadsheet, UserCheck, Sparkles } from 'lucide-react';
+import { Mail, ShieldCheck, FileSpreadsheet, UserCheck, Sparkles, Crown } from 'lucide-react';
 import { InputField } from './InputField';
 import { PasswordField } from './PasswordField';
 import { PrimaryButton } from './PrimaryButton';
@@ -7,9 +7,19 @@ import { FormMessage } from './FormMessage';
 
 const DEMO_ROLES = [
   {
+    id: 'superadmin',
+    label: 'Super Admin',
+    name: 'Nikita Sharma',
+    fullRole: 'Super Admin / Administrator',
+    email: 'superadmin@urbanfurniture.com',
+    password: 'superadmin123',
+    icon: Crown,
+    dashboard: 'Super Admin Multi-Tenant System',
+  },
+  {
     id: 'admin',
     label: 'Admin',
-    name: 'Nikita Sharma',
+    name: 'Rajesh Sharma',
     fullRole: 'Admin / Business Owner',
     email: 'admin@urbanfurniture.com',
     password: 'admin123',
@@ -28,7 +38,7 @@ const DEMO_ROLES = [
   },
   {
     id: 'contact',
-    label: 'Contact/Customer',
+    label: 'Contact',
     name: 'Rohan Kapoor',
     fullRole: 'Contact / Customer',
     email: 'contact@urbanfurniture.com',
@@ -39,9 +49,9 @@ const DEMO_ROLES = [
 ];
 
 export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
-  const [selectedRole, setSelectedRole] = useState('admin');
-  const [email, setEmail] = useState('admin@urbanfurniture.com');
-  const [password, setPassword] = useState('admin123');
+  const [selectedRole, setSelectedRole] = useState('superadmin');
+  const [email, setEmail] = useState('superadmin@urbanfurniture.com');
+  const [password, setPassword] = useState('superadmin123');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -248,7 +258,7 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
           </span>
         </div>
 
-        <div className="grid grid-cols-3 p-1.5 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1.5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 p-1.5 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1.5">
           {DEMO_ROLES.map((roleItem) => {
             const Icon = roleItem.icon;
             const isSelected = selectedRole === roleItem.id;

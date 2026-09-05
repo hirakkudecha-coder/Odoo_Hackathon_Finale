@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'accountant', 'contact'],
+      enum: ['superadmin', 'admin', 'accountant', 'contact'],
       default: 'accountant'
     },
     contactId: {

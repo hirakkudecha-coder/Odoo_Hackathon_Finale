@@ -1138,3 +1138,18 @@ export const generateBillPDF = (bill) => {
   return data;
 };
 
+export default {
+  buildPdfBinary,
+  downloadDirectPdf,
+  createSalesOrderPdfData,
+  createPurchaseOrderPdfData,
+  createPaymentReceiptPdfData,
+  createFinancialReportPdfData,
+  createMasterRegisterPdfData,
+  exportTableToPDF,
+  generateTaxInvoicePDF,
+  generatePurchaseOrderPDF,
+  generatePaymentReceiptPDF,
+  generateFinancialReportPDF,
+  generateBillPDF,
+};

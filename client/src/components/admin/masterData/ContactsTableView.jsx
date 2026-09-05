@@ -18,9 +18,17 @@ export const ContactsTableView = ({ onCreateContact }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleExportPDF = () => {
-    const headers = ['Name', 'Type', 'Email', 'Phone', 'City', 'Status'];
-    const rows = filteredContacts.map(c => [c.name, c.type, c.email, c.phone, c.city, c.status]);
-    exportTableToPDF('Contacts Master Directory', headers, rows);
+    const headers = ['#', 'CONTACT NAME', 'TYPE', 'EMAIL', 'PHONE', 'CITY', 'STATUS'];
+    const rows = filteredContacts.map((c, idx) => [
+      String(idx + 1),
+      c.name,
+      c.type,
+      c.email,
+      c.phone,
+      c.city,
+      c.status
+    ]);
+    exportTableToPDF('CONTACTS & PARTNERS MASTER DIRECTORY', headers, rows);
   };
 
   const rawContacts = [

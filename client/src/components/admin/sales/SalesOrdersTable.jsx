@@ -21,9 +21,17 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleExportPDF = () => {
-    const headers = ['SO No.', 'Date', 'Customer', 'Items', 'Total Amount', 'Status'];
-    const rows = filteredOrders.map(o => [o.soNo, o.date, o.customer, o.items, o.totalAmount, o.status]);
-    exportTableToPDF('Sales Orders Register', headers, rows);
+    const headers = ['#', 'SO #', 'CUSTOMER', 'DATE', 'ITEMS', 'TOTAL AMOUNT', 'STATUS'];
+    const rows = filteredOrders.map((o, idx) => [
+      String(idx + 1),
+      o.soNo,
+      o.customer,
+      o.date,
+      o.items,
+      o.totalAmount,
+      o.status
+    ]);
+    exportTableToPDF('SALES ORDERS & INVOICE REGISTER', headers, rows);
   };
 
   const handleDownloadInvoice = (order) => {

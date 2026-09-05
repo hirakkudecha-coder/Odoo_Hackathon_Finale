@@ -20,9 +20,17 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleExportPDF = () => {
-    const headers = ['PO No.', 'Date', 'Supplier', 'Items', 'Total Amount', 'Status'];
-    const rows = filteredOrders.map(o => [o.poNo, o.date, o.supplier, o.items, o.totalAmount, o.status]);
-    exportTableToPDF('Purchase Orders Register', headers, rows);
+    const headers = ['#', 'PO #', 'SUPPLIER', 'DATE', 'ITEMS', 'TOTAL AMOUNT', 'STATUS'];
+    const rows = filteredOrders.map((o, idx) => [
+      String(idx + 1),
+      o.poNo,
+      o.supplier,
+      o.date,
+      o.items,
+      o.totalAmount,
+      o.status
+    ]);
+    exportTableToPDF('PURCHASE ORDERS PROCUREMENT REGISTER', headers, rows);
   };
 
   const handleDownloadPO = (order) => {

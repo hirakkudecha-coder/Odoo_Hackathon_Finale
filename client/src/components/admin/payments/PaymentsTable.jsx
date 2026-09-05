@@ -23,9 +23,18 @@ export const PaymentsTable = ({ onRecordPayment }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleExportPDF = () => {
-    const headers = ['Payment ID', 'Date', 'Type', 'Contact', 'Mode', 'Amount', 'Status', 'Reference'];
-    const rows = filteredPayments.map(p => [p.paymentId, p.date, p.type, p.contact, p.mode, p.amount, p.status, p.reference]);
-    exportTableToPDF('Payments Register', headers, rows);
+    const headers = ['#', 'PAYMENT ID', 'DATE', 'TYPE', 'CONTACT', 'MODE', 'AMOUNT', 'STATUS'];
+    const rows = filteredPayments.map((p, idx) => [
+      String(idx + 1),
+      p.paymentId,
+      p.date,
+      p.type,
+      p.contact,
+      p.mode,
+      p.amount,
+      p.status
+    ]);
+    exportTableToPDF('PAYMENTS & RECEIPTS REGISTER', headers, rows);
   };
 
   const handleDownloadReceipt = (payment) => {

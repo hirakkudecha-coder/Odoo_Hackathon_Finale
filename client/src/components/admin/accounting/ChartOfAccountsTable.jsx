@@ -21,9 +21,17 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const handleExportPDF = () => {
-    const headers = ['Account Code', 'Account Name', 'Type', 'Account Group', 'Current Balance (₹)', 'Status'];
-    const rows = filteredAccounts.map(a => [a.code, a.accountName, a.type, a.accountGroup, `₹ ${a.balance}`, a.status]);
-    exportTableToPDF('Chart of Accounts Ledger', headers, rows);
+    const headers = ['#', 'CODE', 'ACCOUNT NAME', 'TYPE', 'ACCOUNT GROUP', 'BALANCE', 'STATUS'];
+    const rows = filteredAccounts.map((a, idx) => [
+      String(idx + 1),
+      a.code,
+      a.accountName,
+      a.type,
+      a.accountGroup,
+      `₹ ${a.balance}`,
+      a.status
+    ]);
+    exportTableToPDF('CHART OF ACCOUNTS GENERAL LEDGER', headers, rows);
   };
 
   const rawAccounts = [

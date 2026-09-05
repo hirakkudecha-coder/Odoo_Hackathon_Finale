@@ -2,541 +2,722 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
 /**
- * Urban Furniture Enterprise PDF Generation Utility
- * Generates official, high-resolution, elegantly styled PDFs for Invoices,
- * Purchase Orders, Payment Receipts, Financial Statements, and General Ledgers.
+ * URBAN FURNITURE ENTERPRISE PDF GENERATOR
+ * Pixel-perfect implementation matching the official Urban Furniture
+ * Artisan Architectural Furnishing & Interior Solutions corporate template.
  */
 
-// Color Palette
-const COLORS = {
-  primary: [45, 74, 62],       // Forest Green #2D4A3E
-  primaryDark: [28, 58, 47],   // Deep Forest #1C3A2F
-  accent: [232, 96, 52],       // Terracotta #E86034
-  dark: [20, 26, 23],          // #141A17
-  muted: [102, 117, 111],      // #66756F
-  lightBg: [250, 248, 245],    // Ivory #FAF8F5
-  tableHeader: [36, 68, 55],   // #244437
-  border: [232, 225, 213],     // #E8E1D5
+const PALETTE = {
+  forestDark: [28, 58, 47],     // #1C3A2F
+  forestPrimary: [45, 74, 62],  // #2D4A3E
+  textDark: [20, 26, 23],       // #141A17
+  textMuted: [90, 105, 99],     // #5A6963
+  badgeRed: [224, 90, 43],      // #E05A2B
+  cardBorder: [216, 206, 190],  // #D8CEBE
+  cardBg: [255, 255, 255],      // #FFFFFF
+  zebraBg: [250, 248, 245],     // #FAF8F5
+  divider: [232, 225, 213],     // #E8E1D5
 };
 
 /**
- * Add Brand Header to PDF
+ * Standard Urban Furniture Header
  */
-const addBrandHeader = (doc, title, docNumber, status = 'CONFIRMED') => {
+const renderUrbanFurnitureHeader = (doc, titleText, docNumber, statusBadgeText = 'GENERATED') => {
   const pageWidth = doc.internal.pageSize.getWidth();
-  
-  // Top Accent Bar
-  doc.setFillColor(...COLORS.primaryDark);
-  doc.rect(0, 0, pageWidth, 6, 'F');
 
-  // Brand Logo / Monogram
-  doc.setFillColor(...COLORS.primary);
-  doc.roundedRect(14, 12, 12, 12, 2.5, 2.5, 'F');
-  doc.setTextColor(250, 248, 245);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('UF', 17.5, 20);
-
+  // --- TOP LEFT: BRAND INFO ---
   // Brand Name
-  doc.setTextColor(...COLORS.primaryDark);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(17);
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text('URBAN FURNITURE', 14, 18);
+
+  // Subtitle
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(15);
-  doc.text('URBAN FURNITURE', 29, 19);
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('ARTISAN ARCHITECTURAL FURNISHING & INTERIOR SOLUTIONS', 14, 23);
+
+  // Address Lines
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(6.2);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('Plot No. 42-45, Woodcraft Industrial Estate, S.G. Highway, Ahmedabad, Gujarat - 380054, India', 14, 27.5);
+  
+  // Tax Registration line
+  doc.setFont('helvetica', 'bold');
+  doc.text('GSTIN:', 14, 31.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text('24AAACU8899F1ZV  |  ', 22.5, 31.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('PAN:', 42, 31.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text('AAACU8899F  |  ', 48, 31.5);
+  doc.setFont('helvetica', 'bold');
+  doc.text('CIN:', 65, 31.5);
+  doc.setFont('helvetica', 'normal');
+  doc.text('U36100GJ2020PTC112450', 70.5, 31.5);
+
+  // --- TOP RIGHT: DOCUMENT TITLE & STATUS ---
+  doc.setFont('times', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(...PALETTE.forestDark);
+  
+  // Split title if long
+  const titleLines = doc.splitTextToSize(titleText.toUpperCase(), 80);
+  doc.text(titleLines, pageWidth - 14, 17, { align: 'right' });
+
+  const titleBottomY = 17 + (titleLines.length * 4.5);
+
+  // Reference Code
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text(docNumber, pageWidth - 14, titleBottomY, { align: 'right' });
+
+  // Status Box (Red/Coral outline badge)
+  const badgeW = 26;
+  const badgeH = 5.5;
+  const badgeX = pageWidth - 14 - badgeW;
+  const badgeY = titleBottomY + 2.5;
+
+  doc.setDrawColor(...PALETTE.badgeRed);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.8, 0.8, 'S');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.badgeRed);
+  doc.text(statusBadgeText.toUpperCase(), badgeX + (badgeW / 2), badgeY + 3.8, { align: 'center' });
+
+  return Math.max(38, badgeY + badgeH + 4);
+};
+
+/**
+ * Render Dual Info Cards (Billed To & Document Schedule)
+ */
+const renderDualCards = (doc, startY, leftDetails = {}, rightDetails = {}) => {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const cardWidth = (pageWidth - 28 - 6) / 2;
+  const cardHeight = 31;
+  const leftX = 14;
+  const rightX = leftX + cardWidth + 6;
+
+  // Draw Card 1: Billed To (Customer/Recipient Details)
+  doc.setDrawColor(...PALETTE.cardBorder);
+  doc.setFillColor(...PALETTE.cardBg);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(leftX, startY, cardWidth, cardHeight, 1, 1, 'FD');
+
+  // Header Left Card
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text(leftDetails.header || 'BILLED TO (CUSTOMER DETAILS)', leftX + 4, startY + 5.5);
+
+  doc.setDrawColor(...PALETTE.divider);
+  doc.line(leftX + 4, startY + 7.5, leftX + cardWidth - 4, startY + 7.5);
+
+  // Content Left Card
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(7.5);
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text(leftDetails.title || 'Urban Furniture Internal Audit & ERP', leftX + 4, startY + 12);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('LUXURY LIVING & BUSINESS MANAGEMENT SYSTEM', 29, 23.5);
+  doc.setFontSize(6.8);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text(leftDetails.line1 || 'Executive Accounts Division', leftX + 4, startY + 16.5);
+  doc.text(leftDetails.line2 || 'Ahmedabad, Gujarat', leftX + 4, startY + 20.5);
+  if (leftDetails.line3) {
+    doc.text(leftDetails.line3, leftX + 4, startY + 24.5);
+  }
+  if (leftDetails.line4) {
+    doc.text(leftDetails.line4, leftX + 4, startY + 28.5);
+  }
 
-  // Document Title & Number (Right aligned)
+  // Draw Card 2: Document & Order Schedule
+  doc.setDrawColor(...PALETTE.cardBorder);
+  doc.setFillColor(...PALETTE.cardBg);
+  doc.roundedRect(rightX, startY, cardWidth, cardHeight, 1, 1, 'FD');
+
+  // Header Right Card
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text(title.toUpperCase(), pageWidth - 14, 18, { align: 'right' });
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text(rightDetails.header || 'DOCUMENT & ORDER SCHEDULE', rightX + 4, startY + 5.5);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...COLORS.accent);
-  doc.text(docNumber, pageWidth - 14, 23, { align: 'right' });
+  doc.setDrawColor(...PALETTE.divider);
+  doc.line(rightX + 4, startY + 7.5, rightX + cardWidth - 4, startY + 7.5);
 
-  // Status Badge
-  const badgeWidth = 24;
-  const badgeX = pageWidth - 14 - badgeWidth;
-  doc.setFillColor(229, 247, 237); // Light green
-  doc.roundedRect(badgeX, 25.5, badgeWidth, 5, 1.5, 1.5, 'F');
-  doc.setFontSize(7);
-  doc.setTextColor(30, 116, 69);
-  doc.setFont('helvetica', 'bold');
-  doc.text(status.toUpperCase(), badgeX + (badgeWidth / 2), 29, { align: 'center' });
+  // Content Right Card Key-Values
+  const scheduleItems = rightDetails.items || [
+    { label: 'Invoice / Ref Date:', value: '02 Sep 2025' },
+    { label: 'Payment Due Date:', value: 'Real-time System Snapshot' },
+    { label: 'Place of Supply:', value: 'Gujarat (State Code: 24)' },
+    { label: 'Payment Terms:', value: 'Net 15 Days' },
+    { label: 'Mode of Dispatch:', value: 'Dedicated Air-Cushioned Logistics' },
+  ];
 
-  // Divider line
-  doc.setDrawColor(...COLORS.border);
-  doc.setLineWidth(0.5);
-  doc.line(14, 33, pageWidth - 14, 33);
+  let currentItemY = startY + 11.5;
+  scheduleItems.forEach((item) => {
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(6.2);
+    doc.setTextColor(...PALETTE.textDark);
+    doc.text(item.label, rightX + 4, currentItemY);
+
+    const labelWidth = doc.getTextWidth(item.label);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...PALETTE.textMuted);
+    doc.text(item.value, rightX + 5 + labelWidth, currentItemY);
+
+    currentItemY += 3.8;
+  });
+
+  return startY + cardHeight + 6;
 };
 
 /**
- * Add Standard Footer
+ * Render Terms, Official Digital Record Badge & Authorized Signatory Block
  */
-const addFooter = (doc) => {
-  const pageCount = doc.internal.getNumberOfPages();
+const renderOfficialSignatoryFooter = (doc, noteText) => {
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
+  const bottomY = pageHeight - 38;
 
-  for (let i = 1; i <= pageCount; i++) {
+  // Table Sub-Note
+  if (noteText) {
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(6.8);
+    doc.setTextColor(...PALETTE.textMuted);
+    doc.text(noteText, 14, bottomY - 3);
+  }
+
+  // Divider above footer
+  doc.setDrawColor(...PALETTE.divider);
+  doc.setLineWidth(0.3);
+  doc.line(14, bottomY, pageWidth - 14, bottomY);
+
+  // --- LEFT: Terms & Conditions ---
+  const termsY = bottomY + 4;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('Terms & Conditions:', 14, termsY);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(5.8);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('1. Payment is due within 15 days of invoice date.', 14, termsY + 3.8);
+  doc.text('2. Goods once sold will not be returned unless manufacturing defects are reported within 48 hours.', 14, termsY + 7.2);
+  doc.text('3. Interest @ 18% per annum will be charged on overdue payments.', 14, termsY + 10.6);
+  doc.text('4. Subject to Ahmedabad jurisdiction only.', 14, termsY + 14);
+
+  // --- RIGHT: Official Digital Record Badge + Signatory ---
+  const badgeW = 42;
+  const badgeH = 5.5;
+  const badgeX = pageWidth - 14 - badgeW;
+  const badgeY = termsY - 0.5;
+
+  // Dashed Box Badge
+  doc.setDrawColor(...PALETTE.forestDark);
+  doc.setLineDashPattern([1, 1], 0);
+  doc.setLineWidth(0.4);
+  doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.5, 0.5, 'S');
+  doc.setLineDashPattern([], 0); // reset dash
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.2);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('OFFICIAL DIGITAL RECORD', badgeX + (badgeW / 2), badgeY + 3.8, { align: 'center' });
+
+  // Company Name
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(5.8);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('FOR URBAN FURNITURE & INTERIORS PVT LTD', pageWidth - 14, badgeY + 9, { align: 'right' });
+
+  // Signature Line
+  doc.setDrawColor(...PALETTE.textDark);
+  doc.setLineWidth(0.4);
+  doc.line(pageWidth - 62, badgeY + 18, pageWidth - 14, badgeY + 18);
+
+  // Authorized Signatory Label
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text('Authorized Signatory', pageWidth - 38, badgeY + 22, { align: 'center' });
+
+  // Bottom Pagination / Stamp
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let i = 1; i <= totalPages; i++) {
     doc.setPage(i);
-    doc.setDrawColor(...COLORS.border);
-    doc.setLineWidth(0.4);
-    doc.line(14, pageHeight - 15, pageWidth - 14, pageHeight - 15);
-
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(7);
-    doc.setTextColor(...COLORS.muted);
-    doc.text(
-      'Urban Furniture Pvt. Ltd. • GSTIN: 27AABCU9603R1ZM • support@urbanfurniture.com • www.urbanfurniture.com',
-      14,
-      pageHeight - 10
-    );
-
-    doc.text(
-      `Page ${i} of ${pageCount}`,
-      pageWidth - 14,
-      pageHeight - 10,
-      { align: 'right' }
-    );
+    doc.setFontSize(6);
+    doc.setTextColor(160, 160, 160);
+    doc.text('Urban Furniture Verified Enterprise Document', 14, pageHeight - 4);
+    doc.text(`${i}/${totalPages}`, pageWidth - 14, pageHeight - 4, { align: 'right' });
   }
 };
 
 /**
- * 1. GENERATE OFFICIAL TAX INVOICE / SALES ORDER PDF
+ * 1. MASTER TABLE REGISTER EXPORT (Exact image template)
  */
-export const generateTaxInvoicePDF = (order) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
+export const exportTableToPDF = (title, headers, rows, options = {}) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const today = new Date();
+  const dateFormatted = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const dateStr = today.toISOString().slice(0, 10).replace(/-/g, '');
+  const docRef = options.docNumber || `REG-${dateStr}`;
 
-  const invoiceNo = order.soNo || `INV-${order.id ? String(order.id).padStart(4, '0') : '2026-001'}`;
-  const orderDate = order.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  const customerName = order.customer || 'Atelier Designs & Living';
-  const status = order.status || 'Confirmed';
+  // 1. Header
+  const headerBottomY = renderUrbanFurnitureHeader(
+    doc,
+    title,
+    docRef,
+    options.statusBadge || 'GENERATED'
+  );
 
-  addBrandHeader(doc, 'Tax Invoice', invoiceNo, status);
+  // 2. Dual Cards
+  const leftDetails = options.leftDetails || {
+    header: 'BILLED TO (CUSTOMER DETAILS)',
+    title: 'Urban Furniture Internal Audit & ERP',
+    line1: 'Executive Accounts Division',
+    line2: 'Ahmedabad, Gujarat',
+  };
 
-  // Company Details (Left Box)
-  doc.setFillColor(250, 248, 245);
-  doc.roundedRect(14, 36, 88, 30, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('BILLED FROM:', 18, 41);
+  const rightDetails = options.rightDetails || {
+    header: 'DOCUMENT & ORDER SCHEDULE',
+    items: [
+      { label: 'Invoice / Ref Date:', value: dateFormatted },
+      { label: 'Payment Due Date:', value: 'Real-time System Snapshot' },
+      { label: 'Place of Supply:', value: 'Gujarat (State Code: 24)' },
+      { label: 'Payment Terms:', value: 'Net 15 Days' },
+      { label: 'Mode of Dispatch:', value: 'Dedicated Air-Cushioned Logistics' },
+    ],
+  };
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...COLORS.dark);
-  doc.text('Urban Furniture Private Limited', 18, 46);
+  const tableStartY = renderDualCards(doc, headerBottomY, leftDetails, rightDetails);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Plot 42, Design District, Senapati Bapat Marg', 18, 50.5);
-  doc.text('Lower Parel, Mumbai, Maharashtra - 400013', 18, 54.5);
-  doc.text('GSTIN: 27AABCU9603R1ZM • State: 27 (Maharashtra)', 18, 58.5);
-  doc.text('CIN: U36100MH2024PTC123456', 18, 62.5);
+  // 3. Section Title
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text(`Master Register Schedule (${rows.length} records)`, 14, tableStartY + 1);
 
-  // Customer Details (Right Box)
-  doc.roundedRect(pageWidth - 102, 36, 88, 30, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('BILLED TO (BUYER):', pageWidth - 98, 41);
+  // 4. AutoTable
+  autoTable(doc, {
+    startY: tableStartY + 4,
+    head: [headers],
+    body: rows,
+    theme: 'plain',
+    headStyles: {
+      fillColor: PALETTE.forestDark,
+      textColor: [255, 255, 255],
+      fontSize: 6.8,
+      fontStyle: 'bold',
+      halign: 'left',
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+    },
+    bodyStyles: {
+      fontSize: 6.8,
+      textColor: PALETTE.textDark,
+      cellPadding: { top: 2.8, bottom: 2.8, left: 3, right: 3 },
+      lineColor: PALETTE.divider,
+      lineWidth: { bottom: 0.2 },
+    },
+    alternateRowStyles: {
+      fillColor: PALETTE.zebraBg,
+    },
+    styles: {
+      font: 'helvetica',
+      overflow: 'linebreak',
+    },
+    margin: { left: 14, right: 14, bottom: 42 },
+  });
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...COLORS.dark);
-  doc.text(customerName, pageWidth - 98, 46);
+  // 5. Footer Signatory
+  const note = `Note: Official export generated with total of ${rows.length} verified ledger rows.`;
+  renderOfficialSignatoryFooter(doc, note);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Penthouse Suite 14A, Oberoi Sky City', pageWidth - 98, 50.5);
-  doc.text('Borivali East, Mumbai - 400066', pageWidth - 98, 54.5);
-  doc.text('GSTIN: 27AAAPL1234K1Z5 • State: 27', pageWidth - 98, 58.5);
-  doc.text('Contact: +91 98765 43210 • info@atelier.com', pageWidth - 98, 62.5);
+  const cleanTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+  doc.save(`${cleanTitle}_${docRef}.pdf`);
+  return doc;
+};
 
-  // Invoice Metadata Table Row
-  doc.setFillColor(242, 236, 228);
-  doc.roundedRect(14, 69, pageWidth - 28, 10, 1.5, 1.5, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
+/**
+ * 2. TAX INVOICE GENERATION (Exact Corporate Standard)
+ */
+export const generateTaxInvoicePDF = (order = {}) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const soNo = order.soNo || `INV-${order.id ? String(order.id).padStart(4, '0') : '2025-001'}`;
+  const dateFormatted = order.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const customerName = order.customer || 'Rohan Kapoor Interiors';
 
-  doc.text(`Invoice Date: ${orderDate}`, 18, 75.5);
-  doc.text(`Due Date: 15 Days`, 72, 75.5);
-  doc.text(`Place of Supply: Maharashtra (27)`, 118, 75.5);
-  doc.text(`Reverse Charge: No`, 164, 75.5);
+  const headerBottomY = renderUrbanFurnitureHeader(
+    doc,
+    'TAX INVOICE & SALES ORDER',
+    soNo,
+    order.status ? order.status.toUpperCase() : 'CONFIRMED'
+  );
 
-  // Table Items
+  const leftDetails = {
+    header: 'BILLED TO (BUYER DETAILS)',
+    title: customerName,
+    line1: 'Penthouse 14A, Oberoi Sky City',
+    line2: 'Ahmedabad, Gujarat - 380054',
+    line3: 'GSTIN: 24AAAPL1234K1Z5 | Contact: +91 98765 43210',
+  };
+
+  const rightDetails = {
+    header: 'INVOICE & BILLING SCHEDULE',
+    items: [
+      { label: 'Invoice Date:', value: dateFormatted },
+      { label: 'Payment Terms:', value: 'Net 15 Days' },
+      { label: 'Place of Supply:', value: 'Gujarat (State Code: 24)' },
+      { label: 'Reverse Charge:', value: 'No' },
+      { label: 'Mode of Dispatch:', value: 'Dedicated Air-Cushioned Logistics' },
+    ],
+  };
+
+  const tableStartY = renderDualCards(doc, headerBottomY, leftDetails, rightDetails);
+
+  // Items Schedule
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('Master Invoice Line Schedule (3 items)', 14, tableStartY + 1);
+
   const sampleItems = [
-    ['1', 'Nordic Sand 3-Seater Sofa\n(Solid Teak Frame, Belgian Linen)', '9403', '2 Units', '54,900.00', '1,09,800.00', '9%', '9%', '1,29,564.00'],
-    ['2', 'Olive Velvet Lounge Chair\n(Ergonomic High Back, Brass Base)', '9401', '1 Unit', '37,900.00', '37,900.00', '9%', '9%', '44,722.00'],
+    ['1', 'Nordic Teakwood 3-Seater Sofa Set\n(Belgian Linen Sand)', '9403', '2 Units', '₹ 54,900.00', '₹ 1,09,800.00', '₹ 1,29,564.00'],
+    ['2', 'Olive Velvet High-Back Lounge Chair\n(Ergonomic Brass Base)', '9401', '1 Unit', '₹ 37,900.00', '₹ 37,900.00', '₹ 44,722.00'],
+    ['3', 'Artisan Minimalist Oak Credenza', '9403', '1 Unit', '₹ 22,500.00', '₹ 22,500.00', '₹ 26,550.00'],
   ];
 
   autoTable(doc, {
-    startY: 82,
-    head: [['#', 'Item Description', 'HSN', 'Qty', 'Unit Rate (₹)', 'Taxable (₹)', 'CGST', 'SGST', 'Total (₹)']],
+    startY: tableStartY + 4,
+    head: [['#', 'Item & Specification Description', 'HSN', 'Qty', 'Unit Rate', 'Taxable Amount', 'Total (incl. GST)']],
     body: sampleItems,
-    theme: 'grid',
+    theme: 'plain',
     headStyles: {
-      fillColor: COLORS.tableHeader,
-      textColor: [250, 248, 245],
-      fontSize: 7.5,
+      fillColor: PALETTE.forestDark,
+      textColor: [255, 255, 255],
+      fontSize: 6.8,
       fontStyle: 'bold',
-      halign: 'center',
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
     },
     bodyStyles: {
-      fontSize: 7.5,
-      textColor: COLORS.dark,
+      fontSize: 6.8,
+      textColor: PALETTE.textDark,
+      cellPadding: { top: 2.8, bottom: 2.8, left: 3, right: 3 },
+      lineColor: PALETTE.divider,
+      lineWidth: { bottom: 0.2 },
+    },
+    alternateRowStyles: {
+      fillColor: PALETTE.zebraBg,
     },
     columnStyles: {
       0: { halign: 'center', cellWidth: 8 },
-      1: { cellWidth: 55 },
-      2: { halign: 'center', cellWidth: 16 },
+      1: { cellWidth: 65 },
+      2: { halign: 'center', cellWidth: 15 },
       3: { halign: 'center', cellWidth: 16 },
-      4: { halign: 'right', cellWidth: 22 },
-      5: { halign: 'right', cellWidth: 22 },
-      6: { halign: 'center', cellWidth: 12 },
-      7: { halign: 'center', cellWidth: 12 },
-      8: { halign: 'right', cellWidth: 25 },
+      4: { halign: 'right', cellWidth: 24 },
+      5: { halign: 'right', cellWidth: 26 },
+      6: { halign: 'right', cellWidth: 28 },
     },
-    styles: {
-      cellPadding: 3,
-      lineColor: COLORS.border,
-      lineWidth: 0.2,
-    },
+    margin: { left: 14, right: 14, bottom: 42 },
   });
 
   const finalY = doc.lastAutoTable.finalY || 135;
 
-  // Calculation & Bank Details Section
-  // Left: Bank Information & QR Note
-  doc.setFillColor(250, 248, 245);
-  doc.roundedRect(14, finalY + 5, 95, 38, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('BANK DETAILS FOR NEFT / RTGS / IMPS:', 18, finalY + 11);
+  // Calculation Summary Bar
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setDrawColor(...PALETTE.cardBorder);
+  doc.setFillColor(...PALETTE.zebraBg);
+  doc.roundedRect(pageWidth - 78, finalY + 3, 64, 18, 1, 1, 'FD');
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...COLORS.dark);
-  doc.text('Bank Name: HDFC Bank Ltd', 18, finalY + 16.5);
-  doc.text('Account Name: Urban Furniture Private Limited', 18, finalY + 21);
-  doc.text('Account Number: 50200088992211 (Current)', 18, finalY + 25.5);
-  doc.text('IFSC Code: HDFC0000128 • Branch: Lower Parel, Mumbai', 18, finalY + 30);
-  doc.text('UPI ID: urbanfurniture@hdfcbank', 18, finalY + 34.5);
-  doc.text('Amount in Words: INR One Lakh Seventy-Four Thousand Two Hundred Eighty-Six Only', 18, finalY + 39);
-
-  // Right: Calculation Summary Table
-  const calcX = pageWidth - 80;
-  doc.setFillColor(242, 236, 228);
-  doc.roundedRect(calcX - 5, finalY + 5, 71, 38, 2, 2, 'F');
-
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-
-  doc.text('Taxable Subtotal:', calcX, finalY + 11);
+  doc.setFontSize(6.5);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('Taxable Subtotal:', pageWidth - 74, finalY + 7.5);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text('₹ 1,47,700.00', pageWidth - 14, finalY + 11, { align: 'right' });
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text('₹ 1,70,200.00', pageWidth - 17, finalY + 7.5, { align: 'right' });
 
   doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Central GST (9%):', calcX, finalY + 17);
+  doc.setTextColor(...PALETTE.textMuted);
+  doc.text('CGST + SGST (18%):', pageWidth - 74, finalY + 11.5);
   doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text('₹ 13,293.00', pageWidth - 14, finalY + 17, { align: 'right' });
+  doc.setTextColor(...PALETTE.textDark);
+  doc.text('₹ 30,636.00', pageWidth - 17, finalY + 11.5, { align: 'right' });
 
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('State GST (9%):', calcX, finalY + 23);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text('₹ 13,293.00', pageWidth - 14, finalY + 23, { align: 'right' });
+  doc.setDrawColor(...PALETTE.divider);
+  doc.line(pageWidth - 74, finalY + 13, pageWidth - 17, finalY + 13);
 
-  doc.setDrawColor(...COLORS.primary);
-  doc.setLineWidth(0.4);
-  doc.line(calcX, finalY + 27, pageWidth - 14, finalY + 27);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('Grand Total:', calcX, finalY + 34);
-  doc.setTextColor(...COLORS.accent);
-  doc.text(order.totalAmount || '₹ 1,74,286.00', pageWidth - 14, finalY + 34, { align: 'right' });
-
-  // Signature and Terms Block
-  const sigY = finalY + 48;
-  doc.setFontSize(7);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('TERMS & CONDITIONS:', 14, sigY);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('1. Goods once sold will not be returned unless manufacturing defect is notified within 7 days.', 14, sigY + 4);
-  doc.text('2. Interest @ 18% p.a. will be charged on overdue payments after due date.', 14, sigY + 7.5);
-  doc.text('3. Subject to Mumbai Jurisdiction only.', 14, sigY + 11);
-
-  // Authorised Signatory Box
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('For URBAN FURNITURE PRIVATE LIMITED', pageWidth - 14, sigY, { align: 'right' });
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('Grand Invoice Total:', pageWidth - 74, finalY + 17.5);
+  doc.setTextColor(...PALETTE.badgeRed);
+  doc.text(order.totalAmount || '₹ 2,00,836.00', pageWidth - 17, finalY + 17.5, { align: 'right' });
 
-  doc.setDrawColor(...COLORS.border);
-  doc.line(pageWidth - 65, sigY + 16, pageWidth - 14, sigY + 16);
+  const note = 'Note: Official computer generated tax invoice valid without physical signature under IT Act 2000.';
+  renderOfficialSignatoryFooter(doc, note);
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Authorised Signatory / Digital Verification', pageWidth - 14, sigY + 20, { align: 'right' });
-
-  addFooter(doc);
-
-  // Save PDF
-  doc.save(`${invoiceNo}_Tax_Invoice.pdf`);
+  doc.save(`${soNo}_Tax_Invoice.pdf`);
   return doc;
 };
 
 /**
- * 2. GENERATE OFFICIAL PURCHASE ORDER / VENDOR BILL PDF
+ * 3. PURCHASE ORDER GENERATION
  */
-export const generatePurchaseOrderPDF = (order) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  const poNo = order.poNo || `PO-${order.id ? String(order.id).padStart(4, '0') : '2026-001'}`;
-  const date = order.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+export const generatePurchaseOrderPDF = (order = {}) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const poNo = order.poNo || `PO-${order.id ? String(order.id).padStart(4, '0') : '2025-001'}`;
+  const dateFormatted = order.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const supplier = order.supplier || 'HomeWorks Supplies Ltd';
-  const status = order.status || 'Received';
 
-  addBrandHeader(doc, 'Purchase Order', poNo, status);
+  const headerBottomY = renderUrbanFurnitureHeader(
+    doc,
+    'PURCHASE ORDERS PROCUREMENT REGISTER',
+    poNo,
+    order.status ? order.status.toUpperCase() : 'GENERATED'
+  );
 
-  // Supplier Details
-  doc.setFillColor(250, 248, 245);
-  doc.roundedRect(14, 36, 88, 28, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('SUPPLIER (VENDOR):', 18, 41);
+  const leftDetails = {
+    header: 'SUPPLIER (VENDOR DETAILS)',
+    title: supplier,
+    line1: 'Industrial Timber Estate, Shed 12',
+    line2: 'Bengaluru, Karnataka - 560099',
+    line3: 'GSTIN: 29AABCH5544R1Z8 | Contact: +91 98900 55667',
+  };
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...COLORS.dark);
-  doc.text(supplier, 18, 46);
+  const rightDetails = {
+    header: 'DOCUMENT & ORDER SCHEDULE',
+    items: [
+      { label: 'PO Date:', value: dateFormatted },
+      { label: 'Payment Due Date:', value: 'Real-time System Snapshot' },
+      { label: 'Place of Supply:', value: 'Gujarat (State Code: 24)' },
+      { label: 'Payment Terms:', value: 'Net 15 Days' },
+      { label: 'Mode of Dispatch:', value: 'Dedicated Air-Cushioned Logistics' },
+    ],
+  };
 
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Industrial Timber Estate, Shed 12, Bengaluru', 18, 50.5);
-  doc.text('GSTIN: 29AABCH5544R1Z8 • State: Karnataka (29)', 18, 54.5);
-  doc.text('Contact: supply@homeworks.com • +91 98900 55667', 18, 58.5);
+  const tableStartY = renderDualCards(doc, headerBottomY, leftDetails, rightDetails);
 
-  // Delivery Address
-  doc.roundedRect(pageWidth - 102, 36, 88, 28, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('DELIVER TO (WAREHOUSE):', pageWidth - 98, 41);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('Master Register Schedule (7 records)', 14, tableStartY + 1);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
-  doc.setTextColor(...COLORS.dark);
-  doc.text('Urban Furniture Central Warehouse', pageWidth - 98, 46);
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7.5);
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Logistics Hub Unit 8, Bhiwandi, Thane - 421302', pageWidth - 98, 50.5);
-  doc.text('GSTIN: 27AABCU9603R1ZM • State: Maharashtra (27)', pageWidth - 98, 54.5);
-  doc.text('Attn: Procurement & Quality Control Officer', pageWidth - 98, 58.5);
-
-  // PO Items
-  const items = [
-    ['1', 'Teak Wood Frames (Grade A Seasoned)', '4407', '50 Sets', '1,200.00', '60,000.00', '18%', '10,800.00', '70,800.00'],
-    ['2', 'Belgian Linen Fabric - Natural Sand', '5309', '100 Mtrs', '450.00', '45,000.00', '18%', '8,100.00', '53,100.00'],
+  const poItems = [
+    ['1', 'PO-2025-001', 'Azure Furniture', '02 Sep 2025', '5 items', '₹ 48,750.00', 'Received'],
+    ['2', 'PO-2025-002', 'Woodland Supplies', '30 Aug 2025', '3 items', '₹ 33,200.00', 'Ordered'],
+    ['3', 'PO-2025-003', 'Royal Hardware', '28 Aug 2025', '8 items', '₹ 12,500.00', 'Received'],
+    ['4', 'PO-2025-004', 'Crafty Wood Co.', '26 Aug 2025', '4 items', '₹ 27,800.00', 'Received'],
+    ['5', 'PO-2025-005', 'Prime Metals', '24 Aug 2025', '6 items', '₹ 19,600.00', 'Pending'],
+    ['6', 'PO-2025-006', 'HomeWorks Supplies', '20 Aug 2025', '7 items', '₹ 64,200.00', 'Ordered'],
+    ['7', 'PO-2025-007', 'Timber Craft', '18 Aug 2025', '2 items', '₹ 15,300.00', 'Cancelled'],
   ];
 
   autoTable(doc, {
-    startY: 68,
-    head: [['#', 'Material Description', 'HSN', 'Qty', 'Unit Rate (₹)', 'Taxable (₹)', 'GST Rate', 'GST (₹)', 'Total (₹)']],
-    body: items,
-    theme: 'grid',
+    startY: tableStartY + 4,
+    head: [['#', 'PO #', 'SUPPLIER', 'DATE', 'ITEMS', 'TOTAL AMOUNT', 'STATUS']],
+    body: poItems,
+    theme: 'plain',
     headStyles: {
-      fillColor: COLORS.tableHeader,
-      textColor: [250, 248, 245],
-      fontSize: 7.5,
+      fillColor: PALETTE.forestDark,
+      textColor: [255, 255, 255],
+      fontSize: 6.8,
       fontStyle: 'bold',
-      halign: 'center',
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
     },
     bodyStyles: {
-      fontSize: 7.5,
-      textColor: COLORS.dark,
+      fontSize: 6.8,
+      textColor: PALETTE.textDark,
+      cellPadding: { top: 2.8, bottom: 2.8, left: 3, right: 3 },
+      lineColor: PALETTE.divider,
+      lineWidth: { bottom: 0.2 },
+    },
+    alternateRowStyles: {
+      fillColor: PALETTE.zebraBg,
     },
     columnStyles: {
       0: { halign: 'center', cellWidth: 8 },
-      1: { cellWidth: 55 },
-      2: { halign: 'center', cellWidth: 16 },
-      3: { halign: 'center', cellWidth: 16 },
-      4: { halign: 'right', cellWidth: 22 },
-      5: { halign: 'right', cellWidth: 22 },
-      6: { halign: 'center', cellWidth: 14 },
-      7: { halign: 'right', cellWidth: 18 },
-      8: { halign: 'right', cellWidth: 23 },
+      1: { cellWidth: 26 },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 26 },
+      4: { halign: 'center', cellWidth: 20 },
+      5: { halign: 'right', cellWidth: 30 },
+      6: { halign: 'center', cellWidth: 26 },
     },
-    styles: {
-      cellPadding: 3,
-      lineColor: COLORS.border,
-      lineWidth: 0.2,
-    },
+    margin: { left: 14, right: 14, bottom: 42 },
   });
 
-  const finalY = doc.lastAutoTable.finalY || 120;
+  const note = 'Note: Official export generated with total of 7 verified ledger rows.';
+  renderOfficialSignatoryFooter(doc, note);
 
-  // Calculation & Notes
-  const calcX = pageWidth - 80;
-  doc.setFillColor(242, 236, 228);
-  doc.roundedRect(calcX - 5, finalY + 5, 71, 30, 2, 2, 'F');
-
-  doc.setFontSize(7.5);
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Untaxed Material Cost:', calcX, finalY + 11);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text('₹ 1,05,000.00', pageWidth - 14, finalY + 11, { align: 'right' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Input IGST Credit (18%):', calcX, finalY + 17);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text('₹ 18,900.00', pageWidth - 14, finalY + 17, { align: 'right' });
-
-  doc.setDrawColor(...COLORS.primary);
-  doc.setLineWidth(0.4);
-  doc.line(calcX, finalY + 21, pageWidth - 14, finalY + 21);
-
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('PO Total Amount:', calcX, finalY + 28);
-  doc.setTextColor(...COLORS.accent);
-  doc.text(order.totalAmount || '₹ 1,23,900.00', pageWidth - 14, finalY + 28, { align: 'right' });
-
-  addFooter(doc);
-  doc.save(`${poNo}_Purchase_Order.pdf`);
+  doc.save(`${poNo}_Procurement_Register.pdf`);
   return doc;
 };
 
 /**
- * 3. GENERATE PAYMENT RECEIPT / VOUCHER PDF
+ * 4. PAYMENT RECEIPT GENERATION
  */
-export const generatePaymentReceiptPDF = (payment) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  const payId = payment.paymentId || `PAY-${payment.id ? String(payment.id).padStart(4, '0') : '2026-001'}`;
-  const date = payment.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+export const generatePaymentReceiptPDF = (payment = {}) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const payId = payment.paymentId || `PAY-${payment.id ? String(payment.id).padStart(4, '0') : '2025-001'}`;
+  const dateFormatted = payment.date || new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const contact = payment.contact || 'Rohan Kapoor';
-  const amount = payment.amount || '₹ 48,750.00';
-  const type = payment.type || 'Inbound (Received)';
-  const mode = payment.mode || 'Bank Transfer / NEFT';
 
-  addBrandHeader(doc, 'Payment Receipt', payId, 'COMPLETED');
+  const headerBottomY = renderUrbanFurnitureHeader(
+    doc,
+    'OFFICIAL PAYMENT RECEIPT VOUCHER',
+    payId,
+    'COMPLETED'
+  );
 
-  doc.setFillColor(250, 248, 245);
-  doc.roundedRect(14, 38, pageWidth - 28, 45, 2, 2, 'F');
+  const leftDetails = {
+    header: 'RECEIVED FROM (PARTNER DETAILS)',
+    title: contact,
+    line1: 'Corporate Client Portfolio',
+    line2: 'Ahmedabad, Gujarat',
+    line3: `Payment Mode: ${payment.mode || 'Bank Transfer / NEFT'}`,
+  };
 
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text('PAYMENT VOUCHER DETAILS', 20, 45);
+  const rightDetails = {
+    header: 'TRANSACTION SCHEDULE',
+    items: [
+      { label: 'Payment Date:', value: dateFormatted },
+      { label: 'Transaction Ref:', value: payment.reference || 'UTR-HDFC-992288' },
+      { label: 'Payment Type:', value: payment.type || 'Inbound (Received)' },
+      { label: 'Status:', value: 'Verified & Credited' },
+      { label: 'Settlement:', value: 'Immediate' },
+    ],
+  };
 
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...COLORS.muted);
-  doc.text('Receipt Date:', 20, 52);
-  doc.text('Payment Type:', 20, 58);
-  doc.text('Contact Name:', 20, 64);
-  doc.text('Payment Mode:', 20, 70);
-  doc.text('Transaction Ref:', 20, 76);
+  const tableStartY = renderDualCards(doc, headerBottomY, leftDetails, rightDetails);
 
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.dark);
-  doc.text(date, 55, 52);
-  doc.text(type, 55, 58);
-  doc.text(contact, 55, 64);
-  doc.text(mode, 55, 70);
-  doc.setFont('helvetica', 'bold');
-  doc.text(payment.reference || 'HDFC-TXN-99882244', 55, 76);
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text('Payment Allocation Ledger', 14, tableStartY + 1);
 
-  // Big Amount Box
-  doc.setFillColor(229, 247, 237);
-  doc.roundedRect(pageWidth - 75, 45, 55, 28, 2, 2, 'F');
-  doc.setFontSize(7.5);
-  doc.setTextColor(30, 116, 69);
-  doc.text('AMOUNT RECEIVED', pageWidth - 47.5, 52, { align: 'center' });
+  const rows = [
+    ['1', payId, contact, payment.mode || 'Bank Transfer', payment.reference || 'UTR-882211', payment.amount || '₹ 48,750.00', 'Completed'],
+  ];
 
-  doc.setFontSize(13);
-  doc.setFont('helvetica', 'bold');
-  doc.text(amount, pageWidth - 47.5, 63, { align: 'center' });
+  autoTable(doc, {
+    startY: tableStartY + 4,
+    head: [['#', 'Voucher ID', 'Account / Contact', 'Payment Mode', 'Reference No.', 'Amount (₹)', 'Status']],
+    body: rows,
+    theme: 'plain',
+    headStyles: {
+      fillColor: PALETTE.forestDark,
+      textColor: [255, 255, 255],
+      fontSize: 6.8,
+      fontStyle: 'bold',
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
+    },
+    bodyStyles: {
+      fontSize: 6.8,
+      textColor: PALETTE.textDark,
+      cellPadding: { top: 2.8, bottom: 2.8, left: 3, right: 3 },
+      lineColor: PALETTE.divider,
+      lineWidth: { bottom: 0.2 },
+    },
+    alternateRowStyles: {
+      fillColor: PALETTE.zebraBg,
+    },
+    columnStyles: {
+      0: { halign: 'center', cellWidth: 8 },
+      1: { cellWidth: 28 },
+      2: { cellWidth: 46 },
+      3: { cellWidth: 30 },
+      4: { cellWidth: 30 },
+      5: { halign: 'right', cellWidth: 24 },
+      6: { halign: 'center', cellWidth: 16 },
+    },
+    margin: { left: 14, right: 14, bottom: 42 },
+  });
 
-  addFooter(doc);
+  const note = 'Note: Official system verified payment receipt generated from Urban Furniture ERP.';
+  renderOfficialSignatoryFooter(doc, note);
+
   doc.save(`${payId}_Payment_Receipt.pdf`);
   return doc;
 };
 
 /**
- * 4. GENERATE COMPREHENSIVE FINANCIAL REPORT PDF (P&L, BALANCE SHEET, BUDGETS)
+ * 5. FINANCIAL REPORT GENERATION (P&L, BALANCE SHEET, BUDGETS)
  */
-export const generateFinancialReportPDF = (reportTitle, reportRows, period = 'Fiscal Year 2026') => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageWidth = doc.internal.pageSize.getWidth();
+export const generateFinancialReportPDF = (reportTitle, reportRows, period = 'Fiscal Year 2025-26') => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+  const today = new Date();
+  const dateFormatted = today.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const docRef = `REP-${Date.now().toString().slice(-6)}`;
 
-  const reportId = `REP-${Date.now().toString().slice(-6)}`;
-  addBrandHeader(doc, reportTitle, reportId, 'AUDITED');
+  const headerBottomY = renderUrbanFurnitureHeader(
+    doc,
+    `${reportTitle.toUpperCase()} STATEMENT`,
+    docRef,
+    'AUDITED'
+  );
 
-  // Report Period Header Banner
-  doc.setFillColor(242, 236, 228);
-  doc.roundedRect(14, 36, pageWidth - 28, 10, 1.5, 1.5, 'F');
-  doc.setFontSize(8);
-  doc.setFont('helvetica', 'bold');
-  doc.setTextColor(...COLORS.primaryDark);
-  doc.text(`Statement Period: ${period}`, 18, 42.5);
-  doc.text(`Generated On: ${new Date().toLocaleDateString('en-GB')}`, pageWidth - 18, 42.5, { align: 'right' });
+  const leftDetails = {
+    header: 'ENTITY DETAILS (AUDIT & COMPLIANCE)',
+    title: 'Urban Furniture Private Limited',
+    line1: 'Finance & Accounts Directorate',
+    line2: 'Ahmedabad, Gujarat - 380054',
+  };
+
+  const rightDetails = {
+    header: 'AUDIT & REPORT SCHEDULE',
+    items: [
+      { label: 'Reporting Period:', value: period },
+      { label: 'Generated On:', value: dateFormatted },
+      { label: 'Accounting Standard:', value: 'Ind AS / Schedule III' },
+      { label: 'Currency:', value: 'Indian Rupees (INR ₹)' },
+      { label: 'Audit Status:', value: 'Statutory Verified' },
+    ],
+  };
+
+  const tableStartY = renderDualCards(doc, headerBottomY, leftDetails, rightDetails);
+
+  doc.setFont('times', 'bold');
+  doc.setFontSize(10.5);
+  doc.setTextColor(...PALETTE.forestDark);
+  doc.text(`Financial Performance Schedule (${period})`, 14, tableStartY + 1);
 
   const defaultRows = reportRows || [
-    ['Sales Income (Furniture Retail & Projects)', '₹ 28,67,400.00', '₹ 24,50,000.00', '+ 17.0%'],
-    ['Cost of Goods Sold (COGS - Timber & Fabrics)', '₹ 12,34,500.00', '₹ 10,80,000.00', '+ 14.3%'],
-    ['Gross Profit', '₹ 16,32,900.00', '₹ 13,70,000.00', '+ 19.2%'],
-    ['Operating Expenses (Showroom & Logistics)', '₹ 4,12,000.00', '₹ 3,90,000.00', '+ 5.6%'],
-    ['Net Operating Profit (EBITDA)', '₹ 12,20,900.00', '₹ 9,80,000.00', '+ 24.6%'],
+    ['Sales Income (Luxury Living & Architectural Projects)', '₹ 28,67,400.00', '₹ 24,50,000.00', '+ 17.0%'],
+    ['Cost of Goods Sold (Raw Teak, Velvet & Belgian Linen)', '₹ 12,34,500.00', '₹ 10,80,000.00', '+ 14.3%'],
+    ['Gross Operating Margin', '₹ 16,32,900.00', '₹ 13,70,000.00', '+ 19.2%'],
+    ['Operating & Showroom Expenses', '₹ 4,12,000.00', '₹ 3,90,000.00', '+ 5.6%'],
+    ['Net Operating Profit Before Taxes (EBITDA)', '₹ 12,20,900.00', '₹ 9,80,000.00', '+ 24.6%'],
   ];
 
   autoTable(doc, {
-    startY: 50,
-    head: [['Financial Line Item', 'Current Period (₹)', 'Previous Period (₹)', 'Variance (%)']],
+    startY: tableStartY + 4,
+    head: [['Financial Line Item & Classification', 'Current Period (₹)', 'Previous Period (₹)', 'Variance (%)']],
     body: defaultRows,
-    theme: 'grid',
+    theme: 'plain',
     headStyles: {
-      fillColor: COLORS.tableHeader,
-      textColor: [250, 248, 245],
-      fontSize: 8,
+      fillColor: PALETTE.forestDark,
+      textColor: [255, 255, 255],
+      fontSize: 6.8,
       fontStyle: 'bold',
+      cellPadding: { top: 3, bottom: 3, left: 3, right: 3 },
     },
     bodyStyles: {
-      fontSize: 8,
-      textColor: COLORS.dark,
+      fontSize: 6.8,
+      textColor: PALETTE.textDark,
+      cellPadding: { top: 2.8, bottom: 2.8, left: 3, right: 3 },
+      lineColor: PALETTE.divider,
+      lineWidth: { bottom: 0.2 },
+    },
+    alternateRowStyles: {
+      fillColor: PALETTE.zebraBg,
     },
     columnStyles: {
       0: { cellWidth: 85 },
@@ -544,54 +725,13 @@ export const generateFinancialReportPDF = (reportTitle, reportRows, period = 'Fi
       2: { halign: 'right', cellWidth: 35 },
       3: { halign: 'center', cellWidth: 27 },
     },
-    styles: {
-      cellPadding: 3.5,
-      lineColor: COLORS.border,
-      lineWidth: 0.2,
-    },
+    margin: { left: 14, right: 14, bottom: 42 },
   });
 
-  addFooter(doc);
+  const note = `Note: Official statutory financial statement generated from Urban Furniture Corporate Ledger.`;
+  renderOfficialSignatoryFooter(doc, note);
+
   const cleanName = reportTitle.replace(/[^a-zA-Z0-9]/g, '_');
-  doc.save(`${cleanName}_Statement.pdf`);
-  return doc;
-};
-
-/**
- * 5. GENERIC TABLE EXPORT TO PDF
- */
-export const exportTableToPDF = (title, headers, rows) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: rows[0]?.length > 6 ? 'landscape' : 'portrait' });
-  const pageWidth = doc.internal.pageSize.getWidth();
-
-  const docNo = `EXP-${Date.now().toString().slice(-6)}`;
-  addBrandHeader(doc, title, docNo, 'ACTIVE');
-
-  autoTable(doc, {
-    startY: 38,
-    head: [headers],
-    body: rows,
-    theme: 'grid',
-    headStyles: {
-      fillColor: COLORS.tableHeader,
-      textColor: [250, 248, 245],
-      fontSize: 7.5,
-      fontStyle: 'bold',
-      halign: 'center',
-    },
-    bodyStyles: {
-      fontSize: 7,
-      textColor: COLORS.dark,
-    },
-    styles: {
-      cellPadding: 2.5,
-      lineColor: COLORS.border,
-      lineWidth: 0.2,
-    },
-  });
-
-  addFooter(doc);
-  const cleanName = title.replace(/[^a-zA-Z0-9]/g, '_');
-  doc.save(`${cleanName}_Export.pdf`);
+  doc.save(`${cleanName}_Statement_${docRef}.pdf`);
   return doc;
 };

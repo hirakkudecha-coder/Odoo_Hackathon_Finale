@@ -23,6 +23,14 @@ import { AccountantDashboard } from './components/accountant/AccountantDashboard
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
   const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Sync route on popstate (browser back/forward)
   useEffect(() => {
@@ -61,6 +69,31 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleAuthSuccess = (authData) => {
+    const user = authData?.user;
+    const token = authData?.token;
+    if (user) {
+      setCurrentUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    
+    if (user?.role === 'accountant') {
+      handleNavigateAccountant();
+    } else {
+      handleNavigateDashboard();
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setCurrentUser(null);
+    handleNavigateHome();
+  };
+
   const handleOpenCreateUser = () => {
     setCreateUserModalOpen(true);
   };
@@ -69,31 +102,55 @@ export const App = () => {
     setCreateUserModalOpen(false);
   };
 
-  // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible at /accountant or #accountant
+  // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible only after authentication
   if (
     currentPath === '/accountant' ||
     currentPath.endsWith('/accountant') ||
     window.location.hash === '#accountant'
   ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
     return (
       <AccountantDashboard
         onNavigateHome={handleNavigateHome}
         onNavigateAdminDashboard={handleNavigateDashboard}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
     );
   }
 
-  // FULL SCREEN ADMIN DASHBOARD: Accessible at /dashboard or #dashboard
+  // FULL SCREEN ADMIN DASHBOARD: Accessible only after authentication
   if (
     currentPath === '/dashboard' || 
     currentPath.endsWith('/dashboard') || 
     window.location.hash === '#dashboard'
   ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
     return (
       <>
         <AdminDashboard
           onNavigateHome={handleNavigateHome}
           onOpenCreateUser={handleOpenCreateUser}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
         <CreateUserModal
           isOpen={createUserModalOpen}
@@ -109,7 +166,7 @@ export const App = () => {
       <AuthLayout
         initialMode="login"
         onNavigateHome={handleNavigateHome}
-        onSuccess={handleNavigateDashboard}
+        onSuccess={handleAuthSuccess}
       />
     );
   }
@@ -127,7 +184,7 @@ export const App = () => {
       <AuthLayout
         initialMode="register"
         onNavigateHome={handleNavigateHome}
-        onSuccess={handleNavigateDashboard}
+        onSuccess={handleAuthSuccess}
       />
     );
   }
@@ -140,8 +197,10 @@ export const App = () => {
       <Navbar 
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
-        onOpenDashboard={handleNavigateDashboard}
-        onOpenAccountant={handleNavigateAccountant}
+        onOpenDashboard={currentUser ? handleNavigateDashboard : () => handleOpenAuth('login')}
+        onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Main Long-Form Editorial Content */}

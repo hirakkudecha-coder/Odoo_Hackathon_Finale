@@ -9,6 +9,7 @@ const DEMO_ROLES = [
   {
     id: 'admin',
     label: 'Admin',
+    name: 'Nikita Sharma',
     fullRole: 'Admin / Business Owner',
     email: 'admin@urbanfurniture.com',
     password: 'admin123',
@@ -18,6 +19,7 @@ const DEMO_ROLES = [
   {
     id: 'accountant',
     label: 'Accountant',
+    name: 'Aarav Mehta',
     fullRole: 'Invoicing User / Accountant',
     email: 'accountant@urbanfurniture.com',
     password: 'accountant123',
@@ -27,6 +29,7 @@ const DEMO_ROLES = [
   {
     id: 'contact',
     label: 'Contact/Customer',
+    name: 'Rohan Kapoor',
     fullRole: 'Contact / Customer',
     email: 'contact@urbanfurniture.com',
     password: 'contact123',
@@ -78,18 +81,55 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
 
     setLoading(true);
 
+    // 1. Check if user is registered in localStorage
+    try {
+      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
+      const registeredMatch = registeredUsers.find(
+        (u) => u.email.toLowerCase() === email.trim().toLowerCase()
+      );
+
+      if (registeredMatch) {
+        setTimeout(() => {
+          const userObj = {
+            id: registeredMatch.id,
+            name: registeredMatch.name,
+            email: registeredMatch.email,
+            role: registeredMatch.role || 'admin',
+            fullRole: registeredMatch.fullRole || (registeredMatch.role === 'admin' ? 'Admin / Business Owner' : 'Invoicing User / Accountant'),
+          };
+
+          const userToken = `jwt_token_${userObj.role}_${Date.now()}`;
+          localStorage.setItem('token', userToken);
+          localStorage.setItem('user', JSON.stringify(userObj));
+
+          setSuccessMessage(`Welcome back, ${userObj.name}! Loading workspace...`);
+          setLoading(false);
+
+          setTimeout(() => {
+            if (onSuccess) {
+              onSuccess({ token: userToken, user: userObj });
+            }
+          }, 800);
+        }, 400);
+        return;
+      }
+    } catch (e) {
+      // Continue
+    }
+
     const demoMatch = DEMO_ROLES.find(
-      (r) => r.email.toLowerCase() === email.trim().toLowerCase() || r.id === selectedRole
+      (r) => r.email.toLowerCase() === email.trim().toLowerCase()
     );
 
-    // DEMO LOGIN: Does not connect to main database, directly verifies for dashboard testing
-    if (isDemo || (demoMatch && (password === demoMatch.password || isDemo))) {
+    // 2. DEMO LOGIN: If using demo email or demo quick sign-in
+    if (isDemo || demoMatch) {
       setTimeout(() => {
         const demoUser = {
           id: `demo-${demoMatch ? demoMatch.id : selectedRole}-user`,
-          name: `${demoMatch ? demoMatch.fullRole : 'Demo User'}`,
+          name: demoMatch ? demoMatch.name : (email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())),
           email: email.trim(),
           role: demoMatch ? demoMatch.id : selectedRole,
+          fullRole: demoMatch ? demoMatch.fullRole : (selectedRole === 'admin' ? 'Admin / Business Owner' : selectedRole === 'accountant' ? 'Invoicing User / Accountant' : 'Contact / Customer'),
           isDemo: true,
         };
 
@@ -98,12 +138,40 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         localStorage.setItem('token', demoToken);
         localStorage.setItem('user', JSON.stringify(demoUser));
 
-        setSuccessMessage(`Demo ${demoMatch ? demoMatch.label : selectedRole} verified! Loading dashboard...`);
+        setSuccessMessage(`Welcome ${demoUser.name}! Loading dashboard...`);
         setLoading(false);
 
         setTimeout(() => {
           if (onSuccess) {
-            onSuccess({ token, user: demoUser });
+            onSuccess({ token: demoToken, user: demoUser });
+          }
+        }, 800);
+      }, 500);
+      return;
+    }
+
+    // 3. CUSTOM USER LOGIN: If custom email/password typed
+    if (email.trim() && password) {
+      setTimeout(() => {
+        const customName = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const customUser = {
+          id: `user-${Date.now()}`,
+          name: customName,
+          email: email.trim(),
+          role: selectedRole || 'admin',
+          fullRole: (selectedRole || 'admin') === 'admin' ? 'Admin / Business Owner' : 'Invoicing User / Accountant',
+        };
+
+        const customToken = `jwt_token_${customUser.role}_${Date.now()}`;
+        localStorage.setItem('token', customToken);
+        localStorage.setItem('user', JSON.stringify(customUser));
+
+        setSuccessMessage(`Welcome ${customUser.name}! Loading dashboard...`);
+        setLoading(false);
+
+        setTimeout(() => {
+          if (onSuccess) {
+            onSuccess({ token: customToken, user: customUser });
           }
         }, 800);
       }, 500);

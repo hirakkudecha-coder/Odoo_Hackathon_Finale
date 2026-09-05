@@ -2,7 +2,20 @@ import React from 'react';
 import { Search, Bell, Menu } from 'lucide-react';
 import designerPortrait from '../../assets/images/designer_portrait.png';
 
-export const AccountantHeader = ({ onToggleSidebar, onNavigateHome }) => {
+export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser, onLogout }) => {
+  const storedUser = React.useMemo(() => {
+    try {
+      const saved = localStorage.getItem('user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const activeUser = currentUser || storedUser;
+  const userName = activeUser?.name || 'Aarav Mehta';
+  const userRole = activeUser?.fullRole || (activeUser?.role === 'accountant' ? 'Invoicing User / Accountant' : activeUser?.role || 'Invoicing User / Accountant');
+
   return (
     <header className="sticky top-0 z-30 bg-[#FAF8F5]/90 backdrop-blur-md border-b border-[#2D4A3E]/10 px-4 sm:px-6 lg:px-8 py-3.5 transition-all">
       <div className="flex items-center justify-between gap-4">
@@ -52,12 +65,12 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome }) => {
           {/* Vertical Divider */}
           <div className="h-7 w-px bg-[#2D4A3E]/15" />
 
-          {/* Aarav Mehta User Profile Card */}
+          {/* User Profile Card */}
           <div className="flex items-center gap-2.5 pl-1 select-none">
             <div className="w-9 h-9 rounded-full overflow-hidden border border-[#2D4A3E]/20 shadow-2xs bg-[#EAE4DC] flex items-center justify-center shrink-0">
               <img 
                 src={designerPortrait} 
-                alt="Aarav Mehta" 
+                alt={userName} 
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.onerror = null;
@@ -68,12 +81,22 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome }) => {
             
             <div className="flex flex-col text-left">
               <span className="text-xs font-bold text-[#141A17] leading-tight">
-                Aarav Mehta
+                {userName}
               </span>
               <span className="text-[10.5px] font-medium text-[#687C72] leading-tight mt-0.5">
-                Invoicing User / Accountant
+                {userRole}
               </span>
             </div>
+
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="ml-2 text-[10.5px] font-bold text-[#DC2626] hover:underline cursor-pointer"
+                title="Sign Out"
+              >
+                Sign Out
+              </button>
+            )}
           </div>
 
         </div>

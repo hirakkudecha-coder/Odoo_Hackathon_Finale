@@ -90,6 +90,7 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
     },
   ];
 
+<<<<<<< HEAD
   const [entries, setEntries] = useState(rawEntries);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -135,6 +136,9 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
     loadEntries();
     return () => { isMounted = false; };
   }, []);
+=======
+  const [entries, setEntries] = useState(initialEntries);
+>>>>>>> 5fed872f0bf1975aaf0f133b5f60cbf0f78457af
 
   const [newEntryForm, setNewEntryForm] = useState({
     reference: '',

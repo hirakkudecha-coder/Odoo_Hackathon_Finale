@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import React, { useState, useEffect, useMemo } from 'react';
+=======
+import React, { useState, useMemo } from 'react';
+>>>>>>> 5fed872f0bf1975aaf0f133b5f60cbf0f78457af
 import { 
   BookOpen, 
   Search, 

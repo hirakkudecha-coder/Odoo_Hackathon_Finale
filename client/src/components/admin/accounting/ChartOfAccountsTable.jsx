@@ -118,9 +118,62 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
     },
   ];
 
+  const [apiAccounts, setApiAccounts] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadAccounts = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/accounts', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.accounts && Array.isArray(json.accounts) && json.accounts.length > 0) {
+            const mapped = json.accounts.map((acc, idx) => {
+              const type = acc.type || 'Asset';
+              let typeStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+              if (type === 'Liability') typeStyle = 'bg-[#FEF3C7] text-[#D97706]';
+              else if (type === 'Expense') typeStyle = 'bg-[#FEE2E2] text-[#DC2626]';
+              else if (type === 'Income') typeStyle = 'bg-[#E0E7FF] text-[#4338CA]';
+              else if (type === 'Capital') typeStyle = 'bg-[#F3E8FF] text-[#7E22CE]';
+
+              const balNum = Number(acc.balance || 0);
+              const balFormatted = Math.abs(balNum).toLocaleString('en-IN', { minimumFractionDigits: 2 });
+
+              return {
+                id: acc._id || idx + 1,
+                code: acc.code || String(1000 + idx * 10),
+                accountName: acc.name,
+                type,
+                typeStyle,
+                accountGroup: acc.description || `${type}s`,
+                balance: balFormatted,
+                status: acc.status === 'archived' ? 'Inactive' : 'Active',
+                statusStyle: acc.status === 'archived' ? 'bg-[#FDECE7] text-[#C95426]' : 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: acc.status === 'archived' ? 'bg-[#EF4444]' : 'bg-[#10B981]'
+              };
+            });
+            if (isMounted) setApiAccounts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live accounts fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadAccounts();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedAccounts = apiAccounts || rawAccounts;
+
   // Filter accounts
   const filteredAccounts = useMemo(() => {
-    return rawAccounts.filter((acc) => {
+    return displayedAccounts.filter((acc) => {
       if (typeFilter !== 'All Types' && acc.type !== typeFilter) return false;
       if (groupFilter !== 'All Account Groups' && acc.accountGroup !== groupFilter) return false;
       if (statusFilter === 'Active Accounts' && acc.status !== 'Active') return false;
@@ -135,7 +188,7 @@ export const ChartOfAccountsTable = ({ onAddAccount }) => {
       }
       return true;
     });
-  }, [searchQuery, typeFilter, groupFilter, statusFilter]);
+  }, [displayedAccounts, searchQuery, typeFilter, groupFilter, statusFilter]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredAccounts.length) {

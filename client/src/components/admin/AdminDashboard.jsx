@@ -20,12 +20,30 @@ import { BudgetsPage } from './budgets/BudgetsPage';
 import { ReportsPage } from './reports/ReportsPage';
 
 export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, onLogout }) => {
-  const [activeMenu, setActiveMenu] = useState('dashboard');
+  const [activeMenu, setActiveMenu] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash.replace('#', '');
+    return params.get('tab') || hash || 'dashboard';
+  });
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
+  // Synchronize browser history when tab changes
   const handleSelectMenu = (menuId) => {
     setActiveMenu(menuId);
+    const targetUrl = menuId === 'dashboard' ? '/dashboard' : `/dashboard?tab=${menuId}`;
+    window.history.pushState(null, '', targetUrl);
   };
+
+  // Sync state on browser back/forward buttons
+  useEffect(() => {
+    const onLocationChange = () => {
+      const params = new URLSearchParams(window.location.search);
+      const hash = window.location.hash.replace('#', '');
+      setActiveMenu(params.get('tab') || hash || 'dashboard');
+    };
+    window.addEventListener('popstate', onLocationChange);
+    return () => window.removeEventListener('popstate', onLocationChange);
+  }, []);
 
   const handleQuickAction = (actionId) => {
     if (actionId === 'addContact' && onOpenCreateUser) {

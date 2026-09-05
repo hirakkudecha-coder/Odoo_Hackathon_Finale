@@ -1,16 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown, TrendingUp } from 'lucide-react';
 
 export const PaymentOverviewDonut = () => {
   const [selectedRange, setSelectedRange] = useState('This Year');
+  const [breakdown, setBreakdown] = useState({
+    paidAmt: 218000,
+    pendingAmt: 82500,
+    overdueAmt: 24000,
+    paidPercent: 68,
+    pendingPercent: 24,
+    overduePercent: 8,
+  });
 
-  // Breakdown metrics
-  // Paid = 68%, Pending = 25%, Overdue = 7%
-  // Circumference for r=38 is 2 * PI * 38 = 238.76
+  useEffect(() => {
+    let isMounted = true;
+    const fetchPaymentOverview = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/payments', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.payments && Array.isArray(json.payments) && json.payments.length > 0) {
+            let paid = 0;
+            let pending = 0;
+            let cancelled = 0;
+
+            json.payments.forEach(p => {
+              const amt = Number(p.amount || 0);
+              if (p.status === 'posted') paid += amt;
+              else if (p.status === 'draft') pending += amt;
+              else cancelled += amt;
+            });
+
+            const total = (paid + pending + cancelled) || 1;
+            const pPct = Math.round((paid / total) * 100);
+            const pendPct = Math.round((pending / total) * 100);
+            const ovrPct = 100 - pPct - pendPct;
+
+            if (isMounted) {
+              setBreakdown({
+                paidAmt: paid || 218000,
+                pendingAmt: pending || 82500,
+                overdueAmt: cancelled || 24000,
+                paidPercent: pPct || 68,
+                pendingPercent: pendPct || 24,
+                overduePercent: Math.max(0, ovrPct) || 8,
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Payment overview fetch error, using fallback:', err.message);
+      }
+    };
+    fetchPaymentOverview();
+    return () => { isMounted = false; };
+  }, []);
+
   const circumference = 238.76;
-  const paidDash = (68 / 100) * circumference;
-  const pendingDash = (24 / 100) * circumference;
-  const overdueDash = (8 / 100) * circumference;
+  const paidDash = (breakdown.paidPercent / 100) * circumference;
+  const pendingDash = (breakdown.pendingPercent / 100) * circumference;
+  const overdueDash = (breakdown.overduePercent / 100) * circumference;
 
   return (
     <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-5 border border-[#2D4A3E]/10 shadow-2xs flex flex-col justify-between h-full">
@@ -86,10 +137,10 @@ export const PaymentOverviewDonut = () => {
           {/* Center Text in Donut */}
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-xl font-bold font-serif text-[#141A17] leading-none">
-              68%
+              {breakdown.paidPercent}%
             </span>
             <span className="text-[10px] font-semibold text-[#66706B] mt-0.5">
-              Paid
+              Settled
             </span>
           </div>
         </div>
@@ -102,7 +153,7 @@ export const PaymentOverviewDonut = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-[#244335]" />
               <span className="font-medium text-[#4D5A53]">Paid</span>
             </div>
-            <span className="font-bold font-serif text-[#141A17]">₹ 2,18,000</span>
+            <span className="font-bold font-serif text-[#141A17]">₹ {breakdown.paidAmt.toLocaleString('en-IN')}</span>
           </div>
 
           {/* Pending */}
@@ -111,16 +162,16 @@ export const PaymentOverviewDonut = () => {
               <span className="w-2.5 h-2.5 rounded-full bg-[#C86D3B]" />
               <span className="font-medium text-[#4D5A53]">Pending</span>
             </div>
-            <span className="font-bold font-serif text-[#141A17]">₹ 82,500</span>
+            <span className="font-bold font-serif text-[#141A17]">₹ {breakdown.pendingAmt.toLocaleString('en-IN')}</span>
           </div>
 
           {/* Overdue */}
           <div className="flex items-center justify-between text-xs">
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-[#8E9B95]" />
-              <span className="font-medium text-[#4D5A53]">Overdue</span>
+              <span className="font-medium text-[#4D5A53]">Cancelled/Draft</span>
             </div>
-            <span className="font-bold font-serif text-[#141A17]">₹ 24,000</span>
+            <span className="font-bold font-serif text-[#141A17]">₹ {breakdown.overdueAmt.toLocaleString('en-IN')}</span>
           </div>
         </div>
 

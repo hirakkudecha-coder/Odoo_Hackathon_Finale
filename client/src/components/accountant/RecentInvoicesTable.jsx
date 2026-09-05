@@ -1,13 +1,52 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
-export const RecentInvoicesTable = () => {
-  const invoices = [
+export const RecentInvoicesTable = ({ onViewAll }) => {
+  const rawInvoices = [
     { id: 'INV-0012', customer: 'Nimesh Pathak', date: '02 Sep 2025', amount: '₹ 24,500', status: 'Paid' },
     { id: 'INV-0011', customer: 'Meera & Co.', date: '01 Sep 2025', amount: '₹ 56,800', status: 'Pending' },
     { id: 'INV-0010', customer: 'Studio Nest', date: '30 Aug 2025', amount: '₹ 32,000', status: 'Due' },
     { id: 'INV-0009', customer: 'Urban Spaces', date: '28 Aug 2025', amount: '₹ 18,400', status: 'Paid' },
     { id: 'INV-0008', customer: 'DesignHub Interiors', date: '26 Aug 2025', amount: '₹ 41,250', status: 'Pending' },
   ];
+
+  const [invoices, setInvoices] = useState(rawInvoices);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchInvoices = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/customer-invoices', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.customerInvoices && Array.isArray(json.customerInvoices) && json.customerInvoices.length > 0) {
+            const mapped = json.customerInvoices.slice(0, 5).map((inv, idx) => {
+              const custName = inv.customer?.name || 'Customer';
+              const dateStr = inv.invoiceDate ? new Date(inv.invoiceDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(inv.totalAmount || 0).toLocaleString('en-IN')}`;
+              let statusLabel = 'Pending';
+              if (inv.status === 'paid') statusLabel = 'Paid';
+              else if (inv.status === 'posted' && new Date(inv.dueDate) < new Date()) statusLabel = 'Due';
+
+              return {
+                id: inv.invoiceNumber || `INV-${String(idx + 1).padStart(4, '0')}`,
+                customer: custName,
+                date: dateStr,
+                amount: amtStr,
+                status: statusLabel
+              };
+            });
+            if (isMounted) setInvoices(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Recent invoices fetch error, using fallback:', err.message);
+      }
+    };
+    fetchInvoices();
+    return () => { isMounted = false; };
+  }, []);
 
   const getStatusBadge = (status) => {
     switch (status) {

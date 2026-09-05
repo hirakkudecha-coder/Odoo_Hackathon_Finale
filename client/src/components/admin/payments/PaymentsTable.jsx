@@ -135,9 +135,60 @@ export const PaymentsTable = ({ onRecordPayment }) => {
     },
   ];
 
+  const [apiPayments, setApiPayments] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadPayments = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/payments', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.payments && Array.isArray(json.payments) && json.payments.length > 0) {
+            const mapped = json.payments.map((p, idx) => {
+              const isReceive = p.paymentType === 'receive_money';
+              const partnerName = p.partner?.name || (isReceive ? 'Customer' : 'Vendor');
+              const dateStr = p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(p.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const isCompleted = p.status === 'posted';
+
+              return {
+                id: p._id || idx + 1,
+                paymentId: p.paymentNumber || `PAY-${String(idx + 1).padStart(3, '0')}`,
+                date: dateStr,
+                type: isReceive ? 'Received' : 'Paid',
+                typeStyle: isReceive ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEEFEA] text-[#E05A2B]',
+                contact: partnerName,
+                mode: p.paymentMethod || 'Bank Transfer',
+                amount: amtStr,
+                status: isCompleted ? 'Completed' : p.status === 'cancelled' ? 'Cancelled' : 'Pending',
+                statusStyle: isCompleted ? 'bg-[#E5F7ED] text-[#1E7445]' : p.status === 'cancelled' ? 'bg-[#FDE8E8] text-[#991B1B]' : 'bg-[#FEF7EC] text-[#D97706]',
+                statusDot: isCompleted ? 'bg-[#10B981]' : p.status === 'cancelled' ? 'bg-[#DC2626]' : 'bg-[#F59E0B]',
+                reference: p.notes || p.journalEntry?.entryNumber || 'DIRECT'
+              };
+            });
+            if (isMounted) setApiPayments(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live payments fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadPayments();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedPayments = apiPayments || rawPayments;
+
   // Filter payments
   const filteredPayments = useMemo(() => {
-    return rawPayments.filter((payment) => {
+    return displayedPayments.filter((payment) => {
       if (typeFilter !== 'All Types' && payment.type !== typeFilter) return false;
       if (statusFilter !== 'All Status' && payment.status !== statusFilter) return false;
       if (contactFilter !== 'All Contacts' && payment.contact !== contactFilter) return false;
@@ -154,7 +205,7 @@ export const PaymentsTable = ({ onRecordPayment }) => {
       }
       return true;
     });
-  }, [searchQuery, typeFilter, statusFilter, contactFilter]);
+  }, [displayedPayments, searchQuery, typeFilter, statusFilter, contactFilter]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredPayments.length) {

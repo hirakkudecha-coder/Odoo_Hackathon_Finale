@@ -97,13 +97,60 @@ export const ContactsTableView = ({ onCreateContact }) => {
     },
   ];
 
+  const [apiContacts, setApiContacts] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadContacts = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/contacts', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.contacts && Array.isArray(json.contacts) && json.contacts.length > 0) {
+            const mapped = json.contacts.map((c, idx) => {
+              const initials = c.name ? c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() : 'CO';
+              const isCust = c.type === 'Customer';
+              const isVend = c.type === 'Vendor';
+              return {
+                id: c._id || idx + 1,
+                name: c.name,
+                initials,
+                avatarBg: isCust ? 'bg-[#E5DCD0] text-[#14231C]' : isVend ? 'bg-[#F4E8DC] text-[#8B4513]' : 'bg-[#E0E6E3] text-[#1F4536]',
+                type: c.type || 'Customer',
+                typeBadge: isCust ? 'bg-[#E5F7ED] text-[#1E7445]' : isVend ? 'bg-[#FEF1E8] text-[#D65D33]' : 'bg-[#EBF3FE] text-[#2563EB]',
+                email: c.email || '—',
+                phone: c.mobile || '—',
+                city: c.address?.city || 'India',
+                status: c.status === 'archived' ? 'Inactive' : 'Active',
+                statusBadge: c.status === 'archived' ? 'bg-[#FDECE7] text-[#C95426]' : 'bg-[#E5F7ED] text-[#1E7445]'
+              };
+            });
+            if (isMounted) setApiContacts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live contacts fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadContacts();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedContacts = apiContacts || rawContacts;
+
   // Filter contacts by tab and search
   const filteredContacts = useMemo(() => {
-    return rawContacts.filter((contact) => {
+    return displayedContacts.filter((contact) => {
       // Tab filter
       if (activeTab === 'Customers' && contact.type !== 'Customer') return false;
       if (activeTab === 'Vendors' && contact.type !== 'Vendor') return false;
-      if (activeTab === 'Others' && contact.type !== 'Other') return false;
+      if (activeTab === 'Others' && contact.type === 'Customer' && contact.type === 'Vendor') return false;
 
       // Search filter
       if (searchQuery.trim() !== '') {
@@ -118,7 +165,7 @@ export const ContactsTableView = ({ onCreateContact }) => {
       }
       return true;
     });
-  }, [activeTab, searchQuery]);
+  }, [displayedContacts, activeTab, searchQuery]);
 
   const tabs = ['All', 'Customers', 'Vendors', 'Others'];
 

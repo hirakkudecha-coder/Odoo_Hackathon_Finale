@@ -125,9 +125,77 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
     },
   ];
 
+  const [apiOrders, setApiOrders] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrders = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/sales-orders', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.salesOrders && Array.isArray(json.salesOrders) && json.salesOrders.length > 0) {
+            const mapped = json.salesOrders.map((so, idx) => {
+              const custName = so.customer?.name || 'Walk-in Client';
+              const initials = custName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const dateStr = so.orderDate ? new Date(so.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(so.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const rawStatus = (so.status || 'draft').toLowerCase();
+
+              let statusLabel = 'Pending';
+              let statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+              let statusDot = 'bg-[#3B82F6]';
+
+              if (rawStatus === 'confirmed') {
+                statusLabel = 'Confirmed';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'delivered' || rawStatus === 'shipped') {
+                statusLabel = 'Delivered';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'cancelled') {
+                statusLabel = 'Cancelled';
+                statusStyle = 'bg-[#FDE8E8] text-[#991B1B]';
+                statusDot = 'bg-[#DC2626]';
+              }
+
+              return {
+                id: so._id || idx + 1,
+                soNo: so.orderNumber || `SO-2026-${String(idx + 1).padStart(3, '0')}`,
+                date: dateStr,
+                customer: custName,
+                customerInitials: initials,
+                customerAvatarBg: 'bg-[#E5DCD0] text-[#14231C]',
+                items: `${so.items?.length || 1} items`,
+                totalAmount: amtStr,
+                status: statusLabel,
+                statusStyle,
+                statusDot
+              };
+            });
+            if (isMounted) setApiOrders(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live sales orders fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadOrders();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedOrders = apiOrders || rawOrders;
+
   // Filter orders by search and status
   const filteredOrders = useMemo(() => {
-    return rawOrders.filter((order) => {
+    return displayedOrders.filter((order) => {
       if (statusFilter !== 'All Status' && order.status !== statusFilter) return false;
       if (customerFilter !== 'All Customers' && order.customer !== customerFilter) return false;
       if (searchQuery.trim()) {
@@ -141,7 +209,7 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       }
       return true;
     });
-  }, [searchQuery, statusFilter, customerFilter]);
+  }, [displayedOrders, searchQuery, statusFilter, customerFilter]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {

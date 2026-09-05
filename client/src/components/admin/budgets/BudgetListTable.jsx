@@ -85,8 +85,52 @@ export const BudgetListTable = ({ onCreateBudget }) => {
     },
   ];
 
+  const [apiBudgets, setApiBudgets] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadBudgets = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/reports/budget', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.report && Array.isArray(json.report) && json.report.length > 0) {
+            const mapped = json.report.map((b, idx) => {
+              const util = Math.min(100, Math.round(b.utilizationPercent || 0));
+              const isOver = util > 95;
+              return {
+                id: b._id || idx + 1,
+                department: b.name || b.analyticAccount?.name || `Budget-${idx + 1}`,
+                budgetAmount: Number(b.plannedAmount || 0).toLocaleString('en-IN'),
+                actualAmount: Number(b.actualAmount || 0).toLocaleString('en-IN'),
+                variance: Number(b.variance || 0).toLocaleString('en-IN'),
+                utilization: util,
+                status: isOver ? 'At Risk' : 'On Track',
+                statusStyle: isOver ? 'bg-[#FEF7EC] text-[#D97706]' : 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: isOver ? 'bg-[#F59E0B]' : 'bg-[#10B981]'
+              };
+            });
+            if (isMounted) setApiBudgets(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live budgets fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadBudgets();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedBudgets = apiBudgets || rawBudgets;
+
   const filteredBudgets = useMemo(() => {
-    return rawBudgets.filter((b) => {
+    return displayedBudgets.filter((b) => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         return (
@@ -97,7 +141,7 @@ export const BudgetListTable = ({ onCreateBudget }) => {
       }
       return true;
     });
-  }, [searchQuery]);
+  }, [displayedBudgets, searchQuery]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredBudgets.length) {

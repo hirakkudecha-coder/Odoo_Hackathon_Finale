@@ -1,16 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 export const TopCustomersList = () => {
   const [selectedRange, setSelectedRange] = useState('This Month');
 
-  const customers = [
+  const rawCustomers = [
     { rank: 1, initial: 'N', name: 'Nimesh Pathak', amount: '₹ 1,24,000', color: 'bg-[#CCDCD2] text-[#1E3A2E]' },
     { rank: 2, initial: 'D', name: 'DesignHub Interiors', amount: '₹ 96,000', color: 'bg-[#DFD8CE] text-[#3D372E]' },
     { rank: 3, initial: 'M', name: 'Meera & Co.', amount: '₹ 68,500', color: 'bg-[#F2DDD0] text-[#5C3826]' },
     { rank: 4, initial: 'S', name: 'Studio Nest', amount: '₹ 52,000', color: 'bg-[#D6DDD9] text-[#2C3B34]' },
     { rank: 5, initial: 'U', name: 'Urban Spaces', amount: '₹ 48,000', color: 'bg-[#CCD4D8] text-[#22353D]' },
   ];
+
+  const [customers, setCustomers] = useState(rawCustomers);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchTopCustomers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/customer-invoices', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.customerInvoices && Array.isArray(json.customerInvoices) && json.customerInvoices.length > 0) {
+            // Aggregate totals per customer
+            const map = {};
+            json.customerInvoices.forEach(inv => {
+              const name = inv.customer?.name || 'Customer';
+              map[name] = (map[name] || 0) + Number(inv.totalAmount || 0);
+            });
+
+            const colors = [
+              'bg-[#CCDCD2] text-[#1E3A2E]',
+              'bg-[#DFD8CE] text-[#3D372E]',
+              'bg-[#F2DDD0] text-[#5C3826]',
+              'bg-[#D6DDD9] text-[#2C3B34]',
+              'bg-[#CCD4D8] text-[#22353D]'
+            ];
+
+            const sorted = Object.entries(map)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5)
+              .map(([name, val], idx) => ({
+                rank: idx + 1,
+                initial: name[0] || 'C',
+                name,
+                amount: `₹ ${val.toLocaleString('en-IN')}`,
+                color: colors[idx % colors.length]
+              }));
+
+            if (isMounted && sorted.length > 0) setCustomers(sorted);
+          }
+        }
+      } catch (err) {
+        console.warn('Top customers fetch error, using fallback:', err.message);
+      }
+    };
+    fetchTopCustomers();
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-5 border border-[#2D4A3E]/10 shadow-2xs flex flex-col justify-between h-full">

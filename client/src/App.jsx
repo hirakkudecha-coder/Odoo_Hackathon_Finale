@@ -128,7 +128,7 @@ export const App = () => {
   // FULL SCREEN ACCOUNTANT DASHBOARD: Accessible only after authentication
   if (
     currentPath === '/accountant' ||
-    currentPath.endsWith('/accountant') ||
+    currentPath.startsWith('/accountant') ||
     window.location.hash === '#accountant'
   ) {
     if (!currentUser) {
@@ -154,7 +154,7 @@ export const App = () => {
   // FULL SCREEN ADMIN DASHBOARD: Accessible only after authentication
   if (
     currentPath === '/dashboard' || 
-    currentPath.endsWith('/dashboard') || 
+    currentPath.startsWith('/dashboard') || 
     window.location.hash === '#dashboard'
   ) {
     if (!currentUser) {

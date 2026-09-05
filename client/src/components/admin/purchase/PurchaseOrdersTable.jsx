@@ -124,17 +124,85 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     },
   ];
 
+  const [apiOrders, setApiOrders] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrders = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/purchase-orders', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.purchaseOrders && Array.isArray(json.purchaseOrders) && json.purchaseOrders.length > 0) {
+            const mapped = json.purchaseOrders.map((po, idx) => {
+              const supName = po.vendor?.name || 'Primary Supplier';
+              const initials = supName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const dateStr = po.orderDate ? new Date(po.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(po.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const rawStatus = (po.status || 'draft').toLowerCase();
+
+              let statusLabel = 'Ordered';
+              let statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+              let statusDot = 'bg-[#3B82F6]';
+
+              if (rawStatus === 'confirmed') {
+                statusLabel = 'Confirmed';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'received') {
+                statusLabel = 'Received';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'cancelled') {
+                statusLabel = 'Cancelled';
+                statusStyle = 'bg-[#FDE8E8] text-[#991B1B]';
+                statusDot = 'bg-[#DC2626]';
+              }
+
+              return {
+                id: po._id || idx + 1,
+                poNo: po.orderNumber || `PO-2026-${String(idx + 1).padStart(3, '0')}`,
+                date: dateStr,
+                supplier: supName,
+                supplierInitials: initials,
+                supplierAvatarBg: 'bg-[#F4E8DC] text-[#8B4513]',
+                items: `${po.items?.length || 1} items`,
+                totalAmount: amtStr,
+                status: statusLabel,
+                statusStyle,
+                statusDot
+              };
+            });
+            if (isMounted) setApiOrders(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live purchase orders fetch failed, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadOrders();
+    return () => { isMounted = false; };
+  }, []);
+
+  const displayedOrders = apiOrders || rawOrders;
+
   // Filter orders by search
   const filteredOrders = useMemo(() => {
-    if (!searchQuery.trim()) return rawOrders;
+    if (!searchQuery.trim()) return displayedOrders;
     const q = searchQuery.toLowerCase();
-    return rawOrders.filter((order) =>
+    return displayedOrders.filter((order) =>
       order.poNo.toLowerCase().includes(q) ||
       order.supplier.toLowerCase().includes(q) ||
       order.date.toLowerCase().includes(q) ||
       order.status.toLowerCase().includes(q)
     );
-  }, [searchQuery]);
+  }, [displayedOrders, searchQuery]);
 
   const toggleSelectAll = () => {
     if (selectedIds.length === filteredOrders.length) {

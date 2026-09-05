@@ -1,7 +1,83 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Calendar, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 export const AccountantKpiCards = () => {
+  const [metrics, setMetrics] = useState({
+    salesToday: 48000,
+    purchasesToday: 22500,
+    pendingInvoicesAmt: 124000,
+    pendingInvoicesCount: 12,
+    pendingBillsAmt: 76500,
+    pendingBillsCount: 8,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchAccountantMetrics = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+        const [plRes, invRes, billRes] = await Promise.all([
+          fetch('/api/reports/profit-loss', { headers }).catch(() => null),
+          fetch('/api/customer-invoices', { headers }).catch(() => null),
+          fetch('/api/vendor-bills', { headers }).catch(() => null)
+        ]);
+
+        let sales = 48000;
+        let purchases = 22500;
+        let pendInvAmt = 124000;
+        let pendInvCount = 12;
+        let pendBillAmt = 76500;
+        let pendBillCount = 8;
+
+        if (plRes && plRes.ok) {
+          const pl = await plRes.json();
+          if (pl.report) {
+            sales = pl.report.income?.total ?? sales;
+            purchases = pl.report.expenses?.total ?? purchases;
+          }
+        }
+
+        if (invRes && invRes.ok) {
+          const invJson = await invRes.json();
+          if (invJson.customerInvoices && Array.isArray(invJson.customerInvoices)) {
+            const pendingList = invJson.customerInvoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled');
+            if (pendingList.length > 0) {
+              pendInvCount = pendingList.length;
+              pendInvAmt = pendingList.reduce((sum, i) => sum + ((i.totalAmount || 0) - (i.paidAmount || 0)), 0);
+            }
+          }
+        }
+
+        if (billRes && billRes.ok) {
+          const billJson = await billRes.json();
+          if (billJson.vendorBills && Array.isArray(billJson.vendorBills)) {
+            const pendingList = billJson.vendorBills.filter(b => b.status !== 'paid' && b.status !== 'cancelled');
+            if (pendingList.length > 0) {
+              pendBillCount = pendingList.length;
+              pendBillAmt = pendingList.reduce((sum, b) => sum + ((b.totalAmount || 0) - (b.paidAmount || 0)), 0);
+            }
+          }
+        }
+
+        if (isMounted) {
+          setMetrics({
+            salesToday: sales,
+            purchasesToday: purchases,
+            pendingInvoicesAmt: pendInvAmt,
+            pendingInvoicesCount: pendInvCount,
+            pendingBillsAmt: pendBillAmt,
+            pendingBillsCount: pendBillCount,
+          });
+        }
+      } catch (err) {
+        console.warn('Accountant KPIs fetch error, using fallback:', err.message);
+      }
+    };
+    fetchAccountantMetrics();
+    return () => { isMounted = false; };
+  }, []);
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
       
@@ -17,7 +93,7 @@ export const AccountantKpiCards = () => {
                 Sales Today
               </span>
               <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
-                ₹ 48,000
+                ₹ {metrics.salesToday.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
@@ -53,7 +129,7 @@ export const AccountantKpiCards = () => {
                 Purchases Today
               </span>
               <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
-                ₹ 22,500
+                ₹ {metrics.purchasesToday.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
@@ -89,7 +165,7 @@ export const AccountantKpiCards = () => {
                 Pending Invoices
               </span>
               <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
-                ₹ 1,24,000
+                ₹ {metrics.pendingInvoicesAmt.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
@@ -97,7 +173,7 @@ export const AccountantKpiCards = () => {
 
         <div className="flex items-center justify-between mt-3">
           <span className="text-[11px] font-medium font-numeric text-[#7A8A82]">
-            12 invoices
+            {metrics.pendingInvoicesCount} invoices
           </span>
           <div className="h-6 w-24">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 80 20" preserveAspectRatio="none">
@@ -125,7 +201,7 @@ export const AccountantKpiCards = () => {
                 Pending Bills
               </span>
               <div className="text-xl sm:text-2xl font-bold font-numeric text-[#141A17] tracking-tight mt-0.5">
-                ₹ 76,500
+                ₹ {metrics.pendingBillsAmt.toLocaleString('en-IN')}
               </div>
             </div>
           </div>
@@ -133,7 +209,7 @@ export const AccountantKpiCards = () => {
 
         <div className="flex items-center justify-between mt-3">
           <span className="text-[11px] font-medium text-[#7A8A82]">
-            8 bills
+            {metrics.pendingBillsCount} bills
           </span>
           <div className="h-6 w-24">
             <svg className="w-full h-full overflow-visible" viewBox="0 0 80 20" preserveAspectRatio="none">

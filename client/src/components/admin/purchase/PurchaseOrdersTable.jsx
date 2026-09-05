@@ -8,6 +8,7 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
+  ChevronDown,
   ArrowUpDown,
   FileText
 } from 'lucide-react';
@@ -16,6 +17,7 @@ import { generatePurchaseOrderPDF, exportTableToPDF } from '../../../utils/pdfGe
 export const PurchaseOrdersTable = ({ onCreatePO }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('Purchase Orders'); // 'Purchase Orders' | 'Purchase Bills' | 'Suppliers' | 'Payments'
+  const [statusFilter, setStatusFilter] = useState('All Status');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
 

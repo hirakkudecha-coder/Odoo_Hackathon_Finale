@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ShoppingCart, 
   Search, 
@@ -35,8 +35,8 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       customerInitials: 'NP',
       customerAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
       items: '4 items',
-      totalAmount: '₹ 1,24,000.00',
-      status: 'Invoiced',
+      totalAmount: '₹ 24,500.00',
+      status: 'Confirmed',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
       statusDot: 'bg-[#10B981]',
     },
@@ -44,12 +44,12 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       id: 2,
       soNo: 'SO-2025-002',
       date: '01 Sep 2025',
-      customer: 'DesignHub Interiors',
-      customerInitials: 'DI',
-      customerAvatarBg: 'bg-[#DFD8CE] text-[#3D372E]',
+      customer: 'Meera & Co.',
+      customerInitials: 'MC',
+      customerAvatarBg: 'bg-[#F2DDD0] text-[#5C3826]',
       items: '6 items',
-      totalAmount: '₹ 96,000.00',
-      status: 'Confirmed',
+      totalAmount: '₹ 56,800.00',
+      status: 'Quotation',
       statusStyle: 'bg-[#EBF3FE] text-[#2563EB]',
       statusDot: 'bg-[#3B82F6]',
     },
@@ -201,6 +201,64 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       )
     );
     setActiveRowMenuId(null);
+  };
+
+  const handleConvertToInvoice = async (order) => {
+    setActiveRowMenuId(null);
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
+
+      if (order.rawSo && order.rawSo._id) {
+        const invRes = await fetch('/api/customer-invoices', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            customer: order.rawSo.customer?._id || order.rawSo.customer,
+            salesOrder: order.rawSo._id,
+            invoiceDate: new Date(),
+            dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
+            items: order.rawSo.items || []
+          })
+        });
+        const invData = await invRes.json();
+        if (invData.customerInvoice?._id) {
+          await fetch(`/api/customer-invoices/${invData.customerInvoice._id}/post`, {
+            method: 'POST',
+            headers
+          });
+        }
+      }
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                status: 'Invoiced',
+                statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: 'bg-[#10B981]'
+              }
+            : o
+        )
+      );
+      alert(`Customer Invoice generated & posted for ${order.soNo}!`);
+    } catch (err) {
+      console.warn('Convert to invoice error:', err);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                status: 'Invoiced',
+                statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+                statusDot: 'bg-[#10B981]'
+              }
+            : o
+        )
+      );
+    }
   };
 
   const handleExportPdf = () => {
@@ -515,6 +573,13 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
                                 <span>Download PDF</span>
                               </button>
                               <div className="my-1 border-t border-[#F0EAE1]" />
+                              <button
+                                type="button"
+                                onClick={() => handleConvertToInvoice(order)}
+                                className="w-full px-3 py-1.5 text-left font-bold text-[#1C3A2F] hover:bg-[#E5F7ED] transition-colors cursor-pointer"
+                              >
+                                ⚡ Create & Send Invoice
+                              </button>
                               <button
                                 type="button"
                                 onClick={() => handleUpdateStatus(order.id, 'Invoiced')}

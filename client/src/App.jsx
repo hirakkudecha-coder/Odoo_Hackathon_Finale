@@ -23,6 +23,7 @@ import { PartnerHelpdeskPage } from './components/common/PartnerHelpdeskPage';
 import { AtelierAboutPage } from './components/common/AtelierAboutPage';
 import { ShowroomsPage } from './components/common/ShowroomsPage';
 import { SuperAdminDashboard } from './components/superadmin/SuperAdminDashboard';
+import { ContactPortal } from './components/portal/ContactPortal';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -99,6 +100,12 @@ export const App = () => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
+  const handleNavigatePortal = () => {
+    window.history.pushState(null, '', '/portal');
+    setCurrentPath('/portal');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
   const handleAuthSuccess = (authData) => {
     const user = authData?.user;
     const token = authData?.token;
@@ -114,6 +121,8 @@ export const App = () => {
       handleNavigateSuperAdmin();
     } else if (user?.role === 'accountant') {
       handleNavigateAccountant();
+    } else if (user?.role === 'contact') {
+      handleNavigatePortal();
     } else {
       handleNavigateDashboard();
     }
@@ -134,6 +143,7 @@ export const App = () => {
     setCreateUserModalOpen(false);
   };
 
+<<<<<<< HEAD
   // FULL SCREEN SUPER ADMIN DASHBOARD: Accessible at /superadmin
   if (
     currentPath === '/superadmin' ||
@@ -141,6 +151,14 @@ export const App = () => {
     currentPath.endsWith('/superadmin') ||
     currentPath.endsWith('/super-admin') ||
     window.location.hash === '#superadmin'
+=======
+  // FULL SCREEN CONTACT SELF-SERVICE PORTAL: Accessible at /portal, /my-invoices
+  if (
+    currentPath === '/portal' ||
+    currentPath.startsWith('/portal') ||
+    currentPath === '/my-invoices' ||
+    window.location.hash === '#portal'
+>>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
   ) {
     if (!currentUser) {
       return (
@@ -153,12 +171,19 @@ export const App = () => {
     }
 
     return (
+<<<<<<< HEAD
       <SuperAdminDashboard
         onNavigateHome={handleNavigateHome}
         onNavigateAdmin={handleNavigateDashboard}
         onNavigateAccountant={handleNavigateAccountant}
         currentUser={currentUser}
         onLogout={handleLogout}
+=======
+      <ContactPortal
+        currentUser={currentUser}
+        onLogout={handleLogout}
+        onNavigateHome={handleNavigateHome}
+>>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
       />
     );
   }
@@ -250,14 +275,20 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN PARTNER & HELPDESK PORTAL: Accessible at /partner-helpdesk
+  // FULL SCREEN PARTNER & HELPDESK PORTAL: Accessible at /partner-helpdesk, /helpdesk, /trade-partner, /partner
   if (
     currentPath === '/partner-helpdesk' ||
     currentPath.startsWith('/partner-helpdesk') ||
+    currentPath === '/helpdesk' ||
+    currentPath.startsWith('/helpdesk') ||
+    currentPath === '/trade-partner' ||
+    currentPath.startsWith('/trade-partner') ||
+    currentPath === '/partner' ||
+    currentPath.startsWith('/partner') ||
     window.location.hash === '#partner' ||
     window.location.hash === '#helpdesk'
   ) {
-    const initialTab = (window.location.hash === '#partner' || window.location.hash === '#partner-program') ? 'partner' : 'helpdesk';
+    const initialTab = (window.location.hash === '#partner' || window.location.hash === '#partner-program' || currentPath.includes('partner')) ? 'partner' : 'helpdesk';
     return (
       <PartnerHelpdeskPage
         initialTab={initialTab}
@@ -270,10 +301,12 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN ATELIER ABOUT & EDITORIAL PAGE: Accessible at /about
+  // FULL SCREEN ATELIER ABOUT & EDITORIAL PAGE: Accessible at /about, /atelier
   if (
     currentPath === '/about' ||
-    currentPath.startsWith('/about')
+    currentPath.startsWith('/about') ||
+    currentPath === '/atelier' ||
+    currentPath.startsWith('/atelier')
   ) {
     const hashTab = window.location.hash.replace('#', '') || 'story';
     return (
@@ -288,10 +321,12 @@ export const App = () => {
     );
   }
 
-  // FULL SCREEN SHOWROOMS LOCATOR: Accessible at /showrooms
+  // FULL SCREEN SHOWROOMS LOCATOR: Accessible at /showrooms, /showroom
   if (
     currentPath === '/showrooms' ||
-    currentPath.startsWith('/showrooms')
+    currentPath.startsWith('/showrooms') ||
+    currentPath === '/showroom' ||
+    currentPath.startsWith('/showroom')
   ) {
     return (
       <ShowroomsPage
@@ -316,6 +351,8 @@ export const App = () => {
           currentUser 
             ? (currentUser.role === 'superadmin' 
                 ? handleNavigateSuperAdmin 
+                : currentUser.role === 'contact'
+                ? handleNavigatePortal
                 : currentUser.role === 'accountant' 
                 ? handleNavigateAccountant 
                 : handleNavigateDashboard)
@@ -324,6 +361,9 @@ export const App = () => {
         onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
         currentUser={currentUser}
         onLogout={handleLogout}
+        onNavigatePartnerHelpdesk={handleNavigatePartnerHelpdesk}
+        onNavigateAbout={handleNavigateAbout}
+        onNavigateShowrooms={handleNavigateShowrooms}
       />
 
       {/* Main Long-Form Editorial Content */}

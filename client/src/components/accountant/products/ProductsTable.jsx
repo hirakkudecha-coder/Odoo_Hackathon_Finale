@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Package, 
   Search, 
@@ -92,10 +92,56 @@ export const ProductsTable = ({ onCreateProduct }) => {
   ];
 
   const [products, setProducts] = useState(initialProducts);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadProducts = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/products', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.products && Array.isArray(json.products) && json.products.length > 0) {
+            const mapped = json.products.map((p, idx) => {
+              const cp = `₹ ${Number(p.costPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const sp = `₹ ${Number(p.salesPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const sku = p.code || `UF-PRD-${String(idx + 1).padStart(3, '0')}`;
+              const inStock = p.status === 'active';
+
+              return {
+                id: p._id || idx + 1,
+                sku,
+                name: p.name,
+                type: p.type || 'Goods',
+                category: p.category || 'General Furniture',
+                costPrice: cp,
+                salesPrice: sp,
+                stock: inStock ? '15 units' : '0 units',
+                status: inStock ? 'In Stock' : 'Out of Stock',
+                statusDot: inStock ? 'bg-[#10B981]' : 'bg-[#EF4444]',
+                statusStyle: inStock ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FDECE7] text-[#C95426]'
+              };
+            });
+            if (isMounted) setProducts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live products fetch error, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadProducts();
+    return () => { isMounted = false; };
+  }, []);
 
   const [newProductForm, setNewProductForm] = useState({
     sku: '',
     name: '',
+    type: 'Goods',
     category: 'Living Room Seating',
     costPrice: '',
     salesPrice: '',
@@ -524,7 +570,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
             </div>
 
             <form onSubmit={handleSaveProduct} className="p-5 space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#141A17] mb-1">SKU Code</label>
                   <input
@@ -535,6 +581,19 @@ export const ProductsTable = ({ onCreateProduct }) => {
                     onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F]"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Type</label>
+                  <select
+                    value={newProductForm.type}
+                    onChange={(e) => setNewProductForm({ ...newProductForm, type: e.target.value })}
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  >
+                    <option value="Goods">Goods (Stockable)</option>
+                    <option value="Service">Service</option>
+                    <option value="Combo">Combo</option>
+                  </select>
                 </div>
 
                 <div>
@@ -549,6 +608,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
                     <option value="Dining Furniture">Dining Furniture</option>
                     <option value="Storage & Cabinetry">Storage & Cabinetry</option>
                     <option value="Accent Furniture">Accent Furniture</option>
+                    <option value="General Furniture">General Furniture</option>
                   </select>
                 </div>
               </div>

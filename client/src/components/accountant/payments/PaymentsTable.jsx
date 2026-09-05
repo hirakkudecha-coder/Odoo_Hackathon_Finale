@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   CreditCard, 
   Search, 
@@ -117,6 +117,51 @@ export const PaymentsTable = ({ onCreatePayment }) => {
   ];
 
   const [payments, setPayments] = useState(initialPayments);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadPayments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/payments', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.payments && Array.isArray(json.payments) && json.payments.length > 0) {
+            const mapped = json.payments.map((p, idx) => {
+              const partnerName = p.partner?.name || 'Authorized Partner';
+              const initials = partnerName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const dateStr = p.paymentDate ? new Date(p.paymentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(p.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const isReceive = p.paymentType === 'inbound';
+              const rawMethod = (p.paymentMethod || 'bank').toLowerCase();
+              const methodLabel = rawMethod === 'cash' ? 'Cash' : rawMethod === 'upi' ? 'UPI' : 'Bank Transfer (NEFT)';
+
+              return {
+                id: p._id || idx + 1,
+                payNo: p.paymentNumber || `PAY-2026-${String(idx + 1).padStart(4, '0')}`,
+                date: dateStr,
+                partner: partnerName,
+                partnerInitials: initials,
+                partnerAvatarBg: isReceive ? 'bg-[#CCDCD2] text-[#1E3A2E]' : 'bg-[#F2DDD0] text-[#5C3826]',
+                type: isReceive ? 'Customer Receipt' : 'Vendor Payment',
+                method: methodLabel,
+                amount: amtStr,
+                status: p.status === 'posted' ? 'Completed' : p.status === 'cancelled' ? 'Cancelled' : 'Pending',
+                statusDot: p.status === 'posted' ? 'bg-[#10B981]' : p.status === 'cancelled' ? 'bg-[#DC2626]' : 'bg-[#F59E0B]',
+                statusStyle: p.status === 'posted' ? 'bg-[#E5F7ED] text-[#1E7445]' : p.status === 'cancelled' ? 'bg-[#FDE8E8] text-[#991B1B]' : 'bg-[#FEF7EC] text-[#D97706]'
+              };
+            });
+            if (isMounted) setPayments(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live payments fetch failed:', err.message);
+      }
+    };
+    loadPayments();
+    return () => { isMounted = false; };
+  }, []);
 
   const [newPaymentForm, setNewPaymentForm] = useState({
     partner: '',
@@ -574,23 +619,20 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                     onChange={(e) => setNewPaymentForm({ ...newPaymentForm, type: e.target.value })}
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   >
-                    <option value="Customer Receipt">Customer Receipt</option>
-                    <option value="Vendor Payment">Vendor Payment</option>
+                    <option value="Customer Receipt">Customer Receipt (Inflow)</option>
+                    <option value="Vendor Payment">Vendor Payment (Outflow)</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Method</label>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Payment Journal / Account</label>
                   <select
-                    value={newPaymentForm.method}
-                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, method: e.target.value })}
+                    value={newPaymentForm.journal || 'Bank'}
+                    onChange={(e) => setNewPaymentForm({ ...newPaymentForm, journal: e.target.value, method: e.target.value === 'Cash' ? 'Cash Desk' : 'Bank Transfer (NEFT)' })}
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   >
-                    <option value="Bank Transfer (NEFT)">Bank Transfer (NEFT)</option>
-                    <option value="Online Banking">Online Banking</option>
-                    <option value="UPI Instant">UPI Instant</option>
-                    <option value="Cheque Deposit">Cheque Deposit</option>
-                    <option value="Credit Card">Credit Card</option>
+                    <option value="Bank">Bank Journal (1001 - HDFC Bank)</option>
+                    <option value="Cash">Cash Journal (1002 - Cash in Hand)</option>
                   </select>
                 </div>
               </div>

@@ -209,8 +209,13 @@ const getPayments = async (req, res, next) => {
     const { paymentType, partner, paymentMethod, status, search } = req.query;
     const filter = {};
 
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      filter.partner = req.user.contactId;
+    } else if (partner) {
+      filter.partner = partner;
+    }
+
     if (paymentType) filter.paymentType = paymentType;
-    if (partner) filter.partner = partner;
     if (paymentMethod) filter.paymentMethod = paymentMethod;
     if (status) filter.status = status;
     if (search) filter.paymentNumber = { $regex: search, $options: 'i' };

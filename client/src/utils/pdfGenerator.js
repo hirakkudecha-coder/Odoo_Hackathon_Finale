@@ -947,6 +947,94 @@ export const createSalesOrderPdfData = (order) => {
   };
 };
 
+// Customer Invoice PDF export
+export const createCustomerInvoicePdfData = (invoice) => {
+  const rawNum = parseFloat(String(invoice.totalAmount || invoice.amount || '124000').replace(/[^0-9.-]+/g, '')) || 124000;
+  const taxable = Math.round((rawNum / 1.18) * 100) / 100;
+  const tax = Math.round((rawNum - taxable) * 100) / 100;
+
+  const items = (invoice.items && invoice.items.length > 0) ? invoice.items.map(it => ({
+    name: it.product?.name || it.name || 'Artisan Furnishing Product',
+    hsn: '9403',
+    qty: it.quantity || 1,
+    rate: it.unitPrice || (taxable / (invoice.items.length || 1)),
+    amount: (it.quantity || 1) * (it.unitPrice || (taxable / (invoice.items.length || 1)))
+  })) : [
+    { name: 'Monolith Architectural Dining Table (10-Seater)', hsn: '940360', qty: 1, rate: taxable * 0.7, amount: taxable * 0.7 },
+    { name: 'Curved Ergonomic Velvet Dining Chairs (Set of 4)', hsn: '940130', qty: 4, rate: (taxable * 0.3) / 4, amount: taxable * 0.3 }
+  ];
+
+  return {
+    type: 'INVOICE',
+    title: 'OFFICIAL TAX INVOICE',
+    documentNo: invoice.invoiceNumber || invoice.id || 'INV-2025-001',
+    date: invoice.invoiceDate ? new Date(invoice.invoiceDate).toLocaleDateString('en-GB') : '02 Sep 2025',
+    dueDate: invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString('en-GB') : '17 Sep 2025',
+    status: invoice.status || 'Paid',
+    partner: {
+      name: invoice.customer?.name || invoice.customer || 'Nimesh Pathak',
+      company: invoice.customer?.company || `${invoice.customer?.name || 'Customer'} Interiors`,
+      address: invoice.customer?.address?.street || '14, Palm Avenue, Bodakdev',
+      city: invoice.customer?.address?.city || 'Ahmedabad, Gujarat - 380054',
+      gstin: '24AAPFP9821C1Z3',
+      phone: invoice.customer?.mobile || '+91 98250 44210',
+      email: invoice.customer?.email || 'customer@urbanfurniture.in',
+    },
+    items,
+    summary: {
+      subtotal: taxable,
+      tax: tax,
+      cgst: tax / 2,
+      sgst: tax / 2,
+      grandTotal: rawNum,
+    },
+  };
+};
+
+// Vendor Bill PDF export
+export const createVendorBillPdfData = (bill) => {
+  const rawNum = parseFloat(String(bill.totalAmount || bill.amount || '48750').replace(/[^0-9.-]+/g, '')) || 48750;
+  const taxable = Math.round((rawNum / 1.18) * 100) / 100;
+  const tax = Math.round((rawNum - taxable) * 100) / 100;
+
+  const items = (bill.items && bill.items.length > 0) ? bill.items.map(it => ({
+    name: it.product?.name || it.name || 'Raw Material Teakwood Supplies',
+    hsn: '4407',
+    qty: it.quantity || 1,
+    rate: it.unitPrice || (taxable / (bill.items.length || 1)),
+    amount: (it.quantity || 1) * (it.unitPrice || (taxable / (bill.items.length || 1)))
+  })) : [
+    { name: 'Kiln-Dried Burma Teakwood Lumbers (Grade A)', hsn: '4407', qty: 50, rate: (taxable * 0.7) / 50, amount: taxable * 0.7 },
+    { name: 'PVD Coated Champagne Gold Brass Profiles', hsn: '7419', qty: 20, rate: (taxable * 0.3) / 20, amount: taxable * 0.3 }
+  ];
+
+  return {
+    type: 'BILL',
+    title: 'VENDOR BILL & PROCUREMENT RECEIPT',
+    documentNo: bill.billNumber || bill.id || 'BILL-2025-001',
+    date: bill.billDate ? new Date(bill.billDate).toLocaleDateString('en-GB') : '02 Sep 2025',
+    dueDate: bill.dueDate ? new Date(bill.dueDate).toLocaleDateString('en-GB') : '16 Sep 2025',
+    status: bill.status || 'Posted',
+    partner: {
+      name: bill.vendor?.name || bill.vendor || 'Azure Furniture Supplies',
+      company: bill.vendor?.company || `${bill.vendor?.name || 'Vendor'} Supplies Ltd`,
+      address: bill.vendor?.address?.street || 'GIDC Industrial Zone, Phase II',
+      city: bill.vendor?.address?.city || 'Vadodara, Gujarat - 390010',
+      gstin: '24AAACB4411C1ZX',
+      phone: bill.vendor?.mobile || '+91 94280 11920',
+      email: bill.vendor?.email || 'sales@azuresupplies.com',
+    },
+    items,
+    summary: {
+      subtotal: taxable,
+      tax: tax,
+      cgst: tax / 2,
+      sgst: tax / 2,
+      grandTotal: rawNum,
+    },
+  };
+};
+
 // 2. Purchase Order PDF
 export const createPurchaseOrderPdfData = (po) => {
   const rawNum = parseFloat(String(po.totalAmount || po.amount || '48750').replace(/[^0-9.-]+/g, '')) || 48750;

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Users, 
   Search, 
@@ -111,6 +111,45 @@ export const ContactsTable = ({ onCreateContact }) => {
 
   const [contacts, setContacts] = useState(initialContacts);
 
+  useEffect(() => {
+    let isMounted = true;
+    const fetchContacts = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/contacts', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.contacts && Array.isArray(json.contacts) && json.contacts.length > 0) {
+            const mapped = json.contacts.map((c, idx) => {
+              const initials = c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const type = c.type === 'vendor' ? 'Vendor' : c.type === 'both' ? 'Both' : 'Customer';
+              const isCustomer = type === 'Customer';
+              return {
+                id: c._id || idx + 1,
+                name: c.name,
+                initials: initials || 'CO',
+                avatarBg: isCustomer ? 'bg-[#CCDCD2] text-[#1E3A2E]' : 'bg-[#F2DDD0] text-[#5C3826]',
+                type: type,
+                typeBadge: isCustomer ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEF7EC] text-[#D97706]',
+                email: c.email || '—',
+                phone: c.phone || '—',
+                city: c.city || 'National',
+                status: c.status === 'active' ? 'Active' : 'Inactive',
+                statusDot: c.status === 'active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
+              };
+            });
+            if (isMounted) setContacts(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live contacts fetch failed:', err.message);
+      }
+    };
+    fetchContacts();
+    return () => { isMounted = false; };
+  }, []);
+
   const [newContactForm, setNewContactForm] = useState({
     name: '',
     type: 'Customer',
@@ -118,6 +157,8 @@ export const ContactsTable = ({ onCreateContact }) => {
     phone: '',
     city: '',
     status: 'Active',
+    createPortalUser: false,
+    portalPassword: ''
   });
 
   const filterTabs = ['All', 'Customers', 'Vendors', 'Others'];
@@ -156,32 +197,77 @@ export const ContactsTable = ({ onCreateContact }) => {
     }
   };
 
-  const handleSaveContact = (e) => {
+  const handleSaveContact = async (e) => {
     e.preventDefault();
     if (!newContactForm.name || !newContactForm.email) return;
 
-    const nextId = contacts.length + 1;
-    const initials = newContactForm.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CT';
-    
-    let typeBadge = 'bg-[#E5F7ED] text-[#1E7445]';
-    if (newContactForm.type === 'Vendor') typeBadge = 'bg-[#FEF7EC] text-[#D97706]';
-    else if (newContactForm.type === 'Other') typeBadge = 'bg-[#EBF3FE] text-[#2563EB]';
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-    const newEntry = {
-      id: nextId,
-      name: newContactForm.name,
-      initials,
-      avatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
-      type: newContactForm.type,
-      typeBadge,
-      email: newContactForm.email,
-      phone: newContactForm.phone || '+91 98000 00000',
-      city: newContactForm.city || 'Ahmedabad',
-      status: newContactForm.status,
-      statusDot: newContactForm.status === 'Active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
-    };
+      const payload = {
+        name: newContactForm.name,
+        type: newContactForm.type,
+        email: newContactForm.email,
+        mobile: newContactForm.phone || '+91 98000 00000',
+        city: newContactForm.city || 'Ahmedabad',
+        status: newContactForm.status.toLowerCase(),
+        createPortalUser: newContactForm.createPortalUser,
+        portalPassword: newContactForm.portalPassword || 'UrbanPass@2026'
+      };
 
-    setContacts([newEntry, ...contacts]);
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload)
+      });
+
+      const json = await res.json();
+      const savedContact = json.contact || {};
+
+      const nextId = savedContact._id || contacts.length + 1;
+      const initials = newContactForm.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CT';
+      
+      let typeBadge = 'bg-[#E5F7ED] text-[#1E7445]';
+      if (newContactForm.type === 'Vendor') typeBadge = 'bg-[#FEF7EC] text-[#D97706]';
+      else if (newContactForm.type === 'Other') typeBadge = 'bg-[#EBF3FE] text-[#2563EB]';
+
+      const newEntry = {
+        id: nextId,
+        name: newContactForm.name,
+        initials,
+        avatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+        type: newContactForm.type,
+        typeBadge,
+        email: newContactForm.email,
+        phone: newContactForm.phone || '+91 98000 00000',
+        city: newContactForm.city || 'Ahmedabad',
+        status: newContactForm.status,
+        statusDot: newContactForm.status === 'Active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
+      };
+
+      setContacts([newEntry, ...contacts]);
+    } catch (err) {
+      console.warn('Contact save to API failed, stored locally:', err.message);
+      const nextId = contacts.length + 1;
+      const initials = newContactForm.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CT';
+      const newEntry = {
+        id: nextId,
+        name: newContactForm.name,
+        initials,
+        avatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+        type: newContactForm.type,
+        typeBadge: 'bg-[#E5F7ED] text-[#1E7445]',
+        email: newContactForm.email,
+        phone: newContactForm.phone || '+91 98000 00000',
+        city: newContactForm.city || 'Ahmedabad',
+        status: newContactForm.status,
+        statusDot: newContactForm.status === 'Active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
+      };
+      setContacts([newEntry, ...contacts]);
+    }
+
     setIsCreateModalOpen(false);
     setNewContactForm({
       name: '',
@@ -190,6 +276,8 @@ export const ContactsTable = ({ onCreateContact }) => {
       phone: '',
       city: '',
       status: 'Active',
+      createPortalUser: false,
+      portalPassword: ''
     });
   };
 
@@ -610,6 +698,35 @@ export const ContactsTable = ({ onCreateContact }) => {
                     className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   />
                 </div>
+              </div>
+
+              {/* Portal User Login Provisioning */}
+              <div className="bg-[#FAF8F5] p-3 rounded-2xl border border-[#E8E1D5] space-y-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newContactForm.createPortalUser}
+                    onChange={(e) => setNewContactForm({ ...newContactForm, createPortalUser: e.target.checked })}
+                    className="w-4 h-4 text-[#1C3A2F] rounded border-[#CCD4D0] focus:ring-[#1C3A2F]"
+                  />
+                  <span className="text-xs font-bold text-[#141A17]">Enable Self-Service Portal Login</span>
+                </label>
+                <p className="text-[10.5px] text-[#6B7A74] pl-6">
+                  Allows this partner to log in at <code className="text-[#1C3A2F]">/portal</code> to view their own invoices/bills and settle payments.
+                </p>
+
+                {newContactForm.createPortalUser && (
+                  <div className="pt-2 pl-6">
+                    <label className="block text-[11px] font-semibold text-[#141A17] mb-1">Initial Password</label>
+                    <input
+                      type="password"
+                      placeholder="e.g. UrbanPass@2026"
+                      value={newContactForm.portalPassword}
+                      onChange={(e) => setNewContactForm({ ...newContactForm, portalPassword: e.target.value })}
+                      className="w-full bg-white border border-[#E2DAD0] rounded-xl px-3 py-1.5 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="pt-3 border-t border-[#F0EAE1] flex items-center justify-end gap-2.5">

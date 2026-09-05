@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, 
   Search, 
@@ -91,6 +91,50 @@ export const JournalEntriesTable = ({ onCreateEntry }) => {
   ];
 
   const [entries, setEntries] = useState(initialEntries);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadEntries = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/journal-entries', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.journalEntries && Array.isArray(json.journalEntries) && json.journalEntries.length > 0) {
+            const mapped = json.journalEntries.map((je, idx) => {
+              const dt = je.date ? new Date(je.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const deb = `₹ ${Number(je.totalDebit || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const cred = `₹ ${Number(je.totalCredit || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const isPosted = je.status === 'posted';
+
+              return {
+                id: je._id || idx + 1,
+                entryNo: je.entryNumber || `JE-2026-${String(idx + 1).padStart(4, '0')}`,
+                date: dt,
+                reference: je.reference || je.partner?.name || 'General Operation',
+                journal: je.journal?.name || 'General Operations',
+                debit: deb,
+                credit: cred,
+                status: isPosted ? 'Posted' : je.status === 'cancelled' ? 'Cancelled' : 'Draft',
+                statusDot: isPosted ? 'bg-[#10B981]' : je.status === 'cancelled' ? 'bg-[#DC2626]' : 'bg-[#3B82F6]',
+                statusStyle: isPosted ? 'bg-[#E5F7ED] text-[#1E7445]' : je.status === 'cancelled' ? 'bg-[#FDE8E8] text-[#991B1B]' : 'bg-[#EBF3FE] text-[#2563EB]'
+              };
+            });
+            if (isMounted) setEntries(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live journal entries fetch error, using fallback:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadEntries();
+    return () => { isMounted = false; };
+  }, []);
 
   const [newEntryForm, setNewEntryForm] = useState({
     reference: '',

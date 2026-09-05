@@ -10,7 +10,7 @@ const { authenticate, authorize } = require('../middleware/authMiddleware');
 router.use(authenticate);
 
 router.route('/')
-  .post(authorize('admin', 'accountant'), createPayment)
+  .post(authorize('admin', 'accountant', 'contact'), createPayment)
   .get(getPayments);
 
 router.route('/:id')

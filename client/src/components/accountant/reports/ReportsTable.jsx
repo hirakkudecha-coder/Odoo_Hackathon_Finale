@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { 
   BarChart3, 
   Search, 
-  Filter, 
   Download, 
   FileText, 
   ArrowUpRight,
   TrendingUp,
   PieChart,
-  DollarSign
+  DollarSign,
+  Printer
 } from 'lucide-react';
+import { DocumentPdfModal } from '../DocumentPdfModal';
+import { createFinancialReportPdfData, createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const ReportsTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const reports = [
     {
@@ -77,8 +81,40 @@ export const ReportsTable = () => {
     },
   ];
 
+  const filteredReports = reports.filter((r) =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleViewReportPdf = (report) => {
+    const pdfData = createFinancialReportPdfData(report.name, report.period);
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadReportPdfDirect = (report) => {
+    const pdfData = createFinancialReportPdfData(report.name, report.period);
+    downloadDirectPdf(pdfData);
+  };
+
+  const handleExportAllReportsPdf = () => {
+    const headers = ['Report Name', 'Category', 'Period', 'Last Generated', 'Status'];
+    const rows = filteredReports.map((r) => [
+      r.name,
+      r.category,
+      r.period,
+      r.lastGenerated,
+      r.status,
+    ]);
+
+    const pdfData = createMasterRegisterPdfData('Financial Intelligence & Audit Summary Report', headers, rows);
+    downloadDirectPdf(pdfData);
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
+      
+      {/* 1. Header with Title & Export All */}
       <div className="p-5 sm:p-6 border-b border-[#F0EAE1] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-[#F4EFE6] text-[#1C3A2F] flex items-center justify-center border border-[#E5DDD0] shadow-2xs shrink-0">
@@ -108,14 +144,17 @@ export const ReportsTable = () => {
 
           <button
             type="button"
+            onClick={handleExportAllReportsPdf}
             className="inline-flex items-center gap-2 bg-[#1C3A2F] hover:bg-[#142C23] text-[#FAF8F5] text-xs font-semibold px-4 py-2 rounded-xl shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer shrink-0"
+            title="Download full financial audit summary report as PDF directly"
           >
             <Download className="w-4 h-4" />
-            <span>Export All</span>
+            <span>Export All (PDF)</span>
           </button>
         </div>
       </div>
 
+      {/* 2. Main Data Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-187.5">
           <thead>
@@ -125,21 +164,27 @@ export const ReportsTable = () => {
               <th className="py-3.5 px-3">Period</th>
               <th className="py-3.5 px-3">Last Generated</th>
               <th className="py-3.5 px-3">Status</th>
-              <th className="py-3.5 pr-6 pl-3 text-right">Action</th>
+              <th className="py-3.5 pr-6 pl-3 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
-            {reports.map((rep) => {
+            {filteredReports.map((rep) => {
               const Icon = rep.icon;
               return (
-                <tr key={rep.id} className="hover:bg-[#FAF7F2] transition-colors">
+                <tr key={rep.id} className="hover:bg-[#FAF7F2] transition-colors group">
                   <td className="py-3.5 pl-6 pr-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-xl bg-[#FAF6EE] text-[#1C3A2F] flex items-center justify-center border border-[#E8E1D5] shadow-2xs shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => handleViewReportPdf(rep)}
+                      className="flex items-center gap-3 text-left cursor-pointer group/item"
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-[#FAF6EE] text-[#1C3A2F] flex items-center justify-center border border-[#E8E1D5] shadow-2xs shrink-0 group-hover/item:bg-[#1C3A2F] group-hover/item:text-white transition-colors">
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="font-semibold text-[#141A17]">{rep.name}</span>
-                    </div>
+                      <span className="font-semibold text-[#141A17] group-hover/item:text-[#1C3A2F] group-hover/item:underline">
+                        {rep.name}
+                      </span>
+                    </button>
                   </td>
                   <td className="py-3.5 px-3">
                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${rep.badge} shadow-2xs`}>
@@ -155,10 +200,17 @@ export const ReportsTable = () => {
                     </span>
                   </td>
                   <td className="py-3.5 pr-6 pl-3 text-right">
-                    <button type="button" className="inline-flex items-center gap-1 text-xs font-semibold text-[#1C3A2F] hover:underline cursor-pointer">
-                      <span>View</span>
-                      <ArrowUpRight className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        type="button" 
+                        onClick={() => handleDownloadReportPdfDirect(rep)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF4EB] hover:bg-[#1C3A2F] text-[#1C3A2F] hover:text-white border border-[#E5DDD0] text-xs font-semibold transition-all cursor-pointer shadow-2xs"
+                        title="Download financial statement PDF directly"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Download PDF</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -166,6 +218,14 @@ export const ReportsTable = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
+
     </div>
   );
 };

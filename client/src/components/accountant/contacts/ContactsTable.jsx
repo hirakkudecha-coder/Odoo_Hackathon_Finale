@@ -8,12 +8,17 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  Printer,
+  FileText
 } from 'lucide-react';
+import { DocumentPdfModal } from '../DocumentPdfModal';
+import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const ContactsTable = ({ onCreateContact }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All');
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const rawContacts = [
     {
@@ -114,8 +119,100 @@ export const ContactsTable = ({ onCreateContact }) => {
     return result;
   }, [searchQuery, activeFilterTab]);
 
+  const handleViewContactPdf = (c) => {
+    const customHtml = `
+      <div style="margin-bottom: 20px;">
+        <h3 style="font-family: 'Playfair Display', serif; font-size: 15px; color: #1C3A2F; margin-bottom: 8px;">Partner / Entity Dossier</h3>
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Partner Name:</strong></td><td>${c.name}</td></tr>
+            <tr><td><strong>Category:</strong></td><td>${c.type}</td></tr>
+            <tr><td><strong>Official Email:</strong></td><td>${c.email}</td></tr>
+            <tr><td><strong>Contact Phone:</strong></td><td>${c.phone}</td></tr>
+            <tr><td><strong>Operating City:</strong></td><td>${c.city}</td></tr>
+            <tr><td><strong>Account Status:</strong></td><td>${c.status}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    const pdfData = {
+      type: 'CONTACT',
+      title: 'PARTNER PROFILE DOSSIER',
+      documentNo: `PARTNER-${c.id}`,
+      date: '02 Sep 2025',
+      dueDate: 'Active Registry',
+      status: c.status,
+      partner: {
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        city: c.city,
+      },
+      customSections: customHtml,
+      notes: 'Certified contact and partner record retrieved from Urban Furniture master directory.',
+    };
+
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadContactPdfDirect = (c) => {
+    const pdfData = {
+      type: 'CONTACT',
+      title: 'PARTNER PROFILE DOSSIER',
+      documentNo: `PARTNER-${c.id}`,
+      date: '02 Sep 2025',
+      dueDate: 'Active Registry',
+      status: c.status,
+      partner: {
+        name: c.name,
+        email: c.email,
+        phone: c.phone,
+        city: c.city,
+      },
+      tableData: {
+        headers: ['Field', 'Details'],
+        rows: [
+          ['Partner Name', c.name],
+          ['Category', c.type],
+          ['Official Email', c.email],
+          ['Contact Phone', c.phone],
+          ['Operating City', c.city],
+          ['Account Status', c.status],
+        ],
+      },
+      notes: 'Certified contact and partner record retrieved from Urban Furniture master directory.',
+    };
+
+    downloadDirectPdf(pdfData);
+  };
+
+  const handleExportPdf = () => {
+    const headers = ['Name', 'Type', 'Email', 'Phone', 'City', 'Status'];
+    const rows = filteredContacts.map((c) => [
+      c.name,
+      c.type,
+      c.email,
+      c.phone,
+      c.city,
+      c.status,
+    ]);
+
+    const pdfData = createMasterRegisterPdfData('Contacts & Corporate Partners Master Register', headers, rows);
+    downloadDirectPdf(pdfData);
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
+      
+      {/* 1. Header */}
       <div className="p-5 sm:p-6 border-b border-[#F0EAE1] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-[#F4EFE6] text-[#1C3A2F] flex items-center justify-center border border-[#E5DDD0] shadow-2xs shrink-0">
@@ -155,6 +252,7 @@ export const ContactsTable = ({ onCreateContact }) => {
         </div>
       </div>
 
+      {/* 2. Filter Toolbar */}
       <div className="px-5 sm:px-6 py-3.5 bg-[#FAF8F5]/80 border-b border-[#F0EAE1] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {filterTabs.map((tab) => (
@@ -177,13 +275,19 @@ export const ContactsTable = ({ onCreateContact }) => {
             <Filter className="w-3.5 h-3.5 text-[#738C80]" />
             <span>Filter</span>
           </button>
-          <button type="button" className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs">
+          <button 
+            type="button" 
+            onClick={handleExportPdf}
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Generate & Export PDF"
+          >
             <Download className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
 
+      {/* 3. Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-187.5">
           <thead>
@@ -201,12 +305,19 @@ export const ContactsTable = ({ onCreateContact }) => {
             {filteredContacts.map((c) => (
               <tr key={c.id} className="hover:bg-[#FAF7F2] transition-colors">
                 <td className="py-3.5 pl-6 pr-3">
-                  <div className="flex items-center gap-2.5">
+                  <button
+                    type="button"
+                    onClick={() => handleViewContactPdf(c)}
+                    className="flex items-center gap-2.5 text-left cursor-pointer group"
+                    title="Click to view partner dossier PDF"
+                  >
                     <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10.5px] font-bold ${c.avatarBg} shadow-2xs shrink-0`}>
                       {c.initials}
                     </div>
-                    <span className="font-semibold text-[#141A17]">{c.name}</span>
-                  </div>
+                    <span className="font-semibold text-[#141A17] group-hover:text-[#1C3A2F] group-hover:underline">
+                      {c.name}
+                    </span>
+                  </button>
                 </td>
                 <td className="py-3.5 px-3">
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold ${c.typeBadge} shadow-2xs`}>
@@ -223,9 +334,19 @@ export const ContactsTable = ({ onCreateContact }) => {
                   </span>
                 </td>
                 <td className="py-3.5 pr-6 pl-3 text-right">
-                  <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    <button 
+                      type="button" 
+                      onClick={() => handleDownloadContactPdfDirect(c)}
+                      className="p-1.5 rounded-lg text-[#738C80] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                      title="Download Partner Dossier PDF"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -233,6 +354,7 @@ export const ContactsTable = ({ onCreateContact }) => {
         </table>
       </div>
 
+      {/* 4. Pagination */}
       <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
         <span>Showing 1 to {filteredContacts.length} of {rawContacts.length} contacts</span>
         <div className="flex items-center gap-1.5">
@@ -241,6 +363,14 @@ export const ContactsTable = ({ onCreateContact }) => {
           <button type="button" className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
         </div>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
+
     </div>
   );
 };

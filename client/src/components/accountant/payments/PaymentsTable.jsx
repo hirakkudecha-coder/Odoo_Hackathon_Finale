@@ -8,14 +8,20 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  ArrowUpDown,
+  Printer,
+  FileText
 } from 'lucide-react';
+import { DocumentPdfModal } from '../DocumentPdfModal';
+import { createPaymentReceiptPdfData, createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const PaymentsTable = ({ onCreatePayment }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const rawPayments = [
     {
@@ -137,6 +143,37 @@ export const PaymentsTable = ({ onCreatePayment }) => {
     );
   };
 
+  const handleViewPaymentPdf = (payment) => {
+    const pdfData = createPaymentReceiptPdfData(payment);
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadPaymentPdfDirect = (payment) => {
+    const pdfData = createPaymentReceiptPdfData(payment);
+    downloadDirectPdf(pdfData);
+  };
+
+  const handleExportPdf = () => {
+    const targetPayments = selectedIds.length > 0
+      ? filteredPayments.filter((p) => selectedIds.includes(p.id))
+      : filteredPayments;
+
+    const headers = ['Payment #', 'Partner', 'Type', 'Date', 'Method', 'Amount', 'Status'];
+    const rows = targetPayments.map((p) => [
+      p.payNo,
+      p.partner,
+      p.type,
+      p.date,
+      p.method,
+      p.amount,
+      p.status,
+    ]);
+
+    const pdfData = createMasterRegisterPdfData('Payments & Collections Register', headers, rows);
+    downloadDirectPdf(pdfData);
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
       
@@ -208,10 +245,12 @@ export const PaymentsTable = ({ onCreatePayment }) => {
           </button>
           <button
             type="button"
+            onClick={handleExportPdf}
             className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Generate & Export PDF Report"
           >
             <Download className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
@@ -257,8 +296,16 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                       className="rounded-sm border-[#C5BBAF] text-[#1C3A2F] focus:ring-[#1C3A2F] cursor-pointer"
                     />
                   </td>
-                  <td className="py-3.5 px-3 font-semibold text-[#1C3A2F] font-mono">
-                    {pay.payNo}
+                  <td className="py-3.5 px-3">
+                    <button
+                      type="button"
+                      onClick={() => handleViewPaymentPdf(pay)}
+                      className="font-semibold text-[#1C3A2F] hover:text-[#11241D] hover:underline font-mono inline-flex items-center gap-1.5 cursor-pointer text-left group"
+                      title="Click to view and print official Payment Receipt Voucher PDF"
+                    >
+                      <span>{pay.payNo}</span>
+                      <FileText className="w-3 h-3 text-[#738C80] group-hover:text-[#1C3A2F] transition-colors" />
+                    </button>
                   </td>
                   <td className="py-3.5 px-3">
                     <div className="flex items-center gap-2.5">
@@ -279,9 +326,19 @@ export const PaymentsTable = ({ onCreatePayment }) => {
                     </span>
                   </td>
                   <td className="py-3.5 pr-6 pl-3 text-right">
-                    <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center justify-end gap-1">
+                      <button 
+                        type="button" 
+                        onClick={() => handleDownloadPaymentPdfDirect(pay)}
+                        className="p-1.5 rounded-lg text-[#738C80] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                        title="Download Payment Voucher PDF"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                      <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               );
@@ -299,6 +356,13 @@ export const PaymentsTable = ({ onCreatePayment }) => {
           <button type="button" className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
         </div>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
 
     </div>
   );

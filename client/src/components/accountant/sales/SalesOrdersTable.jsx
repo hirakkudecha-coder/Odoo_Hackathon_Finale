@@ -8,14 +8,20 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  ArrowUpDown,
+  Printer,
+  FileText
 } from 'lucide-react';
+import { DocumentPdfModal } from '../DocumentPdfModal';
+import { createSalesOrderPdfData, createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const SalesOrdersTable = ({ onCreateSO }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All');
   const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const rawOrders = [
     {
@@ -145,6 +151,36 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
     );
   };
 
+  const handleViewInvoicePdf = (order) => {
+    const pdfData = createSalesOrderPdfData(order);
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadInvoicePdfDirect = (order) => {
+    const pdfData = createSalesOrderPdfData(order);
+    downloadDirectPdf(pdfData);
+  };
+
+  const handleExportPdf = () => {
+    const targetOrders = selectedIds.length > 0
+      ? filteredOrders.filter((o) => selectedIds.includes(o.id))
+      : filteredOrders;
+
+    const headers = ['Order #', 'Customer', 'Date', 'Items', 'Total Amount', 'Status'];
+    const rows = targetOrders.map((o) => [
+      o.soNo,
+      o.customer,
+      o.date,
+      o.items,
+      o.totalAmount,
+      o.status,
+    ]);
+
+    const pdfData = createMasterRegisterPdfData('Sales Orders Register', headers, rows);
+    downloadDirectPdf(pdfData);
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
       
@@ -226,10 +262,12 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
 
           <button
             type="button"
+            onClick={handleExportPdf}
             className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Generate & Export PDF Report"
           >
             <Download className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
 
@@ -304,9 +342,17 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
                       />
                     </td>
 
-                    {/* Order No */}
-                    <td className="py-3.5 px-3 font-semibold text-[#1C3A2F] font-mono text-xs">
-                      {order.soNo}
+                    {/* Order No (Clickable to view Tax Invoice PDF) */}
+                    <td className="py-3.5 px-3">
+                      <button
+                        type="button"
+                        onClick={() => handleViewInvoicePdf(order)}
+                        className="font-semibold text-[#1C3A2F] hover:text-[#11241D] hover:underline font-mono text-xs inline-flex items-center gap-1.5 cursor-pointer text-left group"
+                        title="Click to view and print official Tax Invoice PDF"
+                      >
+                        <span>{order.soNo}</span>
+                        <FileText className="w-3 h-3 text-[#738C80] group-hover:text-[#1C3A2F] transition-colors" />
+                      </button>
                     </td>
 
                     {/* Customer with Initials Badge */}
@@ -344,14 +390,24 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
                       </span>
                     </td>
 
-                    {/* Actions */}
+                    {/* Actions: Direct Download PDF & Menu */}
                     <td className="py-3.5 pr-6 pl-3 text-right">
-                      <button
-                        type="button"
-                        className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleDownloadInvoicePdfDirect(order)}
+                          className="p-1.5 rounded-lg text-[#738C80] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                          title="Download Tax Invoice PDF"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
@@ -395,6 +451,13 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
           </button>
         </div>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
 
     </div>
   );

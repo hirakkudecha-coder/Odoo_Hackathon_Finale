@@ -8,13 +8,18 @@ import {
   MoreVertical, 
   ChevronLeft, 
   ChevronRight,
-  ArrowUpDown
+  Printer,
+  FileText
 } from 'lucide-react';
+import { DocumentPdfModal } from '../DocumentPdfModal';
+import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
 
 export const ChartOfAccountsTable = ({ onCreateAccount }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All');
   const [selectedIds, setSelectedIds] = useState([]);
+  const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
+  const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
 
   const rawAccounts = [
     {
@@ -114,8 +119,78 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
     return result;
   }, [searchQuery, activeFilterTab]);
 
+  const handleViewAccountPdf = (acc) => {
+    const pdfData = {
+      type: 'ACCOUNT',
+      title: 'CHART OF ACCOUNTS LEDGER EXTRACT',
+      documentNo: `ACC-${acc.code}`,
+      date: '02 Sep 2025',
+      dueDate: 'Audited Snapshot',
+      status: acc.status,
+      partner: {
+        name: acc.name,
+        company: `Classification: ${acc.type}`,
+        city: 'Ahmedabad, Gujarat',
+      },
+      tableData: {
+        headers: ['Posting Date', 'Transaction Details', 'Account Type', 'Balance'],
+        rows: [
+          ['01 Sep 2025', 'Opening Balance Forward', acc.type, acc.balance],
+          ['02 Sep 2025', 'Current Month System Reconciliation', 'Verified', acc.balance],
+        ],
+      },
+      notes: `Verified Chart of Accounts balance in ${acc.currency} maintained under Indian Accounting Standards.`,
+    };
+
+    setSelectedPdfDoc(pdfData);
+    setIsPdfModalOpen(true);
+  };
+
+  const handleDownloadAccountPdfDirect = (acc) => {
+    const pdfData = {
+      type: 'ACCOUNT',
+      title: 'CHART OF ACCOUNTS LEDGER EXTRACT',
+      documentNo: `ACC-${acc.code}`,
+      date: '02 Sep 2025',
+      dueDate: 'Audited Snapshot',
+      status: acc.status,
+      partner: {
+        name: acc.name,
+        company: `Classification: ${acc.type}`,
+        city: 'Ahmedabad, Gujarat',
+      },
+      tableData: {
+        headers: ['Posting Date', 'Transaction Details', 'Account Type', 'Balance'],
+        rows: [
+          ['01 Sep 2025', 'Opening Balance Forward', acc.type, acc.balance],
+          ['02 Sep 2025', 'Current Month System Reconciliation', 'Verified', acc.balance],
+        ],
+      },
+      notes: `Verified Chart of Accounts balance in ${acc.currency} maintained under Indian Accounting Standards.`,
+    };
+
+    downloadDirectPdf(pdfData);
+  };
+
+  const handleExportPdf = () => {
+    const headers = ['Code', 'Account Name', 'Account Type', 'Currency', 'Current Balance', 'Status'];
+    const rows = filteredAccounts.map((a) => [
+      a.code,
+      a.name,
+      a.type,
+      a.currency,
+      a.balance,
+      a.status,
+    ]);
+
+    const pdfData = createMasterRegisterPdfData('Chart of Accounts & General Ledger Schedule', headers, rows);
+    downloadDirectPdf(pdfData);
+  };
+
   return (
     <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
+      
+      {/* 1. Header */}
       <div className="p-5 sm:p-6 border-b border-[#F0EAE1] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-2xl bg-[#F4EFE6] text-[#1C3A2F] flex items-center justify-center border border-[#E5DDD0] shadow-2xs shrink-0">
@@ -155,6 +230,7 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
         </div>
       </div>
 
+      {/* 2. Filter Toolbar */}
       <div className="px-5 sm:px-6 py-3.5 bg-[#FAF8F5]/80 border-b border-[#F0EAE1] flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
           {filterTabs.map((tab) => (
@@ -177,13 +253,19 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
             <Filter className="w-3.5 h-3.5 text-[#738C80]" />
             <span>Filter</span>
           </button>
-          <button type="button" className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs">
+          <button 
+            type="button" 
+            onClick={handleExportPdf}
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+            title="Generate & Export PDF"
+          >
             <Download className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Export</span>
+            <span>Export PDF</span>
           </button>
         </div>
       </div>
 
+      {/* 3. Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse min-w-187.5">
           <thead>
@@ -200,8 +282,16 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
           <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
             {filteredAccounts.map((acc) => (
               <tr key={acc.id} className="hover:bg-[#FAF7F2] transition-colors">
-                <td className="py-3.5 pl-6 pr-3 font-semibold text-[#1C3A2F] font-mono">
-                  {acc.code}
+                <td className="py-3.5 pl-6 pr-3">
+                  <button
+                    type="button"
+                    onClick={() => handleViewAccountPdf(acc)}
+                    className="font-semibold text-[#1C3A2F] hover:underline font-mono inline-flex items-center gap-1.5 cursor-pointer text-left group"
+                    title="Click to view account ledger schedule PDF"
+                  >
+                    <span>{acc.code}</span>
+                    <FileText className="w-3 h-3 text-[#738C80] group-hover:text-[#1C3A2F]" />
+                  </button>
                 </td>
                 <td className="py-3.5 px-3 font-semibold text-[#141A17]">
                   {acc.name}
@@ -220,9 +310,19 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
                   </span>
                 </td>
                 <td className="py-3.5 pr-6 pl-3 text-right">
-                  <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center justify-end gap-1">
+                    <button 
+                      type="button" 
+                      onClick={() => handleDownloadAccountPdfDirect(acc)}
+                      className="p-1.5 rounded-lg text-[#738C80] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
+                      title="Download Account Schedule PDF"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                    </button>
+                    <button type="button" className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -230,6 +330,7 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
         </table>
       </div>
 
+      {/* 4. Pagination */}
       <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
         <span>Showing 1 to {filteredAccounts.length} of {rawAccounts.length} accounts</span>
         <div className="flex items-center gap-1.5">
@@ -238,6 +339,14 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
           <button type="button" className="p-1.5 rounded-lg border border-[#E2DAD0] bg-white hover:bg-[#F2ECE4] cursor-pointer"><ChevronRight className="w-4 h-4" /></button>
         </div>
       </div>
+
+      {/* Document PDF Modal */}
+      <DocumentPdfModal
+        isOpen={isPdfModalOpen}
+        onClose={() => setIsPdfModalOpen(false)}
+        documentData={selectedPdfDoc}
+      />
+
     </div>
   );
 };

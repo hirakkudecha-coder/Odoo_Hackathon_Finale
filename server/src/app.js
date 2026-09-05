@@ -12,6 +12,7 @@ const accountRoutes = require('./routes/accountRoutes');
 const journalRoutes = require('./routes/journalRoutes');
 const analyticAccountRoutes = require('./routes/analyticAccountRoutes');
 const budgetRoutes = require('./routes/budgetRoutes');
+const journalEntryRoutes = require('./routes/journalEntryRoutes');
 
 const app = express();
 
@@ -48,6 +49,7 @@ app.use('/api/accounts', accountRoutes);
 app.use('/api/journals', journalRoutes);
 app.use('/api/analytic-accounts', analyticAccountRoutes);
 app.use('/api/budgets', budgetRoutes);
+app.use('/api/journal-entries', journalEntryRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

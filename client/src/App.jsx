@@ -22,6 +22,7 @@ import { AccountantDashboard } from './components/accountant/AccountantDashboard
 import { PartnerHelpdeskPage } from './components/common/PartnerHelpdeskPage';
 import { AtelierAboutPage } from './components/common/AtelierAboutPage';
 import { ShowroomsPage } from './components/common/ShowroomsPage';
+import { SuperAdminDashboard } from './components/superadmin/SuperAdminDashboard';
 import { ContactPortal } from './components/portal/ContactPortal';
 
 export const App = () => {
@@ -58,6 +59,12 @@ export const App = () => {
   const handleNavigateHome = () => {
     window.history.pushState(null, '', '/');
     setCurrentPath('/');
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  };
+
+  const handleNavigateSuperAdmin = () => {
+    window.history.pushState(null, '', '/superadmin');
+    setCurrentPath('/superadmin');
     window.scrollTo({ top: 0, behavior: 'instant' });
   };
 
@@ -110,7 +117,9 @@ export const App = () => {
       localStorage.setItem('token', token);
     }
     
-    if (user?.role === 'accountant') {
+    if (user?.role === 'superadmin') {
+      handleNavigateSuperAdmin();
+    } else if (user?.role === 'accountant') {
       handleNavigateAccountant();
     } else if (user?.role === 'contact') {
       handleNavigatePortal();
@@ -133,6 +142,35 @@ export const App = () => {
   const handleCloseCreateUser = () => {
     setCreateUserModalOpen(false);
   };
+
+  // FULL SCREEN SUPER ADMIN DASHBOARD: Accessible at /superadmin
+  if (
+    currentPath === '/superadmin' ||
+    currentPath === '/super-admin' ||
+    currentPath.endsWith('/superadmin') ||
+    currentPath.endsWith('/super-admin') ||
+    window.location.hash === '#superadmin'
+  ) {
+    if (!currentUser) {
+      return (
+        <AuthLayout
+          initialMode="login"
+          onNavigateHome={handleNavigateHome}
+          onSuccess={handleAuthSuccess}
+        />
+      );
+    }
+
+    return (
+      <SuperAdminDashboard
+        onNavigateHome={handleNavigateHome}
+        onNavigateAdmin={handleNavigateDashboard}
+        onNavigateAccountant={handleNavigateAccountant}
+        currentUser={currentUser}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
   // FULL SCREEN CONTACT SELF-SERVICE PORTAL: Accessible at /portal, /my-invoices
   if (
@@ -319,7 +357,17 @@ export const App = () => {
       <Navbar 
         onOpenAuth={handleOpenAuth} 
         onOpenCreateUser={handleOpenCreateUser}
-        onOpenDashboard={currentUser ? (currentUser.role === 'contact' ? handleNavigatePortal : currentUser.role === 'accountant' ? handleNavigateAccountant : handleNavigateDashboard) : () => handleOpenAuth('login')}
+        onOpenDashboard={
+          currentUser 
+            ? (currentUser.role === 'superadmin' 
+                ? handleNavigateSuperAdmin 
+                : currentUser.role === 'contact'
+                ? handleNavigatePortal
+                : currentUser.role === 'accountant' 
+                ? handleNavigateAccountant 
+                : handleNavigateDashboard)
+            : () => handleOpenAuth('login')
+        }
         onOpenAccountant={currentUser ? handleNavigateAccountant : () => handleOpenAuth('login')}
         currentUser={currentUser}
         onLogout={handleLogout}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AccountantSidebar } from './AccountantSidebar';
 import { AccountantHeader } from './AccountantHeader';
 import { AccountantGreetingBanner } from './AccountantGreetingBanner';

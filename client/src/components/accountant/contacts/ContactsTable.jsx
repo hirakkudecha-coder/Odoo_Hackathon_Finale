@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import React, { useState, useMemo } from 'react';
-=======
 import React, { useState, useEffect, useMemo } from 'react';
->>>>>>> 1b85d9c7f200ca573c8451103ce1ecca1021d2f1
 import { 
   Users, 
   Search, 

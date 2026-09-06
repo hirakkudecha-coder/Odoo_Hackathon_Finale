@@ -277,14 +277,8 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
   };
 
   return (
-    <div 
-      className="fixed inset-0 z-50 bg-[#14231C]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fadeIn"
-      onClick={onClose}
-    >
-      <div 
-        className="bg-[#FAF8F5] w-full max-w-2xl max-h-[90vh] rounded-3xl border border-[#E8E1D5] shadow-2xl overflow-hidden flex flex-col my-auto text-left relative"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-50 bg-[#14231C]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn">
+      <div className="bg-[#FAF8F5] w-full max-w-2xl max-h-[90vh] rounded-3xl border border-[#E8E1D5] shadow-2xl overflow-hidden flex flex-col my-auto text-left">
         
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-[#E8E1D5] flex items-center justify-between bg-white shrink-0">
@@ -307,7 +301,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
         </div>
 
         {/* Tab Switcher */}
-        <div className="px-6 pt-4 border-b border-[#E8E1D5] flex gap-6 bg-white shrink-0">
+        <div className="px-6 pt-4 border-b border-[#E8E1D5] flex gap-6 bg-white">
           <button
             onClick={() => {
               setActiveTab('2fa');
@@ -345,7 +339,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 space-y-5 flex-1 overflow-y-auto">
+        <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           
           {/* Global Alert Messages */}
           {errorMessage && (
@@ -544,7 +538,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
                       <button
                         type="submit"
                         disabled={loading || totpCode.length !== 6}
-                        className="px-5 py-2.5 rounded-xl bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold transition-all shadow-xs enabled:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        className="px-5 py-2.5 rounded-xl bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                       >
                         {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <ShieldCheck className="w-3.5 h-3.5" />}
                         <span>Verify & Activate 2FA</span>
@@ -601,7 +595,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
                     <button
                       type="submit"
                       disabled={loading || !disablePassword || disableTotpCode.length !== 6}
-                      className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs enabled:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {loading ? 'Disabling...' : 'Confirm Disable 2FA'}
                     </button>
@@ -726,7 +720,7 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
                   <button
                     type="submit"
                     disabled={loading || !currentPassword || !isPasswordValid || !passwordsMatch}
-                    className="px-5 py-2.5 rounded-xl bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold transition-all shadow-xs enabled:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className="px-5 py-2.5 rounded-xl bg-[#2D4A3E] hover:bg-[#1E332A] text-white text-xs font-bold transition-all shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Lock className="w-3.5 h-3.5" />}
                     <span>Update Password</span>

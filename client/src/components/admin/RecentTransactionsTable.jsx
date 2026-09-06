@@ -115,7 +115,7 @@ export const RecentTransactionsTable = () => {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left text-xs min-w-[560px]">
           <thead>
             <tr className="text-[10px] uppercase font-bold text-[#718079] tracking-wider border-b border-[#F0EAE1] pb-2">
               <th className="py-2.5 font-semibold">Date</th>

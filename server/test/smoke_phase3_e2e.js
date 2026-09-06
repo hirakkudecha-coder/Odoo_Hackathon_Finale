@@ -383,7 +383,7 @@ async function runPhase3E2E() {
     assert('2.11 Accounts Receivable (Debtors) increased by Invoice total (+157,500)', Math.abs(debtDelta - 157500) < 0.01);
 
     // 2.12 Receive Customer Payment
-    const cashAcc = await Account.findOne({ name: 'Petty Cash' });
+    const cashAcc = await Account.findOne({ name: { $in: ['Petty Cash', 'Cash', 'Cash in Hand'] } });
     const cashBalBefore = cashAcc?.balance || 0;
 
     const payInRes = await request('POST', '/payments', {
@@ -402,7 +402,7 @@ async function runPhase3E2E() {
     assert('2.13 Customer Invoice status marked as paid with full settlement', invPaid.status === 'paid' && invPaid.paidAmount === 157500);
 
     // Verify Cash asset increased and Debtors asset cleared
-    const cashAccAfter = await Account.findOne({ name: 'Petty Cash' });
+    const cashAccAfter = await Account.findOne({ name: { $in: ['Petty Cash', 'Cash', 'Cash in Hand'] } });
     const cashDelta = (cashAccAfter?.balance || 0) - cashBalBefore;
     assert('2.14 Cash Asset increased by inflow (+157,500)', Math.abs(cashDelta - 157500) < 0.01);
 
@@ -416,9 +416,18 @@ async function runPhase3E2E() {
     console.log(' WORKFLOW 3: MANUAL JOURNAL ENTRY INVARIANTS & REVERSALS                ');
     console.log('========================================================================');
 
-    const genJournal = await Journal.findOne({ type: 'General' });
-    const bankAccRef = await Account.findOne({ name: 'Bank' });
-    const capitalAccRef = await Account.findOne({ name: 'Capital' });
+    let genJournal = await Journal.findOne({ type: 'General' });
+    if (!genJournal) {
+      genJournal = await Journal.create({ code: 'GEN', name: 'General Operations', type: 'General' });
+    }
+    let bankAccRef = await Account.findOne({ name: 'Bank' });
+    if (!bankAccRef) {
+      bankAccRef = await Account.create({ code: '1002', name: 'Bank', type: 'Asset' });
+    }
+    let capitalAccRef = await Account.findOne({ name: 'Capital' });
+    if (!capitalAccRef) {
+      capitalAccRef = await Account.create({ code: '3001', name: 'Capital', type: 'Capital' });
+    }
 
     // 3.1 Unbalanced Entry Rejection
     const unbalJeRes = await request('POST', '/journal-entries', {

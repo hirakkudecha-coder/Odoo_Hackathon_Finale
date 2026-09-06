@@ -26,6 +26,15 @@ const createPayment = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Valid payment amount greater than zero is required.' });
     }
 
+    if (req.user && req.user.role === 'contact') {
+      if (paymentType === 'send_money') {
+        return res.status(403).json({
+          success: false,
+          message: 'Contact users are not authorized to disburse vendor payments.'
+        });
+      }
+    }
+
     // Determine Payment Journal (Bank or Cash)
     let paymentJournal = null;
     if (journal) {
@@ -40,14 +49,23 @@ const createPayment = async (req, res, next) => {
     }
 
     // Determine Payment Liquidity Account (Bank or Cash)
-    const liquidityAccountName = paymentMethod === 'Cash' ? 'Cash' : 'Bank';
-    let liquidityAccount = await Account.findOne({ name: liquidityAccountName });
+    let liquidityAccount = null;
+    if (paymentJournal?.defaultDebitAccount) {
+      liquidityAccount = await Account.findById(paymentJournal.defaultDebitAccount);
+    }
+    if (!liquidityAccount) {
+      if (paymentMethod === 'Cash') {
+        liquidityAccount = await Account.findOne({ name: { $in: ['Petty Cash', 'Cash', 'Cash in Hand'] } });
+      } else {
+        liquidityAccount = await Account.findOne({ name: { $in: ['Bank', 'Bank Account', 'HDFC Bank'] } });
+      }
+    }
     if (!liquidityAccount) {
       liquidityAccount = await Account.findOne({ type: 'Asset' });
     }
 
     if (!liquidityAccount) {
-      return res.status(400).json({ success: false, message: `Liquidity Account (${liquidityAccountName}) not found.` });
+      return res.status(400).json({ success: false, message: `Liquidity Account (${paymentMethod}) not found.` });
     }
 
     let partnerAccount = null;

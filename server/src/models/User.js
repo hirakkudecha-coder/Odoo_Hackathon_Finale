@@ -129,7 +129,10 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
 
 // Generate JWT token
 userSchema.methods.generateAuthToken = function () {
-  const secret = process.env.JWT_SECRET || 'urban_furniture_super_secret_jwt_key_2026';
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error('FATAL CONFIGURATION ERROR: JWT_SECRET environment variable is missing');
+  }
   const payload = {
     id: this._id,
     name: this.name,

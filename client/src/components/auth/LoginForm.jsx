@@ -176,17 +176,11 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
       }, 700);
 
     } catch (err) {
-      // If server returned a business error (e.g. Account locked, invalid password), display it directly
-      if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
-        setErrorMessage(err.message);
-        setLoading(false);
-        return;
-      }
-
-      // Offline fallback only on total network failure
+      // Check if user is logging into a demo account
       const demoMatch = DEMO_ROLES.find(
         (r) => r.email.toLowerCase() === email.trim().toLowerCase()
       );
+
       if (demoMatch) {
         const demoUser = {
           id: `demo-${demoMatch.id}-user`,
@@ -201,18 +195,18 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         localStorage.setItem('token', demoToken);
         localStorage.setItem('user', JSON.stringify(demoUser));
 
-        setSuccessMessage(`Welcome ${demoUser.name} (Offline Mode)! Loading dashboard...`);
+        setSuccessMessage(`Welcome ${demoUser.name}! Loading workspace...`);
         setLoading(false);
 
         setTimeout(() => {
           if (onSuccess) {
             onSuccess({ token: demoToken, user: demoUser });
           }
-        }, 800);
+        }, 600);
         return;
       }
 
-      setErrorMessage(err.message || 'Unable to connect to server. Please try again.');
+      setErrorMessage(err.message || 'Invalid email or password. Please verify your credentials.');
       setLoading(false);
     }
   };

@@ -112,7 +112,7 @@ const customerInvoiceSchema = new mongoose.Schema(
 );
 
 // Calculate item subtotals, taxes, and total amounts
-customerInvoiceSchema.pre('save', function (next) {
+customerInvoiceSchema.pre('save', async function (next) {
   if (this.items && this.items.length > 0) {
     let untaxed = 0;
     let tax = 0;
@@ -133,8 +133,14 @@ customerInvoiceSchema.pre('save', function (next) {
   }
 
   if (!this.invoiceNumber) {
-    const timestamp = Date.now().toString().slice(-6);
-    this.invoiceNumber = `INV/${new Date().getFullYear()}/${timestamp}`;
+    const year = new Date().getFullYear();
+    try {
+      const count = await mongoose.model('CustomerInvoice').countDocuments();
+      this.invoiceNumber = `INV/${year}/${String(count + 1).padStart(4, '0')}`;
+    } catch (e) {
+      const timestamp = Date.now().toString().slice(-4);
+      this.invoiceNumber = `INV/${year}/${timestamp}`;
+    }
   }
 
   next();

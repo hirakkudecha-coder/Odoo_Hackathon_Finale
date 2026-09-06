@@ -32,6 +32,11 @@ const salesOrderItemSchema = new mongoose.Schema({
   subtotal: {
     type: Number,
     default: 0
+  },
+  analyticAccount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AnalyticAccount',
+    default: null
   }
 });
 
@@ -83,7 +88,7 @@ const salesOrderSchema = new mongoose.Schema(
 );
 
 // Calculate subtotals, taxes, and total amounts
-salesOrderSchema.pre('save', function (next) {
+salesOrderSchema.pre('save', async function (next) {
   if (this.items && this.items.length > 0) {
     let untaxed = 0;
     let tax = 0;
@@ -104,8 +109,13 @@ salesOrderSchema.pre('save', function (next) {
   }
 
   if (!this.orderNumber) {
-    const timestamp = Date.now().toString().slice(-6);
-    this.orderNumber = `SO/${new Date().getFullYear()}/${timestamp}`;
+    try {
+      const count = await mongoose.model('SalesOrder').countDocuments();
+      this.orderNumber = `S${String(count + 1).padStart(5, '0')}`;
+    } catch (e) {
+      const timestamp = Date.now().toString().slice(-5);
+      this.orderNumber = `S${timestamp}`;
+    }
   }
 
   next();

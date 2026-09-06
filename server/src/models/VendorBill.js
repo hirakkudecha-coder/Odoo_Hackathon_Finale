@@ -95,7 +95,7 @@ const vendorBillSchema = new mongoose.Schema(
 );
 
 // Calculate subtotals and totalAmount
-vendorBillSchema.pre('save', function (next) {
+vendorBillSchema.pre('save', async function (next) {
   if (this.items && this.items.length > 0) {
     this.items.forEach(item => {
       item.subtotal = Math.round(item.quantity * item.unitPrice * 100) / 100;
@@ -104,8 +104,14 @@ vendorBillSchema.pre('save', function (next) {
   }
 
   if (!this.billNumber) {
-    const timestamp = Date.now().toString().slice(-6);
-    this.billNumber = `BILL/${new Date().getFullYear()}/${timestamp}`;
+    const year = new Date().getFullYear();
+    try {
+      const count = await mongoose.model('VendorBill').countDocuments();
+      this.billNumber = `Bill/${year}/${String(count + 1).padStart(4, '0')}`;
+    } catch (e) {
+      const timestamp = Date.now().toString().slice(-4);
+      this.billNumber = `Bill/${year}/${timestamp}`;
+    }
   }
 
   next();

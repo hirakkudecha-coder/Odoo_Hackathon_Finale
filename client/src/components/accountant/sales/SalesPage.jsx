@@ -5,18 +5,21 @@ import {
   ShoppingCart, 
   FileSpreadsheet, 
   BookOpen, 
-  PieChart 
+  PieChart,
+  FileText
 } from 'lucide-react';
 import { SalesOrdersTable } from './SalesOrdersTable';
+import { CustomerInvoicesTable } from './CustomerInvoicesTable';
 import purchaseBanner from '../../../assets/images/purchase_banner.png';
 
 export const SalesPage = ({ onNavigateTab }) => {
   const [activeTab, setActiveTab] = useState('sales');
+  const [salesSubView, setSalesSubView] = useState('orders'); // 'orders' | 'invoices'
 
   const navigationTabs = [
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'products', label: 'Products', icon: Package },
-    { id: 'sales', label: 'Sales', icon: ShoppingCart },
+    { id: 'sales', label: 'Sales & Invoices', icon: ShoppingCart },
     { id: 'chartOfAccounts', label: 'Chart of Accounts', icon: FileSpreadsheet },
     { id: 'journals', label: 'Journals', icon: BookOpen },
     { id: 'analyticAccounts', label: 'Analytic Accounts', icon: PieChart },
@@ -43,10 +46,10 @@ export const SalesPage = ({ onNavigateTab }) => {
         {/* Left: Sales Heading */}
         <div>
           <h1 className="font-serif-luxury text-3xl sm:text-4xl text-[#141A17] tracking-tight font-bold">
-            Sales
+            Sales & Customer Invoicing
           </h1>
           <p className="text-xs sm:text-sm text-[#5B6963] mt-1">
-            Manage your sales orders, quotations, and customer revenue transactions.
+            Manage your sales orders, customer invoices, payments, and revenue analytics.
           </p>
         </div>
 
@@ -85,9 +88,43 @@ export const SalesPage = ({ onNavigateTab }) => {
         })}
       </div>
 
-      {/* Active View: Sales Orders Table */}
+      {/* View Selector (Sales Orders vs Customer Invoices) */}
       {activeTab === 'sales' && (
-        <SalesOrdersTable />
+        <div className="flex items-center gap-2 bg-[#F4EFE6] p-1.5 rounded-2xl w-fit border border-[#E5DDD0]">
+          <button
+            type="button"
+            onClick={() => setSalesSubView('orders')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              salesSubView === 'orders'
+                ? 'bg-[#1C3A2F] text-white shadow-xs'
+                : 'text-[#5B6963] hover:text-[#141A17] hover:bg-white/60'
+            }`}
+          >
+            <ShoppingCart className="w-3.5 h-3.5" />
+            <span>Sales Orders (Quotations)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSalesSubView('invoices')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              salesSubView === 'invoices'
+                ? 'bg-[#1C3A2F] text-white shadow-xs'
+                : 'text-[#5B6963] hover:text-[#141A17] hover:bg-white/60'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Customer Invoices (INV/2026/0001)</span>
+          </button>
+        </div>
+      )}
+
+      {/* Active View: Sales Orders Table or Customer Invoices Table */}
+      {activeTab === 'sales' && (
+        salesSubView === 'orders' ? (
+          <SalesOrdersTable onNavigateInvoices={() => setSalesSubView('invoices')} />
+        ) : (
+          <CustomerInvoicesTable onNavigateReport={() => onNavigateTab && onNavigateTab('budgets')} />
+        )
       )}
 
       {activeTab !== 'sales' && (

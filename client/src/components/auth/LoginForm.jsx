@@ -48,7 +48,7 @@ const DEMO_ROLES = [
   },
 ];
 
-export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
+export const LoginForm = ({ onSuccess, onSwitchToRegister, onSwitchToForgotPassword }) => {
   const [selectedRole, setSelectedRole] = useState('superadmin');
   const [email, setEmail] = useState('superadmin@urbanfurniture.com');
   const [password, setPassword] = useState('SuperAdmin123!');
@@ -75,10 +75,11 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
 
   const validate = () => {
     const errors = {};
-    if (!email.trim()) {
-      errors.email = 'Email address is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      errors.email = 'Please enter a valid email address';
+    const inputVal = email.trim();
+    if (!inputVal) {
+      errors.email = 'Email address or Login ID is required';
+    } else if (!inputVal.includes('@') && (inputVal.length < 6 || inputVal.length > 12)) {
+      errors.email = 'Login ID must be between 6 and 12 characters';
     }
 
     if (!password) {
@@ -136,6 +137,7 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          identifier: email.trim(),
           email: email.trim(),
           password,
         }),
@@ -407,16 +409,16 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         <form onSubmit={(e) => handleLogin(e, false)} className="space-y-4 pt-1">
           <InputField
             id="login-email"
-            label="Email address"
-            type="email"
+            label="Login ID or Email Address"
+            type="text"
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null });
             }}
-            placeholder="name@urbanfurniture.com"
+            placeholder="e.g. accountant1 or name@urbanfurniture.com"
             required
-            autoComplete="email"
+            autoComplete="username"
             error={fieldErrors.email}
             icon={Mail}
             disabled={loading}
@@ -446,17 +448,27 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
                 onChange={(e) => setRememberMe(e.target.checked)}
                 className="w-4 h-4 rounded-md border-[#DDD5C9] text-[#2D4A3E] focus:ring-[#2D4A3E] focus:ring-offset-0 cursor-pointer accent-[#2D4A3E]"
               />
-              <span>Remember credentials</span>
+              <span>Remember me</span>
             </label>
 
-            <button
-              type="button"
-              onClick={(e) => handleLogin(e, true)}
-              className="text-xs font-semibold text-[#2D4A3E] hover:underline cursor-pointer flex items-center gap-1"
-            >
-              <span>Auto Sign In Demo</span>
-              <span>⚡</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={onSwitchToForgotPassword}
+                className="text-xs font-semibold text-[#66706B] hover:text-[#1E2623] hover:underline cursor-pointer"
+              >
+                Forgot password?
+              </button>
+
+              <button
+                type="button"
+                onClick={(e) => handleLogin(e, true)}
+                className="text-xs font-semibold text-[#2D4A3E] hover:underline cursor-pointer flex items-center gap-1"
+              >
+                <span>Demo</span>
+                <span>⚡</span>
+              </button>
+            </div>
           </div>
 
           {/* Primary Submit Button */}

@@ -17,6 +17,8 @@ import { ReportsPage } from './reports/ReportsPage';
 import { ContactsPage } from './contacts/ContactsPage';
 import { ProductsPage } from './products/ProductsPage';
 import { JournalEntriesPage } from './journals/JournalEntriesPage';
+import { JournalsMasterPage } from './journals/JournalsMasterPage';
+import { AnalyticAccountsPage } from './analyticals/AnalyticAccountsPage';
 import { BudgetsPage } from './budgets/BudgetsPage';
 
 export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, currentUser, onLogout }) => {
@@ -80,16 +82,20 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
             <PaymentsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'budgets' ? (
             <BudgetsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
+          ) : activeMenu === 'analyticals' ? (
+            <AnalyticAccountsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'accounting' ? (
             <AccountingPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
+          ) : activeMenu === 'journalsMaster' || activeMenu === 'journals' ? (
+            <JournalsMasterPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
+          ) : activeMenu === 'journalEntries' ? (
+            <JournalEntriesPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'reports' ? (
             <ReportsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'contacts' ? (
             <ContactsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : activeMenu === 'products' ? (
             <ProductsPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
-          ) : activeMenu === 'journalEntries' || activeMenu === 'journals' ? (
-            <JournalEntriesPage onNavigateTab={(tabId) => setActiveMenu(tabId)} />
           ) : (
             <>
               {/* Greeting & Motivational Quote Banner */}

@@ -25,6 +25,21 @@ const budgetSchema = new mongoose.Schema(
       default: 'Admin',
       trim: true
     },
+    responsibleContact: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Contact',
+      default: null
+    },
+    revisionOf: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Budget',
+      default: null
+    },
+    revisedWith: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Budget',
+      default: null
+    },
     analyticAccount: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'AnalyticAccount',
@@ -37,8 +52,8 @@ const budgetSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['draft', 'confirmed', 'closed'],
-      default: 'confirmed'
+      enum: ['draft', 'confirmed', 'revised', 'cancelled', 'closed'],
+      default: 'draft'
     }
   },
   {

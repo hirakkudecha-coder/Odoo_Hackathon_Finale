@@ -5,18 +5,21 @@ import {
   ShoppingBag, 
   FileSpreadsheet, 
   BookOpen, 
-  PieChart 
+  PieChart,
+  FileText
 } from 'lucide-react';
 import { PurchaseOrdersTable } from './PurchaseOrdersTable';
+import { VendorBillsTable } from './VendorBillsTable';
 import purchaseBanner from '../../../assets/images/purchase_banner.png';
 
 export const PurchasePage = ({ onNavigateTab }) => {
   const [activeTab, setActiveTab] = useState('purchases');
+  const [purchaseSubView, setPurchaseSubView] = useState('orders'); // 'orders' | 'bills'
 
   const navigationTabs = [
     { id: 'contacts', label: 'Contacts', icon: Users },
     { id: 'products', label: 'Products', icon: Package },
-    { id: 'purchases', label: 'Purchases', icon: ShoppingBag },
+    { id: 'purchases', label: 'Purchases & Bills', icon: ShoppingBag },
     { id: 'chartOfAccounts', label: 'Chart of Accounts', icon: FileSpreadsheet },
     { id: 'journals', label: 'Journals', icon: BookOpen },
     { id: 'analyticAccounts', label: 'Analytic Accounts', icon: PieChart },
@@ -43,10 +46,10 @@ export const PurchasePage = ({ onNavigateTab }) => {
         {/* Left: Purchase Heading */}
         <div>
           <h1 className="font-serif-luxury text-3xl sm:text-4xl text-[#141A17] tracking-tight font-bold">
-            Purchases
+            Purchases & Vendor Bills
           </h1>
           <p className="text-xs sm:text-sm text-[#5B6963] mt-1">
-            Manage your purchase orders, vendor bills, and supplier transactions.
+            Manage your purchase orders, vendor bills, supplier payments, and expense analytics.
           </p>
         </div>
 
@@ -85,8 +88,44 @@ export const PurchasePage = ({ onNavigateTab }) => {
         })}
       </div>
 
-      {/* Active View: Purchase Orders Table */}
-      <PurchaseOrdersTable />
+      {/* View Selector (Purchase Orders vs Vendor Bills) */}
+      {activeTab === 'purchases' && (
+        <div className="flex items-center gap-2 bg-[#F4EFE6] p-1.5 rounded-2xl w-fit border border-[#E5DDD0]">
+          <button
+            type="button"
+            onClick={() => setPurchaseSubView('orders')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              purchaseSubView === 'orders'
+                ? 'bg-[#1C3A2F] text-white shadow-xs'
+                : 'text-[#5B6963] hover:text-[#141A17] hover:bg-white/60'
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span>Purchase Orders (P00001)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPurchaseSubView('bills')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              purchaseSubView === 'bills'
+                ? 'bg-[#1C3A2F] text-white shadow-xs'
+                : 'text-[#5B6963] hover:text-[#141A17] hover:bg-white/60'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            <span>Vendor Bills (Bill/2026/0001)</span>
+          </button>
+        </div>
+      )}
+
+      {/* Active View: Purchase Orders Table or Vendor Bills Table */}
+      {activeTab === 'purchases' && (
+        purchaseSubView === 'orders' ? (
+          <PurchaseOrdersTable onNavigateBills={() => setPurchaseSubView('bills')} />
+        ) : (
+          <VendorBillsTable onNavigateReport={() => onNavigateTab && onNavigateTab('budgets')} />
+        )
+      )}
 
     </div>
   );

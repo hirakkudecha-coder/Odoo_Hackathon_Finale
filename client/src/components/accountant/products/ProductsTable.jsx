@@ -12,79 +12,142 @@ import {
   FileText,
   X,
   CheckCircle,
-  Eye
+  Eye,
+  Camera,
+  Edit2,
+  Tag,
+  Layers,
+  Sparkles
 } from 'lucide-react';
+import { ViewModeToggle } from '../../common/ViewModeToggle';
 import { DocumentPdfModal } from '../DocumentPdfModal';
 import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
+import oliveChairImg from '../../../assets/images/olive_chair.png';
+import creamLoungeChair from '../../../assets/images/cream_lounge_chair.png';
+import royalBlueSofa from '../../../assets/images/royal_blue_sofa.png';
+import diningTable from '../../../assets/images/dining_table.png';
 
 export const ProductsTable = ({ onCreateProduct }) => {
+  const [viewMode, setViewMode] = useState('list');
   const [searchQuery, setSearchQuery] = useState('');
   const [activeFilterTab, setActiveFilterTab] = useState('All');
-  const [selectedIds, setSelectedIds] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortAsc, setSortAsc] = useState(false);
-  const [activeRowMenuId, setActiveRowMenuId] = useState(null);
   const [selectedPdfDoc, setSelectedPdfDoc] = useState(null);
   const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  // Dynamic Categories list
+  const [categories, setCategories] = useState([
+    'Living Room Seating',
+    'Living Room Sofas',
+    'Dining Furniture',
+    'Storage & Cabinetry',
+    'Accent Furniture',
+    'Office Workspaces',
+    'Lighting & Fixtures',
+    'Design Services',
+    'Packages'
+  ]);
+  const [isAddingNewCategory, setIsAddingNewCategory] = useState(false);
+  const [newCategoryInput, setNewCategoryInput] = useState('');
 
   const initialProducts = [
     {
-      id: 1,
+      id: 'p-1',
       sku: 'FUR-OCH-001',
       name: 'Olive Velvet Lounge Chair',
+      type: 'Goods',
       category: 'Living Room Seating',
-      costPrice: '₹ 14,200.00',
-      salesPrice: '₹ 24,500.00',
-      stock: '18 units',
+      image: oliveChairImg,
+      costPrice: 14200,
+      salesPrice: 24500,
+      stock: 18,
       status: 'In Stock',
       statusDot: 'bg-[#10B981]',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
     },
     {
-      id: 2,
+      id: 'p-2',
       sku: 'FUR-MCR-002',
       name: 'Minimalist Oak Credenza',
+      type: 'Goods',
       category: 'Storage & Cabinetry',
-      costPrice: '₹ 28,000.00',
-      salesPrice: '₹ 46,000.00',
-      stock: '6 units',
+      image: 'https://images.unsplash.com/photo-1595428774223-ef52624120d2?w=300&auto=format&fit=crop&q=80',
+      costPrice: 28000,
+      salesPrice: 46000,
+      stock: 6,
       status: 'Low Stock',
       statusDot: 'bg-[#F59E0B]',
       statusStyle: 'bg-[#FEF7EC] text-[#D97706]',
     },
     {
-      id: 3,
+      id: 'p-3',
       sku: 'FUR-BSO-003',
       name: 'Nordic Royal Blue Sofa (3-Seater)',
+      type: 'Goods',
       category: 'Living Room Sofas',
-      costPrice: '₹ 42,000.00',
-      salesPrice: '₹ 72,000.00',
-      stock: '12 units',
+      image: royalBlueSofa,
+      costPrice: 42000,
+      salesPrice: 72000,
+      stock: 12,
       status: 'In Stock',
       statusDot: 'bg-[#10B981]',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
     },
     {
-      id: 4,
+      id: 'p-4',
       sku: 'FUR-WDT-004',
       name: 'Walnut Solid Wood Dining Table',
+      type: 'Goods',
       category: 'Dining Furniture',
-      costPrice: '₹ 32,500.00',
-      salesPrice: '₹ 58,000.00',
-      stock: '9 units',
+      image: diningTable,
+      costPrice: 32500,
+      salesPrice: 58000,
+      stock: 9,
       status: 'In Stock',
       statusDot: 'bg-[#10B981]',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
     },
     {
-      id: 5,
+      id: 'p-5',
       sku: 'FUR-RAC-005',
-      name: 'Handcrafted Rattan Accent Chair',
+      name: 'Handcrafted Cream Bouclé Lounge Chair',
+      type: 'Goods',
       category: 'Accent Furniture',
-      costPrice: '₹ 9,500.00',
-      salesPrice: '₹ 18,200.00',
-      stock: '24 units',
+      image: creamLoungeChair,
+      costPrice: 9500,
+      salesPrice: 18200,
+      stock: 24,
+      status: 'In Stock',
+      statusDot: 'bg-[#10B981]',
+      statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+    },
+    {
+      id: 'p-6',
+      sku: 'SRV-DSG-006',
+      name: 'Bespoke Atelier Space Planning & 3D Render',
+      type: 'Service',
+      category: 'Design Services',
+      image: 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=300&auto=format&fit=crop&q=80',
+      costPrice: 8000,
+      salesPrice: 28000,
+      stock: 0,
+      status: 'In Stock',
+      statusDot: 'bg-[#10B981]',
+      statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
+    },
+    {
+      id: 'p-7',
+      sku: 'CMB-EXE-007',
+      name: 'Executive Suite Master Combo Package',
+      type: 'Combo',
+      category: 'Packages',
+      image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=300&auto=format&fit=crop&q=80',
+      costPrice: 185000,
+      salesPrice: 295000,
+      stock: 4,
       status: 'In Stock',
       statusDot: 'bg-[#10B981]',
       statusStyle: 'bg-[#E5F7ED] text-[#1E7445]',
@@ -92,12 +155,10 @@ export const ProductsTable = ({ onCreateProduct }) => {
   ];
 
   const [products, setProducts] = useState(initialProducts);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
     const loadProducts = async () => {
-      setIsLoading(true);
       try {
         const token = localStorage.getItem('token');
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -106,44 +167,35 @@ export const ProductsTable = ({ onCreateProduct }) => {
           const json = await res.json();
           if (json.products && Array.isArray(json.products) && json.products.length > 0) {
             const mapped = json.products.map((p, idx) => {
-              const cp = `₹ ${Number(p.costPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-              const sp = `₹ ${Number(p.salesPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
-              const sku = p.code || `UF-PRD-${String(idx + 1).padStart(3, '0')}`;
-              const qty = p.currentStock !== undefined ? p.currentStock : (p.status === 'active' ? 15 : 0);
-              let statusLabel = 'In Stock';
-              let statusDot = 'bg-[#10B981]';
-              let statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
-              if (qty === 0) {
-                statusLabel = 'Out of Stock';
-                statusDot = 'bg-[#EF4444]';
-                statusStyle = 'bg-[#FDECE7] text-[#C95426]';
-              } else if (qty < 5) {
-                statusLabel = 'Low Stock';
-                statusDot = 'bg-[#F59E0B]';
-                statusStyle = 'bg-[#FEF7EC] text-[#D97706]';
-              }
-
+              const type = p.type || 'Goods';
+              const cost = Number(p.costPrice) || 0;
+              const sales = Number(p.salesPrice) || 0;
+              const stock = p.currentStock !== undefined ? p.currentStock : (type === 'Service' ? 0 : 15);
+              const isLow = stock > 0 && stock <= 8;
               return {
                 id: p._id || idx + 1,
-                sku,
+                sku: p.sku || `FUR-${String(idx + 1).padStart(3, '0')}`,
                 name: p.name,
-                type: p.type || 'Goods',
-                category: p.category || 'General Furniture',
-                costPrice: cp,
-                salesPrice: sp,
-                stock: `${qty} units`,
-                status: statusLabel,
-                statusDot,
-                statusStyle
+                type,
+                category: p.category || 'General',
+                image: p.image || (idx % 2 === 0 ? oliveChairImg : creamLoungeChair),
+                costPrice: cost,
+                salesPrice: sales,
+                stock,
+                status: stock === 0 && type !== 'Service' ? 'Out of Stock' : isLow ? 'Low Stock' : 'In Stock',
+                statusDot: isLow ? 'bg-[#F59E0B]' : 'bg-[#10B981]',
+                statusStyle: isLow ? 'bg-[#FEF7EC] text-[#D97706]' : 'bg-[#E5F7ED] text-[#1E7445]',
               };
             });
-            if (isMounted) setProducts(mapped);
+            if (isMounted) {
+              setProducts(mapped);
+              const extractedCats = Array.from(new Set(mapped.map(m => m.category))).filter(Boolean);
+              setCategories(prev => Array.from(new Set([...prev, ...extractedCats])));
+            }
           }
         }
       } catch (err) {
-        console.warn('Live products fetch error, using fallback:', err.message);
-      } finally {
-        if (isMounted) setIsLoading(false);
+        console.warn('Live products fetch failed:', err.message);
       }
     };
     loadProducts();
@@ -158,21 +210,22 @@ export const ProductsTable = ({ onCreateProduct }) => {
     costPrice: '',
     salesPrice: '',
     stock: '',
+    image: '',
     status: 'In Stock',
   });
 
-  const filterTabs = ['All', 'Living Room', 'Dining Furniture', 'Storage', 'Low Stock'];
+  const filterTabs = ['All', 'Goods', 'Service', 'Combo'];
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
-    if (activeFilterTab === 'Low Stock') result = result.filter((p) => p.status === 'Low Stock');
-    else if (activeFilterTab !== 'All') result = result.filter((p) => p.category.toLowerCase().includes(activeFilterTab.toLowerCase()));
-
+    if (activeFilterTab !== 'All') {
+      result = result.filter((p) => p.type === activeFilterTab);
+    }
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((p) =>
-        p.sku.toLowerCase().includes(q) ||
         p.name.toLowerCase().includes(q) ||
+        p.sku.toLowerCase().includes(q) ||
         p.category.toLowerCase().includes(q)
       );
     }
@@ -182,7 +235,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
     return result;
   }, [products, searchQuery, activeFilterTab, sortAsc]);
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const paginatedProducts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -190,144 +243,202 @@ export const ProductsTable = ({ onCreateProduct }) => {
   }, [filteredProducts, currentPage]);
 
   const handleOpenCreateModal = () => {
-    if (onCreateProduct) {
-      onCreateProduct();
-    } else {
-      setIsCreateModalOpen(true);
+    setEditingProduct(null);
+    setIsAddingNewCategory(false);
+    setNewProductForm({
+      sku: `SKU-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: '',
+      type: 'Goods',
+      category: categories[0] || 'Living Room Seating',
+      costPrice: '',
+      salesPrice: '',
+      stock: '15',
+      image: '',
+      status: 'In Stock',
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenEditModal = (p) => {
+    setEditingProduct(p);
+    setIsAddingNewCategory(false);
+    setNewProductForm({
+      sku: p.sku,
+      name: p.name,
+      type: p.type || 'Goods',
+      category: p.category || 'General',
+      costPrice: p.costPrice,
+      salesPrice: p.salesPrice,
+      stock: p.stock,
+      image: p.image || '',
+      status: p.status,
+    });
+    setIsCreateModalOpen(true);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewProductForm(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  const handleSaveProduct = (e) => {
+  const handleAddNewCategory = (e) => {
     e.preventDefault();
-    if (!newProductForm.sku || !newProductForm.name || !newProductForm.salesPrice) return;
+    if (!newCategoryInput.trim()) return;
+    const cat = newCategoryInput.trim();
+    if (!categories.includes(cat)) {
+      setCategories([...categories, cat]);
+    }
+    setNewProductForm(prev => ({ ...prev, category: cat }));
+    setNewCategoryInput('');
+    setIsAddingNewCategory(false);
+  };
 
-    const nextId = products.length + 1;
-    const isLowStock = newProductForm.status === 'Low Stock';
-    const statusStyle = isLowStock ? 'bg-[#FEF7EC] text-[#D97706]' : 'bg-[#E5F7ED] text-[#1E7445]';
-    const statusDot = isLowStock ? 'bg-[#F59E0B]' : 'bg-[#10B981]';
+  const handleSaveProduct = async (e) => {
+    e.preventDefault();
+    if (!newProductForm.name || !newProductForm.salesPrice) return;
 
-    const newEntry = {
-      id: nextId,
-      sku: newProductForm.sku,
-      name: newProductForm.name,
-      category: newProductForm.category,
-      costPrice: newProductForm.costPrice.startsWith('₹') ? newProductForm.costPrice : `₹ ${newProductForm.costPrice}`,
-      salesPrice: newProductForm.salesPrice.startsWith('₹') ? newProductForm.salesPrice : `₹ ${newProductForm.salesPrice}`,
-      stock: newProductForm.stock.includes('units') ? newProductForm.stock : `${newProductForm.stock} units`,
-      status: newProductForm.status,
-      statusDot,
-      statusStyle,
-    };
+    try {
+      const token = localStorage.getItem('token');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) headers.Authorization = `Bearer ${token}`;
 
-    setProducts([newEntry, ...products]);
+      const payload = {
+        name: newProductForm.name,
+        type: newProductForm.type,
+        category: newProductForm.category,
+        image: newProductForm.image,
+        costPrice: Number(newProductForm.costPrice) || 0,
+        salesPrice: Number(newProductForm.salesPrice) || 0,
+        currentStock: Number(newProductForm.stock) || 0,
+      };
+
+      if (editingProduct) {
+        const updated = products.map(p => p.id === editingProduct.id ? {
+          ...p,
+          ...payload,
+          sku: newProductForm.sku,
+          stock: payload.currentStock,
+          status: payload.currentStock <= 5 ? 'Low Stock' : 'In Stock'
+        } : p);
+        setProducts(updated);
+        await fetch(`/api/products/${editingProduct.id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } else {
+        const res = await fetch('/api/products', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload)
+        }).catch(() => null);
+
+        let savedProduct = {};
+        if (res && res.ok) {
+          const json = await res.json();
+          savedProduct = json.product || {};
+        }
+
+        const nextId = savedProduct._id || `p-${Date.now()}`;
+        const newEntry = {
+          id: nextId,
+          sku: newProductForm.sku,
+          name: newProductForm.name,
+          type: newProductForm.type,
+          category: newProductForm.category,
+          image: newProductForm.image || oliveChairImg,
+          costPrice: payload.costPrice,
+          salesPrice: payload.salesPrice,
+          stock: payload.currentStock,
+          status: newProductForm.status,
+          statusDot: payload.currentStock <= 5 ? 'bg-[#F59E0B]' : 'bg-[#10B981]',
+          statusStyle: payload.currentStock <= 5 ? 'bg-[#FEF7EC] text-[#D97706]' : 'bg-[#E5F7ED] text-[#1E7445]',
+        };
+
+        setProducts([newEntry, ...products]);
+      }
+    } catch (err) {
+      console.error('Error saving product:', err);
+    }
+
     setIsCreateModalOpen(false);
-    setNewProductForm({
-      sku: '',
-      name: '',
-      category: 'Living Room Seating',
-      costPrice: '',
-      salesPrice: '',
-      stock: '',
-      status: 'In Stock',
-    });
   };
 
   const handleToggleStockStatus = (productId) => {
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id === productId) {
-          const nextStatus = p.status === 'In Stock' ? 'Low Stock' : 'In Stock';
-          const nextStyle = nextStatus === 'In Stock' ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEF7EC] text-[#D97706]';
-          const nextDot = nextStatus === 'In Stock' ? 'bg-[#10B981]' : 'bg-[#F59E0B]';
-          return { ...p, status: nextStatus, statusStyle: nextStyle, statusDot: nextDot };
+          const isCurrentlyIn = p.status === 'In Stock';
+          return {
+            ...p,
+            status: isCurrentlyIn ? 'Low Stock' : 'In Stock',
+            statusDot: isCurrentlyIn ? 'bg-[#F59E0B]' : 'bg-[#10B981]',
+            statusStyle: isCurrentlyIn ? 'bg-[#FEF7EC] text-[#D97706]' : 'bg-[#E5F7ED] text-[#1E7445]',
+          };
         }
         return p;
       })
     );
-    setActiveRowMenuId(null);
   };
 
   const handleViewProductPdf = (p) => {
     const pdfData = {
       type: 'PRODUCT',
-      title: 'PRODUCT VALUATION & INVENTORY SPECIFICATION',
+      title: 'PRODUCT SPECIFICATION SHEET',
       documentNo: p.sku,
-      date: '02 Sep 2025',
-      dueDate: 'Current Stock Valuation',
+      date: new Date().toLocaleDateString('en-GB'),
+      dueDate: 'Active Catalog SKU',
       status: p.status,
       partner: {
         name: p.name,
-        company: `Category: ${p.category}`,
-        city: 'Ahmedabad, Gujarat',
+        email: `Category: ${p.category}`,
+        phone: `Type: ${p.type}`,
+        city: 'Luxury Atelier Collection',
       },
       tableData: {
-        headers: ['Specification Field', 'Details'],
+        headers: ['Specification Attribute', 'Value'],
         rows: [
-          ['Item Name', p.name],
+          ['Product Name', p.name],
           ['SKU Code', p.sku],
-          ['Category', p.category],
-          ['Cost Price (Materials & Labor)', p.costPrice],
-          ['Catalog Sales Price (MSRP)', p.salesPrice],
-          ['Warehouse Inventory Stock', `${p.stock} (${p.status})`],
+          ['Product Classification', p.type],
+          ['Collection Category', p.category],
+          ['Standard Cost Price', `₹ ${Number(p.costPrice).toLocaleString('en-IN')}`],
+          ['Retail Sales Price', `₹ ${Number(p.salesPrice).toLocaleString('en-IN')}`],
+          ['Current Available Stock', `${p.stock} units`],
+          ['Stock Availability Status', p.status],
         ],
       },
-      notes: 'Official product valuation catalog item synchronized with Urban Furniture central inventory.',
+      notes: 'Official Urban Furniture catalog document. Rates are inclusive of standard 18% GST.',
     };
 
     setSelectedPdfDoc(pdfData);
     setIsPdfModalOpen(true);
-    setActiveRowMenuId(null);
-  };
-
-  const handleDownloadProductPdfDirect = (p) => {
-    const pdfData = {
-      type: 'PRODUCT',
-      title: 'PRODUCT VALUATION & INVENTORY SPECIFICATION',
-      documentNo: p.sku,
-      date: '02 Sep 2025',
-      dueDate: 'Current Stock Valuation',
-      status: p.status,
-      partner: {
-        name: p.name,
-        company: `Category: ${p.category}`,
-        city: 'Ahmedabad, Gujarat',
-      },
-      tableData: {
-        headers: ['Specification Field', 'Details'],
-        rows: [
-          ['Item Name', p.name],
-          ['SKU Code', p.sku],
-          ['Category', p.category],
-          ['Cost Price (Materials & Labor)', p.costPrice],
-          ['Catalog Sales Price (MSRP)', p.salesPrice],
-          ['Warehouse Inventory Stock', `${p.stock} (${p.status})`],
-        ],
-      },
-      notes: 'Official product valuation catalog item synchronized with Urban Furniture central inventory.',
-    };
-
-    downloadDirectPdf(pdfData);
-    setActiveRowMenuId(null);
   };
 
   const handleExportPdf = () => {
-    const headers = ['SKU', 'Product Name', 'Category', 'Cost Price', 'Sales Price', 'Stock', 'Status'];
+    const headers = ['SKU', 'Product Name', 'Type', 'Category', 'Cost Price', 'Sales Price', 'Stock Status'];
     const rows = filteredProducts.map((p) => [
       p.sku,
       p.name,
+      p.type,
       p.category,
-      p.costPrice,
-      p.salesPrice,
-      p.stock,
+      `₹ ${Number(p.costPrice).toLocaleString('en-IN')}`,
+      `₹ ${Number(p.salesPrice).toLocaleString('en-IN')}`,
       p.status,
     ]);
 
-    const pdfData = createMasterRegisterPdfData('Products & Finished Goods Inventory Register', headers, rows);
-    downloadDirectPdf(pdfData);
+    const pdfData = createMasterRegisterPdfData('Products Master Catalog', headers, rows);
+    downloadDirectPdf(pdfData, 'Products_Master_Catalog.pdf');
   };
 
   return (
-    <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300">
+    <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden transition-all duration-300 space-y-0">
       
       {/* 1. Header */}
       <div className="p-5 sm:p-6 border-b border-[#F0EAE1] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -337,16 +448,18 @@ export const ProductsTable = ({ onCreateProduct }) => {
           </div>
           <div>
             <h2 className="font-serif-luxury text-lg sm:text-xl font-bold text-[#141A17] tracking-tight">
-              Products & Inventory Master
+              Products Master
             </h2>
             <p className="text-xs text-[#6B7A74] mt-0.5">
-              Manage furniture catalog items, bill of materials, and selling prices.
+              Manage furniture catalog, services, combo bundles, and prices.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:w-64">
+        <div className="flex items-center gap-2.5 w-full md:w-auto">
+          <ViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+          
+          <div className="relative flex-1 md:w-56">
             <Search className="w-4 h-4 text-[#8A9B93] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
@@ -359,6 +472,15 @@ export const ProductsTable = ({ onCreateProduct }) => {
               className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl pl-9 pr-3 py-2 text-xs text-[#141A17] placeholder:text-[#8A9B93] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F] transition-all"
             />
           </div>
+
+          <button
+            type="button"
+            onClick={handleExportPdf}
+            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-2 rounded-xl transition-colors cursor-pointer shadow-2xs"
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>PDF</span>
+          </button>
 
           <button
             type="button"
@@ -388,135 +510,202 @@ export const ProductsTable = ({ onCreateProduct }) => {
                   : 'bg-white text-[#5B6963] border border-[#E8E1D5] hover:bg-[#F2ECE4] hover:text-[#141A17]'
               }`}
             >
-              {tab}
+              {tab === 'All' ? 'All Catalog' : `${tab} Items`}
             </button>
           ))}
         </div>
 
-        <div className="flex items-center gap-2 ml-auto">
-          <button 
-            type="button" 
-            onClick={() => setSortAsc(!sortAsc)}
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
-            title="Toggle alphabetical sort"
-          >
-            <Filter className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>{sortAsc ? 'Name (A-Z)' : 'Name (Z-A)'}</span>
-          </button>
-          <button 
-            type="button" 
-            onClick={handleExportPdf}
-            className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
-            title="Generate & Export PDF"
-          >
-            <Download className="w-3.5 h-3.5 text-[#738C80]" />
-            <span>Export PDF</span>
-          </button>
-        </div>
+        <button 
+          type="button" 
+          onClick={() => setSortAsc(!sortAsc)}
+          className="inline-flex items-center gap-1.5 bg-white border border-[#E2DAD0] hover:bg-[#F5EFE6] text-[#4A5952] text-xs font-semibold px-3 py-1.5 rounded-xl transition-colors cursor-pointer shadow-2xs"
+        >
+          <span>Sort: {sortAsc ? 'A-Z' : 'Z-A'}</span>
+        </button>
       </div>
 
-      {/* 3. Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse min-w-187.5">
-          <thead>
-            <tr className="border-b border-[#EAE3D7] bg-[#F7F4EE] text-[11px] font-bold text-[#55665E] uppercase tracking-wider">
-              <th className="py-3.5 pl-6 pr-3">SKU</th>
-              <th className="py-3.5 px-3">Product Name</th>
-              <th className="py-3.5 px-3">Category</th>
-              <th className="py-3.5 px-3">Cost Price</th>
-              <th className="py-3.5 px-3">Sales Price</th>
-              <th className="py-3.5 px-3">Stock</th>
-              <th className="py-3.5 px-3">Status</th>
-              <th className="py-3.5 pr-6 pl-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
-            {paginatedProducts.map((p) => {
-              const isMenuOpen = activeRowMenuId === p.id;
+      {/* 3. VIEW: KANBAN MODE */}
+      {viewMode === 'kanban' ? (
+        <div className="p-5 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {paginatedProducts.map((p) => (
+            <div 
+              key={p.id}
+              className="bg-white rounded-3xl border border-[#E5DFD5] p-5 shadow-2xs hover:shadow-md transition-all duration-200 flex flex-col justify-between space-y-4 group overflow-hidden"
+            >
+              <div className="space-y-3.5">
+                {/* Product Image Banner */}
+                <div className="w-full h-40 bg-[#FAF8F5] rounded-2xl overflow-hidden relative border border-[#EBE4DA] flex items-center justify-center">
+                  {p.image ? (
+                    <img 
+                      src={p.image} 
+                      alt={p.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  ) : (
+                    <Package className="w-12 h-12 text-[#9AABA2]" />
+                  )}
 
-              return (
-                <tr key={p.id} className="hover:bg-[#FAF7F2] transition-colors">
-                  <td className="py-3.5 pl-6 pr-3">
-                    <button
-                      type="button"
-                      onClick={() => handleViewProductPdf(p)}
-                      className="font-semibold text-[#1C3A2F] hover:underline font-mono inline-flex items-center gap-1.5 cursor-pointer text-left group"
-                      title="Click to view product specification PDF"
-                    >
-                      <span>{p.sku}</span>
-                      <FileText className="w-3 h-3 text-[#738C80] group-hover:text-[#1C3A2F]" />
-                    </button>
-                  </td>
-                  <td className="py-3.5 px-3 font-semibold text-[#141A17]">{p.name}</td>
-                  <td className="py-3.5 px-3 text-[#55665E]">{p.category}</td>
-                  <td className="py-3.5 px-3 text-[#55665E] font-serif">{p.costPrice}</td>
-                  <td className="py-3.5 px-3 font-bold font-serif text-[#141A17]">{p.salesPrice}</td>
-                  <td className="py-3.5 px-3 font-medium text-[#141A17]">{p.stock}</td>
-                  <td className="py-3.5 px-3">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold ${p.statusStyle} shadow-2xs`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${p.statusDot}`} />
-                      <span>{p.status}</span>
+                  <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-md bg-[#14231C]/80 backdrop-blur-xs text-white text-[10px] font-mono font-bold">
+                      {p.sku}
                     </span>
-                  </td>
-                  <td className="py-3.5 pr-6 pl-3 text-right">
-                    <div className="flex items-center justify-end gap-1 relative">
-                      <button 
-                        type="button" 
-                        onClick={() => handleDownloadProductPdfDirect(p)}
-                        className="p-1.5 rounded-lg text-[#738C80] hover:text-[#1C3A2F] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
-                        title="Download Product Specification PDF"
-                      >
-                        <Printer className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setActiveRowMenuId(isMenuOpen ? null : p.id)}
-                        className="p-1.5 rounded-lg text-[#738C80] hover:text-[#141A17] hover:bg-[#EAE4DC] transition-colors cursor-pointer"
-                        title="More options"
-                      >
-                        <MoreVertical className="w-4 h-4" />
-                      </button>
+                    <span className="px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[#1C3A2F] text-[10.5px] font-bold shadow-xs">
+                      {p.type}
+                    </span>
+                  </div>
 
-                      {/* Context Menu */}
-                      {isMenuOpen && (
-                        <div className="absolute right-0 top-8 z-30 w-48 bg-white rounded-xl shadow-lg border border-[#E8E1D5] py-1 text-left">
-                          <button
-                            type="button"
-                            onClick={() => handleViewProductPdf(p)}
-                            className="w-full px-3.5 py-2 text-xs text-[#141A17] hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
-                          >
-                            <Eye className="w-3.5 h-3.5 text-[#1C3A2F]" />
-                            <span>View Spec PDF</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDownloadProductPdfDirect(p)}
-                            className="w-full px-3.5 py-2 text-xs text-[#141A17] hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
-                          >
-                            <Download className="w-3.5 h-3.5 text-[#1C3A2F]" />
-                            <span>Download PDF</span>
-                          </button>
-                          <div className="border-t border-[#F0EAE1] my-1"></div>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleStockStatus(p.id)}
-                            className="w-full px-3.5 py-2 text-xs text-[#1C3A2F] font-semibold hover:bg-[#FAF8F5] flex items-center gap-2 cursor-pointer"
-                          >
-                            <CheckCircle className="w-3.5 h-3.5" />
-                            <span>{p.status === 'In Stock' ? 'Mark Low Stock' : 'Mark In Stock'}</span>
-                          </button>
-                        </div>
-                      )}
-                    </div>
+                  <span className={`absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold shadow-xs ${p.statusStyle}`}>
+                    {p.status}
+                  </span>
+                </div>
+
+                {/* Details */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-[#84958C] uppercase tracking-wider block truncate">
+                    {p.category}
+                  </span>
+                  <h3 className="font-serif font-bold text-base text-[#141A17] group-hover:text-[#1C3A2F] transition-colors line-clamp-2 leading-snug">
+                    {p.name}
+                  </h3>
+                </div>
+
+                {/* Prices & Stock Grid */}
+                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-[#F0EAE1] text-xs">
+                  <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EBE4DA]">
+                    <span className="text-[10px] font-bold uppercase text-[#889890] block">Sales Price</span>
+                    <span className="text-sm font-bold text-[#141A17]">
+                      ₹ {Number(p.salesPrice).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  <div className="bg-[#FAF8F5] p-2.5 rounded-xl border border-[#EBE4DA]">
+                    <span className="text-[10px] font-bold uppercase text-[#889890] block">Cost Price</span>
+                    <span className="text-sm font-semibold text-[#66776F]">
+                      ₹ {Number(p.costPrice).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bottom Actions */}
+              <div className="pt-3 border-t border-[#F0EAE1] flex items-center justify-between">
+                <span className="text-xs text-[#52645B] font-medium">
+                  Stock: <strong className="text-[#141A17]">{p.stock} units</strong>
+                </span>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleViewProductPdf(p)}
+                    className="p-1.5 rounded-lg text-[#55665E] hover:bg-[#FAF8F5] cursor-pointer"
+                    title="View Spec PDF"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(p)}
+                    className="p-1.5 rounded-lg text-[#1C3A2F] hover:bg-[#FAF8F5] cursor-pointer"
+                    title="Edit Product"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        /* 4. VIEW: TABLE LIST VIEW */
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-[#FAF8F5] border-b border-[#F0EAE1] text-[11px] font-bold text-[#55665E] uppercase tracking-wider">
+                <th className="py-3 px-6">SKU / Item</th>
+                <th className="py-3 px-4">Type</th>
+                <th className="py-3 px-4">Category</th>
+                <th className="py-3 px-4 text-right">Cost Price</th>
+                <th className="py-3 px-4 text-right">Sales Price</th>
+                <th className="py-3 px-4 text-center">Stock</th>
+                <th className="py-3 px-4 text-center">Status</th>
+                <th className="py-3 px-6 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#F0EAE1] text-xs text-[#141A17]">
+              {paginatedProducts.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="py-8 text-center text-[#7A8A82]">
+                    No products found.
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                paginatedProducts.map((p) => (
+                  <tr key={p.id} className="hover:bg-[#FAF8F5]/80 transition-colors">
+                    <td className="py-3.5 px-6 font-bold text-[#141A17]">
+                      <div className="flex items-center gap-3">
+                        {p.image ? (
+                          <img src={p.image} alt={p.name} className="w-9 h-9 rounded-xl object-cover border border-[#DDD5C7] shrink-0" />
+                        ) : (
+                          <div className="w-9 h-9 rounded-xl bg-[#E8E1D5] flex items-center justify-center shrink-0">
+                            <Package className="w-4 h-4 text-[#55665E]" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-mono text-[10.5px] font-bold text-[#1C3A2F]">{p.sku}</div>
+                          <div className="font-medium text-[#141A17]">{p.name}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="px-2 py-0.5 rounded-md bg-[#FAF8F5] border border-[#E2DAD0] font-bold text-[10.5px] text-[#2D4A3E]">
+                        {p.type}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-[#55665E]">{p.category}</td>
+                    <td className="py-3.5 px-4 text-right font-medium text-[#66776F]">
+                      ₹ {Number(p.costPrice).toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-bold text-[#141A17]">
+                      ₹ {Number(p.salesPrice).toLocaleString('en-IN')}
+                    </td>
+                    <td className="py-3.5 px-4 text-center font-semibold text-[#141A17]">
+                      {p.stock} units
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10.5px] font-semibold ${p.statusStyle}`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${p.statusDot}`} />
+                        <span>{p.status}</span>
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-6 text-center">
+                      <div className="flex items-center justify-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleViewProductPdf(p)}
+                          className="p-1.5 rounded-lg text-[#55665E] hover:bg-[#F2ECE4] hover:text-[#141A17] cursor-pointer"
+                          title="View PDF Spec"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditModal(p)}
+                          className="p-1.5 rounded-lg text-[#55665E] hover:bg-[#F2ECE4] hover:text-[#141A17] cursor-pointer"
+                          title="Edit Product"
+                        >
+                          <Edit2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* 4. Pagination */}
+      {/* 5. Pagination */}
       <div className="px-6 py-4 border-t border-[#F0EAE1] bg-[#FAF8F5]/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#55665E]">
         <span>
           Showing {filteredProducts.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} to{' '}
@@ -558,17 +747,19 @@ export const ProductsTable = ({ onCreateProduct }) => {
         </div>
       </div>
 
-      {/* Create Product Modal */}
+      {/* Create / Edit Product Modal with Dynamic Category Creation & Image Upload */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-2xl max-w-md w-full overflow-hidden text-left animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-[#F0EAE1] flex items-center justify-between bg-[#FAF8F5]">
+          <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto text-left animate-scaleUp">
+            <div className="p-5 border-b border-[#F0EAE1] flex items-center justify-between bg-[#FAF8F5] sticky top-0 z-10">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-[#1C3A2F] text-white flex items-center justify-center">
                   <Package className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif-luxury font-bold text-base text-[#141A17]">Add Product Item</h3>
+                  <h3 className="font-serif-luxury font-bold text-base text-[#141A17]">
+                    {editingProduct ? 'Edit Product Item' : 'Add Product Item'}
+                  </h3>
                   <p className="text-[11px] text-[#6B7A74]">Configure catalog SKU and inventory rates</p>
                 </div>
               </div>
@@ -582,51 +773,59 @@ export const ProductsTable = ({ onCreateProduct }) => {
             </div>
 
             <form onSubmit={handleSaveProduct} className="p-5 space-y-4 text-xs">
-              <div className="grid grid-cols-3 gap-3">
+              {/* Product Image Upload */}
+              <div className="flex items-center gap-4 p-3 bg-[#FAF8F5] rounded-2xl border border-[#E5DFD5]">
+                {newProductForm.image ? (
+                  <img 
+                    src={newProductForm.image} 
+                    alt="Product Preview" 
+                    className="w-16 h-16 rounded-2xl object-cover border border-[#DDD5C7]" 
+                  />
+                ) : (
+                  <div className="w-16 h-16 rounded-2xl bg-[#E8E1D5] text-[#55665E] flex items-center justify-center">
+                    <Camera className="w-6 h-6" />
+                  </div>
+                )}
+                <div className="space-y-1">
+                  <label className="block text-xs font-bold text-[#141A17]">Product Image</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="text-[11px] text-[#66776F] file:mr-2.5 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#1C3A2F] file:text-white hover:file:bg-[#142C23] file:cursor-pointer"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">SKU Code</label>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">SKU Code *</label>
                   <input
                     type="text"
                     required
                     placeholder="e.g. FUR-TBL-006"
                     value={newProductForm.sku}
                     onChange={(e) => setNewProductForm({ ...newProductForm, sku: e.target.value })}
-                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F] focus:ring-1 focus:ring-[#1C3A2F]"
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs font-mono text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Type</label>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Product Type *</label>
                   <select
                     value={newProductForm.type}
                     onChange={(e) => setNewProductForm({ ...newProductForm, type: e.target.value })}
-                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs font-bold text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   >
-                    <option value="Goods">Goods (Stockable)</option>
-                    <option value="Service">Service</option>
-                    <option value="Combo">Combo</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Category</label>
-                  <select
-                    value={newProductForm.category}
-                    onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
-                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
-                  >
-                    <option value="Living Room Seating">Living Room Seating</option>
-                    <option value="Living Room Sofas">Living Room Sofas</option>
-                    <option value="Dining Furniture">Dining Furniture</option>
-                    <option value="Storage & Cabinetry">Storage & Cabinetry</option>
-                    <option value="Accent Furniture">Accent Furniture</option>
-                    <option value="General Furniture">General Furniture</option>
+                    <option value="Goods">Goods (Stockable Product)</option>
+                    <option value="Service">Service (Non-stockable)</option>
+                    <option value="Combo">Combo (Bundle / Package)</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-[#141A17] mb-1">Product Name</label>
+                <label className="block text-xs font-semibold text-[#141A17] mb-1">Product Name *</label>
                 <input
                   type="text"
                   required
@@ -637,11 +836,54 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 />
               </div>
 
+              {/* Dynamic Category Selection & Creation */}
+              <div className="p-3 bg-[#FAF8F5] rounded-2xl border border-[#E5DFD5] space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-[#141A17]">Category (Relational)</label>
+                  <button
+                    type="button"
+                    onClick={() => setIsAddingNewCategory(!isAddingNewCategory)}
+                    className="text-[11px] font-bold text-[#1C3A2F] hover:underline cursor-pointer"
+                  >
+                    {isAddingNewCategory ? '← Select Existing' : '+ Add New Category'}
+                  </button>
+                </div>
+
+                {isAddingNewCategory ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="e.g. Acoustic Wall Panels"
+                      value={newCategoryInput}
+                      onChange={(e) => setNewCategoryInput(e.target.value)}
+                      className="flex-1 bg-white border border-[#E2DAD0] rounded-xl px-3 py-1.5 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddNewCategory}
+                      className="px-3 py-1.5 bg-[#1C3A2F] text-white rounded-xl font-semibold text-xs cursor-pointer shadow-2xs"
+                    >
+                      Add
+                    </button>
+                  </div>
+                ) : (
+                  <select
+                    value={newProductForm.category}
+                    onChange={(e) => setNewProductForm({ ...newProductForm, category: e.target.value })}
+                    className="w-full bg-white border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs font-semibold text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                )}
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#141A17] mb-1">Cost Price (INR)</label>
                   <input
-                    type="text"
+                    type="number"
                     placeholder="e.g. 12000"
                     value={newProductForm.costPrice}
                     onChange={(e) => setNewProductForm({ ...newProductForm, costPrice: e.target.value })}
@@ -650,14 +892,14 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Sales Price (INR)</label>
+                  <label className="block text-xs font-semibold text-[#141A17] mb-1">Sales Price (INR) *</label>
                   <input
-                    type="text"
+                    type="number"
                     required
                     placeholder="e.g. 21500"
                     value={newProductForm.salesPrice}
                     onChange={(e) => setNewProductForm({ ...newProductForm, salesPrice: e.target.value })}
-                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs font-bold text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
                   />
                 </div>
               </div>
@@ -666,11 +908,12 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 <div>
                   <label className="block text-xs font-semibold text-[#141A17] mb-1">Stock Quantity</label>
                   <input
-                    type="text"
-                    placeholder="e.g. 15"
+                    type="number"
+                    disabled={newProductForm.type === 'Service'}
+                    placeholder={newProductForm.type === 'Service' ? 'N/A' : 'e.g. 15'}
                     value={newProductForm.stock}
                     onChange={(e) => setNewProductForm({ ...newProductForm, stock: e.target.value })}
-                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F]"
+                    className="w-full bg-[#FAF8F5] border border-[#E2DAD0] rounded-xl px-3 py-2 text-xs text-[#141A17] focus:outline-hidden focus:border-[#1C3A2F] disabled:opacity-50"
                   />
                 </div>
 
@@ -683,6 +926,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
                   >
                     <option value="In Stock">In Stock</option>
                     <option value="Low Stock">Low Stock</option>
+                    <option value="Out of Stock">Out of Stock</option>
                   </select>
                 </div>
               </div>
@@ -697,9 +941,9 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-[#1C3A2F] hover:bg-[#142C23] text-white font-semibold cursor-pointer shadow-xs"
+                  className="px-5 py-2 rounded-xl bg-[#1C3A2F] hover:bg-[#142C23] text-white font-semibold cursor-pointer shadow-xs"
                 >
-                  Save Product
+                  {editingProduct ? 'Save Changes' : 'Save Product'}
                 </button>
               </div>
             </form>

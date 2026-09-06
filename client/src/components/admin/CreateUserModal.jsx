@@ -78,6 +78,7 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
         },
         body: JSON.stringify({
           name: fullName.trim(),
+          loginId: userId.trim(),
           email: email.trim(),
           password: password,
           role: selectedRole

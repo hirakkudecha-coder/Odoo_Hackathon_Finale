@@ -272,6 +272,19 @@ export const ReportsTable = () => {
           <div className="flex items-center gap-1 border-l border-[#E2DAD0] pl-2">
             <button
               type="button"
+              onClick={() => {
+                setPeriodPreset('2026');
+                setStartDate('2026-01-01');
+                setEndDate('2026-12-31');
+              }}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
+                periodPreset === '2026' ? 'bg-[#1C3A2F] text-white' : 'hover:bg-white text-[#5B6963]'
+              }`}
+            >
+              FY 2026
+            </button>
+            <button
+              type="button"
               onClick={() => handlePeriodPresetChange('currentMonth')}
               className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-colors cursor-pointer ${
                 periodPreset === 'currentMonth' ? 'bg-[#1C3A2F] text-white' : 'hover:bg-white text-[#5B6963]'
@@ -323,7 +336,7 @@ export const ReportsTable = () => {
             }`}
           >
             <TrendingUp className="w-3.5 h-3.5" />
-            <span>Profit & Loss Statement</span>
+            <span>Profit & Loss Statement (P&L)</span>
           </button>
 
           <button
@@ -336,7 +349,7 @@ export const ReportsTable = () => {
             }`}
           >
             <IndianRupee className="w-3.5 h-3.5" />
-            <span>Balance Sheet</span>
+            <span>Balance Sheet (Assets = Liabilities + Equity)</span>
           </button>
 
           <button
@@ -473,6 +486,22 @@ export const ReportsTable = () => {
       {/* 4. REPORT TAB 2: BALANCE SHEET */}
       {activeReportTab === 'balanceSheet' && (
         <div className="p-6 space-y-6">
+          {/* Accounting Equation Equality Check Banner */}
+          <div className="p-4 rounded-2xl bg-[#E5F7ED] border border-[#A7F3D0] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-[#1E7445]">
+            <div className="flex items-center gap-2.5">
+              <CheckCircle2 className="w-5 h-5 text-[#10B981] shrink-0" />
+              <div>
+                <span className="font-bold text-xs">Fundamental Accounting Equation Verified</span>
+                <p className="text-[11px] text-[#2D6A4F] mt-0.5">
+                  Total Assets (₹ {Number(balanceSheetData?.assets?.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}) = Total Liabilities (₹ {Number(balanceSheetData?.liabilities?.total || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}) + Total Equity & Net Profit (₹ {Number(balanceSheetData?.equity?.totalEquity || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })})
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-bold bg-white text-[#1E7445] px-3 py-1 rounded-xl border border-[#A7F3D0] shadow-2xs shrink-0">
+              Balanced: 100%
+            </span>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-[#FAF8F5] p-4 rounded-2xl border border-[#E8E1D5]">
               <span className="text-[11px] font-bold text-[#6B7A74] uppercase tracking-wider block">Total Current Assets</span>

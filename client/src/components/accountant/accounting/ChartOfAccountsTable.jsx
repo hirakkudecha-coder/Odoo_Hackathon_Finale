@@ -167,19 +167,54 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
   const [newAccountForm, setNewAccountForm] = useState({
     code: '',
     name: '',
+    categoryGroup: 'Balance Sheet', // 'Balance Sheet' | 'Profit & Loss'
     type: 'Current Asset',
     balance: '',
     currency: 'INR',
     status: 'Active',
   });
 
-  const filterTabs = ['All', 'Bank & Cash', 'Current Asset', 'Current Liability', 'Operating Income', 'Expense'];
+  const filterTabs = [
+    'All', 
+    'Balance Sheet', 
+    'Profit & Loss', 
+    'Bank & Cash', 
+    'Assets', 
+    'Liabilities', 
+    'Income', 
+    'Expenses'
+  ];
 
   const filteredAccounts = useMemo(() => {
     let result = [...accounts];
-    if (activeFilterTab !== 'All') {
-      result = result.filter((a) => a.type.toLowerCase() === activeFilterTab.toLowerCase());
+    if (activeFilterTab === 'Balance Sheet') {
+      result = result.filter((a) => 
+        a.type.includes('Asset') || 
+        a.type.includes('Liability') || 
+        a.type.includes('Bank') || 
+        a.type.includes('Cash') ||
+        a.type.includes('Equity') ||
+        a.type.includes('Capital')
+      );
+    } else if (activeFilterTab === 'Profit & Loss') {
+      result = result.filter((a) => 
+        a.type.includes('Income') || 
+        a.type.includes('Revenue') || 
+        a.type.includes('Expense') || 
+        a.type.includes('Cost')
+      );
+    } else if (activeFilterTab === 'Assets') {
+      result = result.filter((a) => a.type.includes('Asset') || a.type.includes('Bank') || a.type.includes('Cash'));
+    } else if (activeFilterTab === 'Liabilities') {
+      result = result.filter((a) => a.type.includes('Liability') || a.type.includes('Payable'));
+    } else if (activeFilterTab === 'Income') {
+      result = result.filter((a) => a.type.includes('Income') || a.type.includes('Revenue'));
+    } else if (activeFilterTab === 'Expenses') {
+      result = result.filter((a) => a.type.includes('Expense') || a.type.includes('Cost'));
+    } else if (activeFilterTab === 'Bank & Cash') {
+      result = result.filter((a) => a.type.includes('Bank') || a.type.includes('Cash'));
     }
+
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((a) =>
@@ -194,7 +229,7 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
     return result;
   }, [accounts, searchQuery, activeFilterTab, sortAsc]);
 
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
   const totalPages = Math.max(1, Math.ceil(filteredAccounts.length / itemsPerPage));
   const paginatedAccounts = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -215,10 +250,10 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
 
     const nextId = accounts.length + 1;
     let typeBadge = 'bg-[#E5F7ED] text-[#1E7445]';
-    if (newAccountForm.type === 'Bank & Cash') typeBadge = 'bg-[#EBF3FE] text-[#2563EB]';
-    else if (newAccountForm.type === 'Current Liability') typeBadge = 'bg-[#FEF7EC] text-[#D97706]';
-    else if (newAccountForm.type === 'Operating Income') typeBadge = 'bg-[#F3E8FF] text-[#7E22CE]';
-    else if (newAccountForm.type === 'Expense') typeBadge = 'bg-[#FDE8E8] text-[#991B1B]';
+    if (newAccountForm.type.includes('Bank') || newAccountForm.type.includes('Cash')) typeBadge = 'bg-[#EBF3FE] text-[#2563EB]';
+    else if (newAccountForm.type.includes('Liability')) typeBadge = 'bg-[#FEF7EC] text-[#D97706]';
+    else if (newAccountForm.type.includes('Income') || newAccountForm.type.includes('Revenue')) typeBadge = 'bg-[#F3E8FF] text-[#7E22CE]';
+    else if (newAccountForm.type.includes('Expense') || newAccountForm.type.includes('Cost')) typeBadge = 'bg-[#FDE8E8] text-[#991B1B]';
 
     const newEntry = {
       id: nextId,
@@ -237,6 +272,7 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
     setNewAccountForm({
       code: '',
       name: '',
+      categoryGroup: 'Balance Sheet',
       type: 'Current Asset',
       balance: '',
       currency: 'INR',

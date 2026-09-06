@@ -23,6 +23,11 @@ const purchaseOrderItemSchema = new mongoose.Schema({
   subtotal: {
     type: Number,
     default: 0
+  },
+  analyticAccount: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'AnalyticAccount',
+    default: null
   }
 });
 
@@ -66,7 +71,7 @@ const purchaseOrderSchema = new mongoose.Schema(
 );
 
 // Calculate subtotals and totalAmount
-purchaseOrderSchema.pre('save', function (next) {
+purchaseOrderSchema.pre('save', async function (next) {
   if (this.items && this.items.length > 0) {
     this.items.forEach(item => {
       item.subtotal = Math.round(item.quantity * item.unitPrice * 100) / 100;
@@ -75,8 +80,13 @@ purchaseOrderSchema.pre('save', function (next) {
   }
 
   if (!this.orderNumber) {
-    const timestamp = Date.now().toString().slice(-6);
-    this.orderNumber = `PO/${new Date().getFullYear()}/${timestamp}`;
+    try {
+      const count = await mongoose.model('PurchaseOrder').countDocuments();
+      this.orderNumber = `P${String(count + 1).padStart(5, '0')}`;
+    } catch (e) {
+      const timestamp = Date.now().toString().slice(-5);
+      this.orderNumber = `P${timestamp}`;
+    }
   }
 
   next();

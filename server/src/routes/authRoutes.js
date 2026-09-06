@@ -4,6 +4,8 @@ const {
   register, 
   createUserByAdmin, 
   login, 
+  forgotPassword,
+  resetPassword,
   changePassword, 
   resetUserPasswordByAdmin, 
   setup2FA,
@@ -18,6 +20,8 @@ const { authLimiter } = require('../middleware/rateLimitMiddleware');
 // Public routes
 router.post('/register', authLimiter, register);
 router.post('/login', authLimiter, login);
+router.post('/forgot-password', authLimiter, forgotPassword);
+router.post('/reset-password', authLimiter, resetPassword);
 
 // Protected routes
 router.get('/me', authenticate, getMe);

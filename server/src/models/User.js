@@ -9,6 +9,14 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Name is required'],
       trim: true
     },
+    loginId: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+      minlength: 6,
+      maxlength: 12
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -19,7 +27,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: 6,
+      minlength: 8,
       select: false
     },
     role: {
@@ -42,6 +50,12 @@ const userSchema = new mongoose.Schema(
       default: 0
     },
     lockUntil: {
+      type: Date
+    },
+    resetPasswordToken: {
+      type: String
+    },
+    resetPasswordExpires: {
       type: Date
     },
     passwordChangedAt: {

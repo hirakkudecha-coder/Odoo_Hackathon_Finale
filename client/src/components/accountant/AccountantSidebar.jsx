@@ -30,15 +30,17 @@ export const AccountantSidebar = ({
 
   const menuStructure = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'sales', label: 'Sales', icon: ShoppingCart },
-    { id: 'purchases', label: 'Purchases', icon: ShoppingBag },
+    { id: 'sales', label: 'Sales (Orders & Invoices)', icon: ShoppingCart },
+    { id: 'purchases', label: 'Purchases (POs & Bills)', icon: ShoppingBag },
     { id: 'payments', label: 'Payments', icon: CreditCard },
-    { id: 'budgets', label: 'Budgets & Analytics', icon: PieChart },
-    { id: 'accounting', label: 'Accounting', icon: BookOpen },
-    { id: 'reports', label: 'Reports', icon: BarChart3 },
-    { id: 'contacts', label: 'Contacts', icon: Users },
-    { id: 'products', label: 'Products', icon: Package },
+    { id: 'budgets', label: 'Budgets & Revisions', icon: PieChart },
+    { id: 'analyticals', label: 'Analytic Accounts', icon: PieChart },
+    { id: 'accounting', label: 'Chart of Accounts', icon: BookOpen },
+    { id: 'journalsMaster', label: 'Journals Master', icon: BookOpen },
     { id: 'journalEntries', label: 'Journal Entries', icon: FileText },
+    { id: 'reports', label: 'Financial Reports', icon: BarChart3 },
+    { id: 'contacts', label: 'Contacts Master', icon: Users },
+    { id: 'products', label: 'Products Master', icon: Package },
   ];
 
   return (

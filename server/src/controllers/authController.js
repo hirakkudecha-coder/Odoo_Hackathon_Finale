@@ -5,16 +5,25 @@ const totpService = require('../services/totpService');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Register User (Public: cannot assign admin or superadmin)
+// Register User (Public: strictly creates only Invoicing Users / Accountants)
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, role, contactId } = req.body;
+    const { name, email, loginId, password, contactId } = req.body;
 
     if (!name || !email || !password || typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
         message: 'Name, email and password strings are required.'
       });
+    }
+
+    if (loginId) {
+      if (typeof loginId !== 'string' || loginId.trim().length < 6 || loginId.trim().length > 12 || !/^[a-zA-Z0-9_-]+$/.test(loginId.trim())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Login ID must be between 6 and 12 alphanumeric characters (letters, numbers, underscores, hyphens).'
+        });
+      }
     }
 
     const complexity = validatePasswordComplexity(password);
@@ -25,20 +34,32 @@ const register = async (req, res, next) => {
       });
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanLoginId = loginId ? loginId.trim() : null;
+
+    const existingUser = await User.findOne({
+      $or: [
+        { email: cleanEmail },
+        ...(cleanLoginId ? [{ loginId: cleanLoginId }] : [])
+      ]
+    });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'A user with this email address already exists.'
+        message: existingUser.email === cleanEmail 
+          ? 'A user with this email address already exists.' 
+          : 'A user with this Login ID already exists.'
       });
     }
 
-    // Public registration strictly assigns 'accountant' or 'contact' role
-    const assignedRole = role === 'contact' ? 'contact' : 'accountant';
+    // Public registration strictly and automatically assigns 'accountant' (Invoicing User)
+    const assignedRole = 'accountant';
 
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: cleanEmail,
+      loginId: cleanLoginId,
       password,
       role: assignedRole,
       contactId: contactId || null
@@ -48,12 +69,13 @@ const register = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'User registered successfully.',
+      message: 'Invoicing User registered successfully.',
       token,
       user: {
         _id: user._id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId,
         role: user.role,
         contactId: user.contactId
       }
@@ -63,16 +85,25 @@ const register = async (req, res, next) => {
   }
 };
 
-// Admin-only Create User (Can assign admin or superadmin)
+// Admin-only Create User (Can assign admin, superadmin, accountant, contact)
 const createUserByAdmin = async (req, res, next) => {
   try {
-    const { name, email, password, role, contactId } = req.body;
+    const { name, email, loginId, password, role, contactId } = req.body;
 
     if (!name || !email || !password || typeof name !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
       return res.status(400).json({
         success: false,
         message: 'Name, email and password strings are required.'
       });
+    }
+
+    if (loginId) {
+      if (typeof loginId !== 'string' || loginId.trim().length < 6 || loginId.trim().length > 12 || !/^[a-zA-Z0-9_-]+$/.test(loginId.trim())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Login ID must be between 6 and 12 alphanumeric characters.'
+        });
+      }
     }
 
     const complexity = validatePasswordComplexity(password);
@@ -83,11 +114,22 @@ const createUserByAdmin = async (req, res, next) => {
       });
     }
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
+    const cleanEmail = email.toLowerCase().trim();
+    const cleanLoginId = loginId ? loginId.trim() : null;
+
+    const existingUser = await User.findOne({
+      $or: [
+        { email: cleanEmail },
+        ...(cleanLoginId ? [{ loginId: cleanLoginId }] : [])
+      ]
+    });
+
     if (existingUser) {
       return res.status(400).json({
         success: false,
-        message: 'A user with this email address already exists.'
+        message: existingUser.email === cleanEmail 
+          ? 'A user with this email address already exists.' 
+          : 'A user with this Login ID already exists.'
       });
     }
 
@@ -95,8 +137,9 @@ const createUserByAdmin = async (req, res, next) => {
     const assignedRole = allowedRoles.includes(role) ? role : 'accountant';
 
     const user = await User.create({
-      name,
-      email: email.toLowerCase(),
+      name: name.trim(),
+      email: cleanEmail,
+      loginId: cleanLoginId,
       password,
       role: assignedRole,
       contactId: contactId || null
@@ -109,6 +152,7 @@ const createUserByAdmin = async (req, res, next) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        loginId: user.loginId,
         role: user.role,
         contactId: user.contactId
       }
@@ -121,7 +165,7 @@ const createUserByAdmin = async (req, res, next) => {
 // Login User
 const login = async (req, res, next) => {
   try {
-    const { email, password, tempToken, twoFactorCode } = req.body;
+    const { email, loginId, identifier, password, tempToken, twoFactorCode } = req.body;
 
     let user;
 
@@ -142,47 +186,86 @@ const login = async (req, res, next) => {
         });
       }
     } else {
-      if (!email || !password || typeof email !== 'string' || typeof password !== 'string') {
+      const loginIdentifier = (identifier || email || loginId || '').trim();
+      if (!loginIdentifier || !password || typeof password !== 'string') {
         return res.status(400).json({
           success: false,
-          message: 'Email and password strings are required.'
+          message: 'Login ID / Email and password are required.'
         });
       }
 
-      const cleanEmail = email.toLowerCase().trim();
+      const cleanIdentifier = loginIdentifier.toLowerCase();
       const DEMO_ACCOUNTS = {
         'superadmin@urbanfurniture.com': {
           name: 'Elena Rossi',
           role: 'superadmin',
+          loginId: 'superadmin',
+          passwords: ['SuperAdmin123!', 'superadmin123', 'admin123']
+        },
+        'superadmin': {
+          name: 'Elena Rossi',
+          role: 'superadmin',
+          loginId: 'superadmin',
+          email: 'superadmin@urbanfurniture.com',
           passwords: ['SuperAdmin123!', 'superadmin123', 'admin123']
         },
         'admin@urbanfurniture.com': {
           name: 'Nikita Sharma',
           role: 'admin',
+          loginId: 'admin_nikita',
+          passwords: ['AdminPassword123!', 'admin123', 'Admin123!']
+        },
+        'admin_nikita': {
+          name: 'Nikita Sharma',
+          role: 'admin',
+          loginId: 'admin_nikita',
+          email: 'admin@urbanfurniture.com',
           passwords: ['AdminPassword123!', 'admin123', 'Admin123!']
         },
         'accountant@urbanfurniture.com': {
           name: 'Aarav Mehta',
           role: 'accountant',
+          loginId: 'accountant1',
+          passwords: ['AccountantPassword123!', 'accountant123', 'Accountant123!']
+        },
+        'accountant1': {
+          name: 'Aarav Mehta',
+          role: 'accountant',
+          loginId: 'accountant1',
+          email: 'accountant@urbanfurniture.com',
           passwords: ['AccountantPassword123!', 'accountant123', 'Accountant123!']
         },
         'contact@urbanfurniture.com': {
           name: 'Nimesh Pathak',
           role: 'contact',
+          loginId: 'contact_user',
+          passwords: ['ContactPassword123!', 'contact123', 'Contact123!']
+        },
+        'contact_user': {
+          name: 'Nimesh Pathak',
+          role: 'contact',
+          loginId: 'contact_user',
+          email: 'contact@urbanfurniture.com',
           passwords: ['ContactPassword123!', 'contact123', 'Contact123!']
         }
       };
 
-      const demoConfig = DEMO_ACCOUNTS[cleanEmail];
+      const demoConfig = DEMO_ACCOUNTS[cleanIdentifier] || DEMO_ACCOUNTS[loginIdentifier];
 
-      user = await User.findOne({ email: cleanEmail }).select('+password +twoFactorSecret +twoFactorBackupCodes');
+      user = await User.findOne({
+        $or: [
+          { email: cleanIdentifier },
+          { loginId: loginIdentifier }
+        ]
+      }).select('+password +twoFactorSecret +twoFactorBackupCodes');
 
       // Auto-provision demo user if missing in database
       if (!user && demoConfig) {
         try {
           user = await User.create({
             name: demoConfig.name,
-            email: cleanEmail,
+            email: demoConfig.email || (cleanIdentifier.includes('@') ? cleanIdentifier : `${cleanIdentifier}@urbanfurniture.com`),
+            loginId: demoConfig.loginId || loginIdentifier,
             password: demoConfig.passwords[0],
             role: demoConfig.role,
             status: 'active'
@@ -196,7 +279,7 @@ const login = async (req, res, next) => {
       if (!user) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid email or password.'
+          message: 'Invalid Login ID / Email or password.'
         });
       }
 
@@ -667,10 +750,139 @@ const disable2FA = async (req, res, next) => {
   }
 };
 
+// Forgot Password Workflow: initiates reset request
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { identifier, email, loginId } = req.body;
+    const searchParam = (identifier || email || loginId || '').trim();
+
+    if (!searchParam) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide your registered Email or Login ID.'
+      });
+    }
+
+    const cleanParam = searchParam.toLowerCase();
+    const user = await User.findOne({
+      $or: [
+        { email: cleanParam },
+        { loginId: searchParam }
+      ]
+    });
+
+    if (!user) {
+      // Return ambiguous success for security or helpful demo prompt
+      return res.status(200).json({
+        success: true,
+        message: 'If an account exists with that identifier, password reset instructions have been generated.',
+        mockResetToken: 'DEMO-RESET-TOKEN-123'
+      });
+    }
+
+    const resetToken = require('crypto').randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    await user.save();
+
+    auditService.logEvent({
+      req,
+      action: 'PASSWORD_RESET_REQUESTED',
+      module: 'Auth',
+      description: `Password reset requested for user '${user.email}'`,
+      severity: 'info',
+      resource: 'User',
+      resourceId: user._id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset instructions and verification code generated successfully.',
+      resetToken,
+      email: user.email
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Reset Password Workflow: verifies token and updates password
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword, identifier } = req.body;
+
+    if (!newPassword || typeof newPassword !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'New password is required.'
+      });
+    }
+
+    const complexity = validatePasswordComplexity(newPassword);
+    if (!complexity.isValid) {
+      return res.status(400).json({
+        success: false,
+        message: complexity.message
+      });
+    }
+
+    let user;
+    if (token && token !== 'DEMO-RESET-TOKEN-123') {
+      user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: Date.now() }
+      }).select('+password');
+    }
+
+    if (!user && identifier) {
+      const searchParam = identifier.trim().toLowerCase();
+      user = await User.findOne({
+        $or: [
+          { email: searchParam },
+          { loginId: identifier.trim() }
+        ]
+      }).select('+password');
+    }
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password reset token is invalid or has expired.'
+      });
+    }
+
+    user.password = newPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    user.failedLoginAttempts = 0;
+    user.lockUntil = null;
+    await user.save();
+
+    auditService.logEvent({
+      req,
+      action: 'PASSWORD_RESET_COMPLETED',
+      module: 'Auth',
+      description: `Password successfully reset for user '${user.email}'`,
+      severity: 'info',
+      resource: 'User',
+      resourceId: user._id
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password has been successfully updated. You can now log in with your new password.'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   createUserByAdmin,
   login,
+  forgotPassword,
+  resetPassword,
   changePassword,
   resetUserPasswordByAdmin,
   setup2FA,

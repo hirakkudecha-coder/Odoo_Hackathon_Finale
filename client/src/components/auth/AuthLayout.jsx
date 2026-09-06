@@ -4,19 +4,30 @@ import { BrandPanel } from './BrandPanel';
 import { AuthTabs } from './AuthTabs';
 import { LoginForm } from './LoginForm';
 import { RegisterForm } from './RegisterForm';
+import { ForgotPasswordForm } from './ForgotPasswordForm';
 
 export const AuthLayout = ({ initialMode = 'login', onNavigateHome, onSuccess }) => {
   const [activeTab, setActiveTab] = useState(
-    initialMode === 'register' || initialMode === 'signup' ? 'register' : 'login'
+    initialMode === 'register' || initialMode === 'signup' 
+      ? 'register' 
+      : initialMode === 'forgot-password' 
+      ? 'forgot-password' 
+      : 'login'
   );
 
   useEffect(() => {
-    setActiveTab(initialMode === 'register' || initialMode === 'signup' ? 'register' : 'login');
+    setActiveTab(
+      initialMode === 'register' || initialMode === 'signup' 
+        ? 'register' 
+        : initialMode === 'forgot-password' 
+        ? 'forgot-password' 
+        : 'login'
+    );
   }, [initialMode]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    const targetPath = tab === 'login' ? '/login' : '/register';
+    const targetPath = tab === 'login' ? '/login' : tab === 'register' ? '/register' : '/forgot-password';
     window.history.pushState(null, '', targetPath);
   };
 
@@ -54,10 +65,12 @@ export const AuthLayout = ({ initialMode = 'login', onNavigateHome, onSuccess })
         {/* Form Container */}
         <div className="w-full max-w-md mx-auto my-auto py-2">
           {/* Top Segmented Tabs & Switch link */}
-          <AuthTabs
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
+          {activeTab !== 'forgot-password' && (
+            <AuthTabs
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            />
+          )}
 
           {/* Render Form with Smooth Entrance */}
           <div className="transition-all duration-300">
@@ -66,12 +79,19 @@ export const AuthLayout = ({ initialMode = 'login', onNavigateHome, onSuccess })
                 <LoginForm
                   onSuccess={onSuccess}
                   onSwitchToRegister={() => handleTabChange('register')}
+                  onSwitchToForgotPassword={() => handleTabChange('forgot-password')}
+                />
+              </div>
+            ) : activeTab === 'register' ? (
+              <div className="animate-fadeIn w-full">
+                <RegisterForm
+                  onSuccess={onSuccess}
+                  onSwitchToLogin={() => handleTabChange('login')}
                 />
               </div>
             ) : (
               <div className="animate-fadeIn w-full">
-                <RegisterForm
-                  onSuccess={onSuccess}
+                <ForgotPasswordForm
                   onSwitchToLogin={() => handleTabChange('login')}
                 />
               </div>

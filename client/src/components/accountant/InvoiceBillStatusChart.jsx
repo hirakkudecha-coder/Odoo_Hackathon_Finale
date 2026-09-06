@@ -1,22 +1,45 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
+
+/**
+ * Calculates dynamic nice ceiling and 4 equal step intervals for Y-axis scaling
+ */
+const getNiceScale = (maxValue) => {
+  const targetMax = Math.max(maxValue, 100);
+  const roughStep = targetMax / 4;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+  const factor = roughStep / magnitude;
+  let step;
+  if (factor <= 1.2) step = 1 * magnitude;
+  else if (factor <= 2.2) step = 2 * magnitude;
+  else if (factor <= 3.0) step = 2.5 * magnitude;
+  else if (factor <= 6.0) step = 5 * magnitude;
+  else step = 10 * magnitude;
+
+  const niceMax = step * 4;
+  return {
+    maxVal: niceMax,
+    ticks: [niceMax, niceMax * 0.75, niceMax * 0.5, niceMax * 0.25, 0]
+  };
+};
+
+/**
+ * Formats value (in thousands) into human-readable Indian currency shorthand
+ */
+const formatYLabel = (valInK) => {
+  if (valInK === 0) return '0';
+  const amount = valInK * 1000;
+  if (amount >= 100000) {
+    const lakhs = amount / 100000;
+    return Number.isInteger(lakhs) ? `${lakhs}L` : `${lakhs.toFixed(1)}L`;
+  }
+  return `${Math.round(valInK)}K`;
+};
 
 export const InvoiceBillStatusChart = () => {
   const [selectedRange, setSelectedRange] = useState('This Year');
-
-  const rawData = [
-    { month: 'Jan', invoices: 110, bills: 50 },
-    { month: 'Feb', invoices: 125, bills: 90 },
-    { month: 'Mar', invoices: 128, bills: 125 },
-    { month: 'Apr', invoices: 115, bills: 132 },
-    { month: 'May', invoices: 140, bills: 125 },
-    { month: 'Jun', invoices: 118, bills: 128 },
-    { month: 'Jul', invoices: 130, bills: 115 },
-    { month: 'Aug', invoices: 150, bills: 125 },
-    { month: 'Sep', invoices: 145, bills: 110 },
-  ];
-
-  const [data, setData] = useState(rawData);
+  const [monthlyStats, setMonthlyStats] = useState({});
+  const [hasRealData, setHasRealData] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -34,7 +57,6 @@ export const InvoiceBillStatusChart = () => {
           const invJson = await invRes.json();
           const billJson = await billRes.json();
 
-          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
           const invMap = {};
           const billMap = {};
 
@@ -42,7 +64,7 @@ export const InvoiceBillStatusChart = () => {
             invJson.customerInvoices.forEach(inv => {
               if (inv.invoiceDate) {
                 const m = new Date(inv.invoiceDate).toLocaleString('en-GB', { month: 'short' });
-                invMap[m] = (invMap[m] || 0) + (Number(inv.totalAmount || 0) / 1000);
+                invMap[m] = (invMap[m] || 0) + Number(inv.totalAmount || 0);
               }
             });
           }
@@ -51,19 +73,15 @@ export const InvoiceBillStatusChart = () => {
             billJson.vendorBills.forEach(b => {
               if (b.billDate) {
                 const m = new Date(b.billDate).toLocaleString('en-GB', { month: 'short' });
-                billMap[m] = (billMap[m] || 0) + (Number(b.totalAmount || 0) / 1000);
+                billMap[m] = (billMap[m] || 0) + Number(b.totalAmount || 0);
               }
             });
           }
 
           const hasData = Object.keys(invMap).length > 0 || Object.keys(billMap).length > 0;
-          if (hasData && isMounted) {
-            const mapped = months.map(m => ({
-              month: m,
-              invoices: Math.round(invMap[m] || 40),
-              bills: Math.round(billMap[m] || 30)
-            }));
-            setData(mapped);
+          if (isMounted) {
+            setMonthlyStats({ invMap, billMap });
+            setHasRealData(hasData);
           }
         }
       } catch (err) {
@@ -74,10 +92,58 @@ export const InvoiceBillStatusChart = () => {
     return () => { isMounted = false; };
   }, []);
 
-  const maxVal = 200; // Represents 2L
+  // Determine months to show based on selected range
+  const displayedMonths = useMemo(() => {
+    const allMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const currentMonthIdx = new Date().getMonth(); // 8 for Sep
+    if (selectedRange === 'This Quarter') {
+      const qStart = Math.floor(currentMonthIdx / 3) * 3;
+      return allMonths.slice(qStart, qStart + 3);
+    }
+    if (selectedRange === 'Last 6 Months') {
+      const res = [];
+      for (let i = 5; i >= 0; i--) {
+        const idx = (currentMonthIdx - i + 12) % 12;
+        res.push(allMonths[idx]);
+      }
+      return res;
+    }
+    // Default: 'This Year' (Jan through Sep/current month)
+    return allMonths.slice(0, Math.max(currentMonthIdx + 1, 9));
+  }, [selectedRange]);
+
+  // Map data for displayed months
+  const chartData = useMemo(() => {
+    const { invMap = {}, billMap = {} } = monthlyStats;
+    return displayedMonths.map(m => {
+      const realInv = invMap[m];
+      const realBill = billMap[m];
+
+      // If database has real activity, use exact numbers; otherwise fallback to small baseline
+      const actualInvoices = realInv !== undefined ? realInv : (hasRealData ? 40000 : 110000);
+      const actualBills = realBill !== undefined ? realBill : (hasRealData ? 30000 : 80000);
+
+      return {
+        month: m,
+        invoices: actualInvoices / 1000, // in thousands for scaling
+        bills: actualBills / 1000,
+        actualInvoices,
+        actualBills
+      };
+    });
+  }, [displayedMonths, monthlyStats, hasRealData]);
+
+  // Compute dynamic scale and ticks based on maximum value in view
+  const { maxVal, ticks } = useMemo(() => {
+    const rawMax = Math.max(
+      ...chartData.map(d => Math.max(d.invoices || 0, d.bills || 0)),
+      100
+    );
+    return getNiceScale(rawMax);
+  }, [chartData]);
 
   return (
-    <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-5 border border-[#2D4A3E]/10 shadow-2xs flex flex-col justify-between h-full">
+    <div className="bg-white/90 backdrop-blur-xs rounded-2xl p-5 border border-[#2D4A3E]/10 shadow-2xs flex flex-col justify-between h-full overflow-hidden">
       
       {/* Header with Title, Legend & Dropdown */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -115,64 +181,75 @@ export const InvoiceBillStatusChart = () => {
       </div>
 
       {/* Grouped Bar Chart Area */}
-      <div className="relative w-full h-52 flex items-end pt-4 pb-1">
+      <div className="relative w-full h-52 flex flex-col justify-between pt-2">
         
-        {/* Y-Axis Gridlines & Labels */}
-        <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-[#8E9B95] font-medium pr-2">
-          <div className="flex items-center justify-between border-b border-[#2D4A3E]/8 pb-0.5">
-            <span className="w-6">2L</span>
-            <div className="flex-1 border-b border-dashed border-[#2D4A3E]/10 ml-2" />
+        {/* Plot Canvas (Gridlines + Bars strictly contained) */}
+        <div className="relative w-full flex-1 flex items-end overflow-hidden">
+          
+          {/* Y-Axis Gridlines & Labels */}
+          <div className="absolute inset-0 flex flex-col justify-between pointer-events-none text-[10px] text-[#8E9B95] font-medium pr-1">
+            {ticks.map((tickVal, idx) => (
+              <div key={idx} className="flex items-center justify-between w-full">
+                <span className="w-8 text-right pr-2 shrink-0 font-mono text-[9.5px]">
+                  {formatYLabel(tickVal)}
+                </span>
+                <div
+                  className={`flex-1 border-b ${
+                    idx === ticks.length - 1
+                      ? 'border-[#2D4A3E]/20'
+                      : 'border-dashed border-[#2D4A3E]/10'
+                  }`}
+                />
+              </div>
+            ))}
           </div>
-          <div className="flex items-center justify-between border-b border-[#2D4A3E]/8 pb-0.5">
-            <span className="w-6">1.5L</span>
-            <div className="flex-1 border-b border-dashed border-[#2D4A3E]/10 ml-2" />
-          </div>
-          <div className="flex items-center justify-between border-b border-[#2D4A3E]/8 pb-0.5">
-            <span className="w-6">1L</span>
-            <div className="flex-1 border-b border-dashed border-[#2D4A3E]/10 ml-2" />
-          </div>
-          <div className="flex items-center justify-between border-b border-[#2D4A3E]/8 pb-0.5">
-            <span className="w-6">50K</span>
-            <div className="flex-1 border-b border-dashed border-[#2D4A3E]/10 ml-2" />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="w-6">0</span>
-            <div className="flex-1 border-b border-[#2D4A3E]/15 ml-2" />
+
+          {/* Bars Container */}
+          <div
+            className="w-full pl-9 pr-1 grid gap-1 sm:gap-2 h-full items-end z-10 overflow-hidden"
+            style={{ gridTemplateColumns: `repeat(${chartData.length}, minmax(0, 1fr))` }}
+          >
+            {chartData.map((item) => {
+              const invoiceHeight = Math.min(100, Math.max(0, (item.invoices / maxVal) * 100));
+              const billHeight = Math.min(100, Math.max(0, (item.bills / maxVal) * 100));
+
+              return (
+                <div key={item.month} className="flex flex-col items-center h-full justify-end group/bar relative">
+                  <div className="flex items-end gap-1 h-full w-full justify-center overflow-hidden">
+                    
+                    {/* Invoice Bar (Dark Green) */}
+                    <div
+                      style={{ height: `${invoiceHeight}%` }}
+                      className="w-2.5 sm:w-3.5 bg-[#244335] rounded-t-xs hover:bg-[#182F25] transition-all duration-300 relative cursor-pointer"
+                      title={`Invoices (${item.month}): ₹ ${Math.round(item.actualInvoices).toLocaleString('en-IN')}`}
+                    />
+                    
+                    {/* Bill Bar (Terracotta Orange) */}
+                    <div
+                      style={{ height: `${billHeight}%` }}
+                      className="w-2.5 sm:w-3.5 bg-[#C86D3B] rounded-t-xs hover:bg-[#A8582C] transition-all duration-300 relative cursor-pointer"
+                      title={`Bills (${item.month}): ₹ ${Math.round(item.actualBills).toLocaleString('en-IN')}`}
+                    />
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Bars Container */}
-        <div className="w-full pl-8 pr-1 grid grid-cols-9 gap-1 sm:gap-2 h-full items-end z-10">
-          {data.map((item) => {
-            const invoiceHeight = (item.invoices / maxVal) * 100;
-            const billHeight = (item.bills / maxVal) * 100;
-
-            return (
-              <div key={item.month} className="flex flex-col items-center h-full justify-end group">
-                <div className="flex items-end gap-1 h-[78%] w-full justify-center">
-                  
-                  {/* Invoice Bar (Dark Green) */}
-                  <div
-                    style={{ height: `${invoiceHeight}%` }}
-                    className="w-2.5 sm:w-3.5 bg-[#244335] rounded-t-xs hover:bg-[#182F25] transition-all duration-300"
-                    title={`Invoices: ₹ ${(item.invoices * 1000).toLocaleString()}`}
-                  />
-                  
-                  {/* Bill Bar (Terracotta Orange) */}
-                  <div
-                    style={{ height: `${billHeight}%` }}
-                    className="w-2.5 sm:w-3.5 bg-[#C86D3B] rounded-t-xs hover:bg-[#A8582C] transition-all duration-300"
-                    title={`Bills: ₹ ${(item.bills * 1000).toLocaleString()}`}
-                  />
-                </div>
-
-                {/* X-Axis Month Label */}
-                <span className="text-[10.5px] font-medium text-[#687C72] mt-2 group-hover:text-[#141A17] transition-colors">
-                  {item.month}
-                </span>
-              </div>
-            );
-          })}
+        {/* X-Axis Month Labels Row */}
+        <div
+          className="w-full pl-9 pr-1 grid gap-1 sm:gap-2 pt-2"
+          style={{ gridTemplateColumns: `repeat(${chartData.length}, minmax(0, 1fr))` }}
+        >
+          {chartData.map((item) => (
+            <span
+              key={item.month}
+              className="text-[10px] font-medium text-center text-[#687C72] hover:text-[#141A17] transition-colors truncate"
+            >
+              {item.month}
+            </span>
+          ))}
         </div>
 
       </div>

@@ -1,5 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { ChevronDown } from 'lucide-react';
+
+const formatYLabel = (val) => {
+  if (val === 0) return '0';
+  if (val >= 100000) {
+    const lakhs = val / 100000;
+    return Number.isInteger(lakhs) ? `${lakhs}L` : `${lakhs.toFixed(1)}L`;
+  }
+  if (val >= 1000) {
+    const k = val / 1000;
+    return Number.isInteger(k) ? `${k}K` : `${k.toFixed(1)}K`;
+  }
+  return val.toLocaleString('en-IN');
+};
 
 export const SalesPurchasesChart = () => {
   const [filter, setFilter] = useState('This Year');
@@ -88,6 +101,25 @@ export const SalesPurchasesChart = () => {
     fetchOrdersData();
   }, []);
 
+  const chartMax = useMemo(() => {
+    const raw = Math.max(
+      ...data.map(d => Math.max(d.actualSales || 0, d.actualPurchases || 0, d.sales * 2000, d.purchases * 2000)),
+      100000
+    );
+    const roughStep = raw / 4;
+    const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+    const factor = roughStep / magnitude;
+    let step;
+    if (factor <= 1.2) step = 1 * magnitude;
+    else if (factor <= 2.2) step = 2 * magnitude;
+    else if (factor <= 3.0) step = 2.5 * magnitude;
+    else if (factor <= 6.0) step = 5 * magnitude;
+    else step = 10 * magnitude;
+    return step * 4;
+  }, [data]);
+
+  const ticks = [chartMax, chartMax * 0.75, chartMax * 0.5, chartMax * 0.25, 0];
+
   return (
     <div className="bg-white rounded-2xl p-5 border border-[#E8E1D5] shadow-2xs flex flex-col justify-between h-full">
       
@@ -127,26 +159,12 @@ export const SalesPurchasesChart = () => {
         
         {/* Y Axis Guide Lines & Labels */}
         <div className="absolute inset-x-0 inset-y-0 flex flex-col justify-between pointer-events-none text-[9px] text-[#9AA7A1] pr-2">
-          <div className="flex items-center w-full">
-            <span className="w-6 text-left shrink-0">2L</span>
-            <div className="flex-1 border-b border-dashed border-[#EAE3D8]"></div>
-          </div>
-          <div className="flex items-center w-full">
-            <span className="w-6 text-left shrink-0">1.5L</span>
-            <div className="flex-1 border-b border-dashed border-[#EAE3D8]"></div>
-          </div>
-          <div className="flex items-center w-full">
-            <span className="w-6 text-left shrink-0">1L</span>
-            <div className="flex-1 border-b border-dashed border-[#EAE3D8]"></div>
-          </div>
-          <div className="flex items-center w-full">
-            <span className="w-6 text-left shrink-0">50K</span>
-            <div className="flex-1 border-b border-dashed border-[#EAE3D8]"></div>
-          </div>
-          <div className="flex items-center w-full">
-            <span className="w-6 text-left shrink-0">0</span>
-            <div className="flex-1 border-b border-[#D8CFBF]"></div>
-          </div>
+          {ticks.map((tickVal, idx) => (
+            <div key={idx} className="flex items-center w-full">
+              <span className="w-8 text-left shrink-0 font-mono text-[9px]">{formatYLabel(tickVal)}</span>
+              <div className={`flex-1 border-b ${idx === ticks.length - 1 ? 'border-[#D8CFBF]' : 'border-dashed border-[#EAE3D8]'}`}></div>
+            </div>
+          ))}
         </div>
 
         {/* Dual Bars Container */}

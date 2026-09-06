@@ -40,7 +40,7 @@ export const BrandPanel = () => {
   const slide = SLIDES[currentSlide];
 
   return (
-    <div className="relative w-full h-full min-h-125 bg-[#1E332A] text-[#FAF8F5] overflow-hidden rounded-3xl flex flex-col justify-between p-5 sm:p-6 lg:p-7 select-none shadow-xl">
+    <div className="relative w-full h-full min-h-64 sm:min-h-80 md:min-h-125 bg-[#1E332A] text-[#FAF8F5] overflow-hidden rounded-3xl flex flex-col justify-between p-4 sm:p-6 lg:p-7 select-none shadow-xl">
       {/* Background Furniture Visual */}
       <div className="absolute inset-0 z-0 overflow-hidden">
         <img
@@ -68,17 +68,17 @@ export const BrandPanel = () => {
       </div>
 
       {/* Middle Hero Visual Editorial Headline & Copy */}
-      <div className="relative z-10 my-auto py-3 space-y-3 max-w-md">
+      <div className="relative z-10 my-auto py-2.5 sm:py-3 space-y-2 sm:space-y-3 max-w-md">
         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-[9.5px] font-semibold tracking-widest uppercase text-[#FAF8F5]">
           <Sparkles className="w-3 h-3 text-[#E86034]" />
           <span>{slide.tag}</span>
         </div>
 
-        <h1 className="font-serif-luxury text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#FAF8F5] leading-[1.2] tracking-tight whitespace-pre-line drop-shadow-sm">
+        <h1 className="font-serif-luxury text-xl sm:text-2xl lg:text-[32px] font-bold text-[#FAF8F5] leading-[1.2] tracking-tight whitespace-pre-line drop-shadow-sm">
           {slide.headline}
         </h1>
 
-        <p className="text-xs text-[#D7E2DC] leading-relaxed font-normal max-w-sm drop-shadow-2xs">
+        <p className="text-xs sm:text-sm text-[#D7E2DC] leading-relaxed font-normal max-w-sm drop-shadow-2xs">
           {slide.subtext}
         </p>
       </div>

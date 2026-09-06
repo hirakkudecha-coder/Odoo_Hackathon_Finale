@@ -4,6 +4,7 @@ import { InputField } from './InputField';
 import { PasswordField } from './PasswordField';
 import { PrimaryButton } from './PrimaryButton';
 import { FormMessage } from './FormMessage';
+import { RoleSelector } from './RoleSelector';
 
 export const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
   const [name, setName] = useState('');

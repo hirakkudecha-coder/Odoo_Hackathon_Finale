@@ -2,9 +2,9 @@ import React from 'react';
 
 export const AuthTabs = ({ activeTab, onTabChange }) => {
   return (
-    <div className="flex items-center justify-between pb-2.5 border-b border-[#EAE4DC] mb-3.5 pr-10 sm:pr-12">
+    <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2.5 pb-2.5 border-b border-[#EAE4DC] mb-3.5">
       {/* Segmented Pill Switcher with Geometric Concentric Borders */}
-      <div className="inline-flex p-1 bg-[#EFE9E0] rounded-full border border-[#DDD5C9] shadow-2xs">
+      <div className="inline-flex p-1 bg-[#EFE9E0] rounded-full border border-[#DDD5C9] shadow-2xs shrink-0">
         <button
           type="button"
           onClick={() => onTabChange('login')}

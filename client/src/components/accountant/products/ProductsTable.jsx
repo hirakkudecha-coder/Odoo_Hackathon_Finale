@@ -22,10 +22,6 @@ import {
 import { ViewModeToggle } from '../../common/ViewModeToggle';
 import { DocumentPdfModal } from '../DocumentPdfModal';
 import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
-import oliveChairImg from '../../../assets/images/olive_chair.png';
-import creamLoungeChair from '../../../assets/images/cream_lounge_chair.png';
-import royalBlueSofa from '../../../assets/images/royal_blue_sofa.png';
-import diningTable from '../../../assets/images/dining_table.png';
 
 export const ProductsTable = ({ onCreateProduct }) => {
   const [viewMode, setViewMode] = useState('list');

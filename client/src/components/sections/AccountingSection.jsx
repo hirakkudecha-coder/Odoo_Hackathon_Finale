@@ -136,7 +136,7 @@ export const AccountingSection = ({ onOpenAuth }) => {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs sm:text-sm">
+              <table className="w-full text-left text-xs sm:text-sm min-w-[520px]">
                 <thead>
                   <tr className="border-b border-[#E8E1D5] text-[#6A7570] uppercase text-[10px] tracking-wider font-bold">
                     <th className="pb-3 w-20">Code</th>

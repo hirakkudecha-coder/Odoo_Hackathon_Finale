@@ -277,11 +277,11 @@ export const SecuritySettingsModal = ({ isOpen, onClose, currentUser, onUserUpda
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#14231C]/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fadeIn">
-      <div className="bg-[#FAF8F5] w-full max-w-2xl rounded-3xl border border-[#E8E1D5] shadow-2xl overflow-hidden flex flex-col my-auto text-left">
+    <div className="fixed inset-0 z-50 bg-[#14231C]/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto animate-fadeIn">
+      <div className="bg-[#FAF8F5] w-full max-w-2xl max-h-[90vh] rounded-3xl border border-[#E8E1D5] shadow-2xl overflow-hidden flex flex-col my-auto text-left">
         
         {/* Modal Header */}
-        <div className="px-6 py-5 border-b border-[#E8E1D5] flex items-center justify-between bg-white">
+        <div className="px-6 py-5 border-b border-[#E8E1D5] flex items-center justify-between bg-white shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-[#14231C] text-[#FAF8F5] flex items-center justify-center shadow-xs">
               <ShieldCheck className="w-5 h-5 text-[#C88A58]" />

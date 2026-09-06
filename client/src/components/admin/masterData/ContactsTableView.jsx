@@ -268,7 +268,7 @@ export const ContactsTableView = ({ onCreateContact }) => {
 
       {/* 3. Table Container */}
       <div className="overflow-x-auto border border-[#EFE8DC] rounded-2xl">
-        <table className="w-full text-left text-xs">
+        <table className="w-full text-left text-xs min-w-[720px]">
           <thead>
             <tr className="bg-[#FAF8F5] text-[10px] uppercase font-bold text-[#6D7D76] tracking-wider border-b border-[#EFE8DC]">
               <th className="py-3.5 px-4 font-semibold">

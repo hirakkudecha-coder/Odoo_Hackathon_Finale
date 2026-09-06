@@ -412,7 +412,7 @@ export const ConciergeLeadsPage = ({ onNavigateTab }) => {
       {activeTab === 'inquiries' && (
         <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-[#FAF8F5] border-b border-[#E8E1D5] text-[#66756F] uppercase tracking-wider text-[11px] font-bold">
                   <th className="py-3.5 px-4">Inquiry Code</th>
@@ -498,7 +498,7 @@ export const ConciergeLeadsPage = ({ onNavigateTab }) => {
       {activeTab === 'tours' && (
         <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-[#FAF8F5] border-b border-[#E8E1D5] text-[#66756F] uppercase tracking-wider text-[11px] font-bold">
                   <th className="py-3.5 px-4">Booking Code</th>
@@ -585,7 +585,7 @@ export const ConciergeLeadsPage = ({ onNavigateTab }) => {
       {activeTab === 'tickets' && (
         <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-[#FAF8F5] border-b border-[#E8E1D5] text-[#66756F] uppercase tracking-wider text-[11px] font-bold">
                   <th className="py-3.5 px-4">Ticket Number</th>
@@ -675,7 +675,7 @@ export const ConciergeLeadsPage = ({ onNavigateTab }) => {
       {activeTab === 'partners' && (
         <div className="bg-white rounded-3xl border border-[#E8E1D5] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-[#FAF8F5] border-b border-[#E8E1D5] text-[#66756F] uppercase tracking-wider text-[11px] font-bold">
                   <th className="py-3.5 px-4">Partner Code</th>

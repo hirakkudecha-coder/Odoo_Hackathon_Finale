@@ -124,7 +124,7 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
       onClick={onClose}
     >
       <div 
-        className="relative w-full max-w-5xl bg-[#FAF8F5] rounded-3xl border border-[#E6DFD4] shadow-2xl overflow-hidden flex flex-col md:flex-row my-auto transition-all duration-300"
+        className="relative w-full max-w-5xl max-h-[90vh] bg-[#FAF8F5] rounded-3xl border border-[#E6DFD4] shadow-2xl overflow-y-auto flex flex-col md:flex-row my-auto transition-all duration-300"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}

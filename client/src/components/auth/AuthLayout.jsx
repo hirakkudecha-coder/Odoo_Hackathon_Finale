@@ -33,12 +33,12 @@ export const AuthLayout = ({ initialMode = 'login', onNavigateHome, onSuccess })
   return (
     <div className="min-h-screen w-full bg-[#FAF8F5] flex flex-col md:flex-row items-stretch selection:bg-[#2D4A3E] selection:text-[#FAF8F5] p-3 sm:p-4 lg:p-5 gap-4 sm:gap-5">
       {/* Left Visual Brand Panel - 50% Split */}
-      <div className="w-full md:w-1/2 flex flex-col min-h-125">
+      <div className="w-full md:w-1/2 flex flex-col min-h-64 sm:min-h-80 md:min-h-125">
         <BrandPanel />
       </div>
 
       {/* Right Authentication Section - 50% Split (Symmetrically Framed, Zero Floating Voids) */}
-      <div className="w-full md:w-1/2 bg-white rounded-3xl border border-[#E6DFD4] shadow-sm p-6 sm:p-8 lg:p-10 flex flex-col justify-between min-h-125">
+      <div className="w-full md:w-1/2 bg-white rounded-3xl border border-[#E6DFD4] shadow-sm p-6 sm:p-8 lg:p-10 flex flex-col justify-between min-h-auto md:min-h-125">
         {/* Top: Back to Home link */}
         <div className="flex items-center justify-between pb-1">
           <button

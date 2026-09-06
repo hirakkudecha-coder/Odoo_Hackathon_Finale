@@ -511,7 +511,7 @@ export const ActivityLogsPage = () => {
 
         {/* 5. Logs Table */}
         <div className="overflow-x-auto rounded-2xl border border-[#F0EAE1]">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full text-left text-xs border-collapse min-w-[760px]">
             <thead>
               <tr className="bg-[#F8F5F0] text-[#55635D] font-semibold border-b border-[#E8E1D5]">
                 <th className="py-3 px-4">Log ID</th>

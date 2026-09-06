@@ -125,7 +125,7 @@ export const RecentBillsTable = ({ onViewAll }) => {
 
       {/* Table Content */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+        <table className="w-full text-left border-collapse min-w-[480px]">
           <thead>
             <tr className="border-b border-[#2D4A3E]/8 text-[11px] font-semibold text-[#7A8A82]">
               <th className="py-2.5 px-2 font-medium">Bill #</th>

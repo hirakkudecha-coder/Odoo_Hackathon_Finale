@@ -13,7 +13,13 @@ import {
 import designerPortrait from '../../assets/images/designer_portrait.png';
 import { SecuritySettingsModal } from '../common/SecuritySettingsModal';
 
-export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser, onLogout }) => {
+export const AccountantHeader = ({ 
+  onNavigateHome, 
+  onToggleSidebar, 
+  sidebarOpen, 
+  currentUser, 
+  onLogout 
+}) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [securityModalOpen, setSecurityModalOpen] = useState(false);
@@ -116,7 +122,7 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser,
           onClick={onToggleSidebar}
           className="p-2 rounded-xl bg-white border border-[#E4DCD0] text-[#14231C] hover:text-[#2D4A3E] hover:bg-[#F2ECE3] active:scale-95 transition-all cursor-pointer shadow-2xs shrink-0 flex items-center justify-center group"
           aria-label="Toggle Navigation Sidebar"
-          title="Toggle Sidebar"
+          title={sidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
         >
           <Menu className="w-5 h-5 text-[#14231C] group-hover:text-[#2D4A3E]" />
         </button>

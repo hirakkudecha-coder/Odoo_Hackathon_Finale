@@ -60,16 +60,17 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
       {/* 2. Main Content Canvas */}
       <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
         
-        {/* Fixed Header */}
+        {/* Top Header with Hamburger Toggle (100% Fixed at Top - Never scrolls away) */}
         <AccountantHeader 
           onNavigateHome={onNavigateHome}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          sidebarOpen={sidebarOpen}
           currentUser={currentUser}
           onLogout={onLogout}
         />
 
         {/* Scrollable Dashboard Body */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-5 space-y-5 w-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-6 lg:px-8 py-6 space-y-6 w-full">
           
           {/* Conditional Views */}
           {activeMenu === 'sales' ? (

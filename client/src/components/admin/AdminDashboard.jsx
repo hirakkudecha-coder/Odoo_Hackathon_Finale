@@ -114,7 +114,7 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
               <GreetingBanner userName={currentUser?.name?.split(' ')[0]} />
 
               {/* 4 Financial KPI Summary Cards */}
-              <KpiCards />
+              <KpiCards onNavigateTab={handleSelectMenu} />
 
               {/* Middle Row 1: Charts & Financial Health */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -122,21 +122,21 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
                 {/* Sales vs Purchases Bar Chart (6 cols) */}
                 <div className="lg:col-span-6 flex">
                   <div className="w-full">
-                    <SalesPurchasesChart />
+                    <SalesPurchasesChart onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
                 {/* Profit & Loss Overview (3 cols) */}
                 <div className="lg:col-span-3 flex">
                   <div className="w-full">
-                    <ProfitLossCard />
+                    <ProfitLossCard onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
                 {/* Budget Snapshot (3 cols) */}
                 <div className="lg:col-span-3 flex">
                   <div className="w-full">
-                    <BudgetSnapshotCard />
+                    <BudgetSnapshotCard onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
@@ -148,7 +148,7 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
                 {/* Recent Transactions Table (7 cols) */}
                 <div className="lg:col-span-7 flex">
                   <div className="w-full">
-                    <RecentTransactionsTable />
+                    <RecentTransactionsTable onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
@@ -167,21 +167,21 @@ export const AdminDashboard = ({ onNavigateHome, onOpenCreateUser, currentUser, 
                 {/* Top Selling Products (4 cols) */}
                 <div className="lg:col-span-4 flex">
                   <div className="w-full">
-                    <TopSellingProducts />
+                    <TopSellingProducts onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
                 {/* Sales by Category Donut Chart (4.5 cols) */}
                 <div className="lg:col-span-5 flex">
                   <div className="w-full">
-                    <SalesByCategoryChart />
+                    <SalesByCategoryChart onNavigateTab={handleSelectMenu} />
                   </div>
                 </div>
 
                 {/* Reports List (3.5 cols) */}
                 <div className="lg:col-span-3 flex">
                   <div className="w-full">
-                    <FinancialReportsList />
+                    <FinancialReportsList onSelectReport={() => handleSelectMenu('reports')} />
                   </div>
                 </div>
 

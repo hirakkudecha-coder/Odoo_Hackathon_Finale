@@ -9,6 +9,7 @@ import {
   ArrowUp
 } from 'lucide-react';
 import { PurchaseOrdersTable } from './PurchaseOrdersTable';
+import { ContactsTableView } from '../masterData/ContactsTableView';
 import purchaseBanner from '../../../assets/images/purchase_banner.png';
 
 export const PurchasePage = ({ onNavigateTab, onCreatePO }) => {
@@ -57,11 +58,7 @@ export const PurchasePage = ({ onNavigateTab, onCreatePO }) => {
   ];
 
   const handleTabClick = (tabId) => {
-    if (tabId === 'suppliers' && onNavigateTab) {
-      onNavigateTab('masterData');
-    } else {
-      setActiveTab(tabId);
-    }
+    setActiveTab(tabId);
   };
 
   return (
@@ -146,8 +143,12 @@ export const PurchasePage = ({ onNavigateTab, onCreatePO }) => {
         })}
       </div>
 
-      {/* Active View: Purchase Orders Table */}
-      <PurchaseOrdersTable onCreatePO={onCreatePO} />
+      {/* Active View */}
+      {activeTab === 'suppliers' ? (
+        <ContactsTableView onCreateContact={onCreatePO} />
+      ) : (
+        <PurchaseOrdersTable onCreatePO={onCreatePO} />
+      )}
 
     </div>
   );

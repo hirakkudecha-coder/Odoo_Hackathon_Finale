@@ -8,10 +8,11 @@ import {
   MoreVertical 
 } from 'lucide-react';
 
-export const SuperAdminKpiCards = () => {
+export const SuperAdminKpiCards = ({ onNavigateTab }) => {
   const cards = [
     {
       id: 'orgs',
+      targetTab: 'organizations',
       title: 'Total Organizations',
       value: '12',
       change: '+20% from last month',
@@ -22,6 +23,7 @@ export const SuperAdminKpiCards = () => {
     },
     {
       id: 'users',
+      targetTab: 'users',
       title: 'Total Users',
       value: '248',
       change: '+18% from last month',
@@ -32,6 +34,7 @@ export const SuperAdminKpiCards = () => {
     },
     {
       id: 'subs',
+      targetTab: 'organizations',
       title: 'Active Subscriptions',
       value: '10',
       change: '+25% from last month',
@@ -42,6 +45,7 @@ export const SuperAdminKpiCards = () => {
     },
     {
       id: 'revenue',
+      targetTab: 'reports',
       title: 'Total Revenue (All Orgs)',
       value: '₹ 12,48,300',
       change: '+12% from last month',
@@ -59,7 +63,9 @@ export const SuperAdminKpiCards = () => {
         return (
           <div
             key={card.id}
-            className="bg-white rounded-3xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative flex flex-col justify-between"
+            onClick={() => onNavigateTab && onNavigateTab(card.targetTab)}
+            title={`View ${card.title} Details`}
+            className="bg-white rounded-3xl p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative flex flex-col justify-between cursor-pointer group"
           >
             {/* Top row: Icon & 3-dots Menu */}
             <div className="flex items-center justify-between">

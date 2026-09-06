@@ -10,6 +10,7 @@ import {
   ArrowUp 
 } from 'lucide-react';
 import { ChartOfAccountsTable } from './ChartOfAccountsTable';
+import { JournalEntriesTable } from '../../accountant/journals/JournalEntriesTable';
 import accountingBanner from '../../../assets/images/accounting_banner.png';
 
 export const AccountingPage = ({ onNavigateTab, onAddAccount }) => {
@@ -142,23 +143,17 @@ export const AccountingPage = ({ onNavigateTab, onAddAccount }) => {
         })}
       </div>
 
-      {/* Active View: Chart of Accounts Table */}
+      {/* Active View */}
       {activeTab === 'chartOfAccounts' && (
         <ChartOfAccountsTable onAddAccount={onAddAccount} />
       )}
 
-      {activeTab !== 'chartOfAccounts' && (
-        <div className="bg-white rounded-3xl p-12 border border-[#E8E1D5] shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#F5F1EA] text-[#2D4A3E] flex items-center justify-center mx-auto border border-[#E4DCD0]">
-            <BookOpen className="w-7 h-7" />
-          </div>
-          <h3 className="font-serif font-bold text-lg text-[#141A17]">
-            {navigationTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <p className="text-xs text-[#6B7A74] max-w-sm mx-auto">
-            General ledger postings, double-entry journal entries, and analytic cost centers are synchronized.
-          </p>
-        </div>
+      {activeTab === 'journals' && (
+        <JournalEntriesTable onCreateEntry={onAddAccount} />
+      )}
+
+      {activeTab === 'analyticAccounts' && (
+        <ChartOfAccountsTable onAddAccount={onAddAccount} />
       )}
 
     </div>

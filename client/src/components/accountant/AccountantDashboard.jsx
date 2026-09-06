@@ -96,25 +96,25 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
               <AccountantGreetingBanner />
 
               {/* 4 Financial KPI Summary Cards */}
-              <AccountantKpiCards />
+              <AccountantKpiCards onNavigateTab={(tabId) => setActiveMenu(tabId)} />
 
               {/* Middle Row: Invoice & Bill Status Chart (5 cols) + Payment Overview Donut (4 cols) + Top Customers (3 cols) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 <div className="lg:col-span-5 flex">
                   <div className="w-full">
-                    <InvoiceBillStatusChart />
+                    <InvoiceBillStatusChart onNavigateTab={(tabId) => setActiveMenu(tabId)} />
                   </div>
                 </div>
 
                 <div className="lg:col-span-4 flex">
                   <div className="w-full">
-                    <PaymentOverviewDonut />
+                    <PaymentOverviewDonut onNavigateTab={(tabId) => setActiveMenu(tabId)} />
                   </div>
                 </div>
 
                 <div className="lg:col-span-3 flex">
                   <div className="w-full">
-                    <TopCustomersList />
+                    <TopCustomersList onNavigateTab={(tabId) => setActiveMenu(tabId)} />
                   </div>
                 </div>
               </div>
@@ -123,13 +123,13 @@ export const AccountantDashboard = ({ onNavigateHome, onNavigateAdminDashboard, 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 <div className="lg:col-span-6 flex">
                   <div className="w-full">
-                    <RecentInvoicesTable />
+                    <RecentInvoicesTable onNavigateTab={(tabId) => setActiveMenu(tabId)} />
                   </div>
                 </div>
 
                 <div className="lg:col-span-6 flex">
                   <div className="w-full">
-                    <RecentBillsTable />
+                    <RecentBillsTable onNavigateTab={(tabId) => setActiveMenu(tabId)} />
                   </div>
                 </div>
               </div>

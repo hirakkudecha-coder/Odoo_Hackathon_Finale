@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, Package, ArrowDownLeft, ArrowUpRight, Wallet } from 'lucide-react';
 
-export const KpiCards = () => {
+export const KpiCards = ({ onNavigateTab }) => {
   const [metrics, setMetrics] = useState({
     totalSales: 245000,
     totalPurchases: 132500,
@@ -65,6 +65,7 @@ export const KpiCards = () => {
 
   const cards = [
     {
+      id: 'sales',
       title: 'Total Sales',
       value: formatCurrency(metrics.totalSales),
       change: '12%',
@@ -76,6 +77,7 @@ export const KpiCards = () => {
       sparkPath: 'M0 22 Q 25 18, 45 22 T 85 8 T 120 12',
     },
     {
+      id: 'purchase',
       title: 'Total Purchases',
       value: formatCurrency(metrics.totalPurchases),
       change: '8%',
@@ -87,6 +89,7 @@ export const KpiCards = () => {
       sparkPath: 'M0 24 Q 30 20, 50 16 T 90 20 T 120 8',
     },
     {
+      id: 'payments',
       title: 'Receivables',
       value: formatCurrency(metrics.receivables),
       change: '4%',
@@ -98,6 +101,7 @@ export const KpiCards = () => {
       sparkPath: 'M0 12 Q 35 10, 60 18 T 95 12 T 120 22',
     },
     {
+      id: 'payments',
       title: 'Payables',
       value: formatCurrency(metrics.payables),
       change: '6%',
@@ -117,6 +121,8 @@ export const KpiCards = () => {
         return (
           <div 
             key={idx}
+            onClick={() => onNavigateTab && onNavigateTab(card.id)}
+            title={`View ${card.title} module`}
             className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E8E1D5] shadow-2xs hover:shadow-lg hover:-translate-y-1 hover:border-[#2D4A3E]/30 transition-all duration-300 flex flex-col justify-between cursor-pointer group"
           >
             {/* Top row: Icon + Title + Trend Pill */}

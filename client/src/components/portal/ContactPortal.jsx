@@ -157,14 +157,6 @@ export const ContactPortal = ({ currentUser, onLogout, onNavigateHome }) => {
 
       const isInvoice = selectedDocument.docType === 'invoice';
 
-      if (currentUser?.role === 'contact') {
-        // Portal customer settlement: records reference and marks acknowledgment without 403 ledger failure
-        setSettleModalOpen(false);
-        setIsSubmittingPayment(false);
-        alert(`Payment reference of ₹ ${Number(settleAmount).toLocaleString('en-IN')} submitted successfully via ${settleMethod}! Our accounts desk will reconcile and update your document status.`);
-        return;
-      }
-
       const payload = {
         paymentType: isInvoice ? 'receive_money' : 'send_money',
         amount: Number(settleAmount),

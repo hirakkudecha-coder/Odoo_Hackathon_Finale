@@ -8,7 +8,10 @@ import {
   IndianRupee,
   ArrowUp
 } from 'lucide-react';
-import { SalesOrdersTable } from './SalesOrdersTable';
+import { SalesOrdersTable } from '../../accountant/sales/SalesOrdersTable';
+import { ContactsTableView } from '../masterData/ContactsTableView';
+import { ProductsTable } from '../../accountant/products/ProductsTable';
+import { PaymentsTable } from '../payments/PaymentsTable';
 import salesBanner from '../../../assets/images/sales_banner.png';
 
 export const SalesPage = ({ onNavigateTab, onOpenCreateUser }) => {
@@ -58,11 +61,7 @@ export const SalesPage = ({ onNavigateTab, onOpenCreateUser }) => {
   ];
 
   const handleTabClick = (tabId) => {
-    if (tabId === 'customers' && onNavigateTab) {
-      onNavigateTab('masterData');
-    } else {
-      setActiveTab(tabId);
-    }
+    setActiveTab(tabId);
   };
 
   return (
@@ -136,7 +135,7 @@ export const SalesPage = ({ onNavigateTab, onOpenCreateUser }) => {
                   <span className="font-serif font-bold text-xl sm:text-2xl text-[#141A17] tracking-tight block">
                     {kpi.value}
                   </span>
-                  <div className="flex items-center gap-1 text-[10px] font-bold text-[#1E7445] mt-0.5">
+                  <div className="flex items-center gap-1 text-[10px] font-bold font-numeric text-[#1E7445] mt-0.5">
                     <ArrowUp className="w-3 h-3" />
                     <span>{kpi.change}</span>
                   </div>
@@ -147,23 +146,21 @@ export const SalesPage = ({ onNavigateTab, onOpenCreateUser }) => {
         })}
       </div>
 
-      {/* Active View: Sales Orders Table */}
-      {activeTab === 'salesOrders' && (
+      {/* Active View */}
+      {(activeTab === 'salesOrders' || activeTab === 'salesInvoices') && (
         <SalesOrdersTable onCreateSO={onOpenCreateUser} />
       )}
 
-      {activeTab !== 'salesOrders' && (
-        <div className="bg-white rounded-3xl p-12 border border-[#E8E1D5] shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#F5F1EA] text-[#2D4A3E] flex items-center justify-center mx-auto border border-[#E4DCD0]">
-            <ShoppingCart className="w-7 h-7" />
-          </div>
-          <h3 className="font-serif font-bold text-lg text-[#141A17]">
-            {navigationTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <p className="text-xs text-[#6B7A74] max-w-sm mx-auto">
-            Real-time customer billing and automated payment reconciliation are active.
-          </p>
-        </div>
+      {activeTab === 'receipts' && (
+        <PaymentsTable onRecordPayment={onOpenCreateUser} />
+      )}
+
+      {activeTab === 'customers' && (
+        <ContactsTableView onCreateContact={onOpenCreateUser} />
+      )}
+
+      {activeTab === 'products' && (
+        <ProductsTable onCreateProduct={onOpenCreateUser} />
       )}
 
     </div>

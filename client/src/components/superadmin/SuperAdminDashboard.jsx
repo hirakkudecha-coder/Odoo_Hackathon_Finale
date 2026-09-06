@@ -103,7 +103,7 @@ export const SuperAdminDashboard = ({
               />
 
               {/* 4 Top KPI Cards */}
-              <SuperAdminKpiCards />
+              <SuperAdminKpiCards onNavigateTab={handleSelectMenu} />
 
               {/* Middle Row: Organization Growth (6 cols) + Recent Orgs (3.2 cols) + User Distribution Donut (2.8 cols) */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">

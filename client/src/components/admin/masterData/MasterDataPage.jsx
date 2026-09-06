@@ -7,6 +7,9 @@ import {
   PieChart 
 } from 'lucide-react';
 import { ContactsTableView } from './ContactsTableView';
+import { ProductsTable } from '../../accountant/products/ProductsTable';
+import { ChartOfAccountsTable } from '../accounting/ChartOfAccountsTable';
+import { JournalEntriesTable } from '../../accountant/journals/JournalEntriesTable';
 import masterDataBanner from '../../../assets/images/master_data_banner.png';
 
 export const MasterDataPage = ({ onOpenCreateUser }) => {
@@ -76,18 +79,20 @@ export const MasterDataPage = ({ onOpenCreateUser }) => {
         <ContactsTableView onCreateContact={onOpenCreateUser} />
       )}
 
-      {activeTab !== 'contacts' && (
-        <div className="bg-white rounded-3xl p-12 border border-[#E8E1D5] shadow-xs text-center space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-[#F5F1EA] text-[#2D4A3E] flex items-center justify-center mx-auto border border-[#E4DCD0]">
-            <Package className="w-7 h-7" />
-          </div>
-          <h3 className="font-serif font-bold text-lg text-[#141A17]">
-            {navigationTabs.find((t) => t.id === activeTab)?.label}
-          </h3>
-          <p className="text-xs text-[#6B7A74] max-w-sm mx-auto">
-            This module is ready for live ERP catalog synchronization. Manage records, analytic tags, and ledger bindings seamlessly.
-          </p>
-        </div>
+      {activeTab === 'products' && (
+        <ProductsTable onCreateProduct={onOpenCreateUser} />
+      )}
+
+      {activeTab === 'chartOfAccounts' && (
+        <ChartOfAccountsTable onAddAccount={onOpenCreateUser} />
+      )}
+
+      {activeTab === 'journals' && (
+        <JournalEntriesTable onCreateEntry={onOpenCreateUser} />
+      )}
+
+      {activeTab === 'analyticAccounts' && (
+        <ChartOfAccountsTable onAddAccount={onOpenCreateUser} />
       )}
 
     </div>

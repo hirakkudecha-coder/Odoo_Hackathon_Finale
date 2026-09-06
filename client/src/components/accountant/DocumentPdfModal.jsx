@@ -17,10 +17,10 @@ export const DocumentPdfModal = ({ isOpen, onClose, documentData }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#141A17]/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#141A17]/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto">
       
       {/* Modal Card */}
-      <div className="bg-[#FAF8F5] w-full max-w-5xl h-[92vh] max-h-[900px] rounded-3xl border border-[#E8E1D5] shadow-2xl flex flex-col overflow-hidden text-[#141A17]">
+      <div className="bg-[#FAF8F5] w-full max-w-5xl h-[90vh] max-h-225 my-auto rounded-3xl border border-[#E8E1D5] shadow-2xl flex flex-col overflow-hidden text-[#141A17]">
         
         {/* Top Header Bar */}
         <div className="px-6 py-4 bg-white border-b border-[#EAE3D7] flex items-center justify-between gap-4 shrink-0">

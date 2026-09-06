@@ -525,7 +525,7 @@ export const PaymentsTable = ({ onRecordPayment }) => {
         <div className="flex items-center gap-1.5">
           <button 
             disabled={currentPage === 1}
-            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer transition-colors"
             title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />

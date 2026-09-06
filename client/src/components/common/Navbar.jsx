@@ -134,63 +134,6 @@ export const Navbar = ({
                     </a>
                   );
                 })}
-
-                {/* Direct SPA luxury page shortcuts */}
-                <div className="h-3.5 w-px bg-[#2D4A3E]/20 mx-1" />
-                <a
-                  href="/showrooms"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavigateShowrooms) onNavigateShowrooms();
-                    else {
-                      window.history.pushState(null, '', '/showrooms');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
-                    window.location.pathname === '/showrooms'
-                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
-                      : 'text-[#2D4A3E] hover:bg-white/60'
-                  }`}
-                >
-                  Showrooms
-                </a>
-                <a
-                  href="/about#story"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavigateAbout) onNavigateAbout('story');
-                    else {
-                      window.history.pushState(null, '', '/about#story');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
-                    window.location.pathname === '/about'
-                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
-                      : 'text-[#2D4A3E] hover:bg-white/60'
-                  }`}
-                >
-                  Our Story
-                </a>
-                <a
-                  href="/partner-helpdesk"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (onNavigatePartnerHelpdesk) onNavigatePartnerHelpdesk('helpdesk');
-                    else {
-                      window.history.pushState(null, '', '/partner-helpdesk');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className={`text-[10px] 2xl:text-[11px] font-semibold uppercase tracking-wider px-2 2xl:px-2.5 py-1.5 rounded-full transition-all duration-200 flex items-center justify-center whitespace-nowrap ${
-                    window.location.pathname === '/partner-helpdesk'
-                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
-                      : 'text-[#2D4A3E] hover:bg-white/60'
-                  }`}
-                >
-                  Helpdesk & Trade
-                </a>
               </nav>
             </div>
 
@@ -307,52 +250,6 @@ export const Navbar = ({
                   </a>
                 );
               })}
-
-              {/* Quick links to new full-page modules */}
-              <div className="grid grid-cols-3 gap-1.5 pt-2 mt-2 border-t border-[#2D4A3E]/12">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onNavigateAbout) onNavigateAbout('story');
-                    else {
-                      window.history.pushState(null, '', '/about');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
-                >
-                  Our Story
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onNavigateShowrooms) onNavigateShowrooms();
-                    else {
-                      window.history.pushState(null, '', '/showrooms');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
-                >
-                  Showrooms
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onNavigatePartnerHelpdesk) onNavigatePartnerHelpdesk('helpdesk');
-                    else {
-                      window.history.pushState(null, '', '/partner-helpdesk');
-                      window.dispatchEvent(new PopStateEvent('popstate'));
-                    }
-                  }}
-                  className="py-1.5 px-2 text-[10px] font-semibold uppercase tracking-wider rounded-lg bg-[#EAE4DC]/60 text-[#2D4A3E] hover:bg-[#2D4A3E] hover:text-[#FAF8F5] transition-all text-center"
-                >
-                  Help Desk
-                </button>
-              </div>
 
               <div className="flex flex-col gap-2 pt-2 border-t border-[#2D4A3E]/15">
                 {onOpenCreateUser && (

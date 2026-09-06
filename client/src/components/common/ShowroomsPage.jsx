@@ -211,23 +211,13 @@ export const ShowroomsPage = ({
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Atelier</span>
             </button>
-            <div className="hidden sm:block h-5 w-[1px] bg-[#D4CEBF]"></div>
+            <div className="hidden sm:block h-5 w-px bg-[#D4CEBF]"></div>
             <button
               onClick={handleBackHome}
               className="hidden sm:block cursor-pointer text-left"
               title="Return to Atelier Home"
             >
               <BrandLogo />
-            </button>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => handleOpenBooking('Mumbai Flagship Atelier')}
-              className="bg-[#2D4A3E] hover:bg-[#1C332A] text-[#FAF8F5] px-4 py-2 rounded-full text-xs font-semibold tracking-wide transition-all shadow-md cursor-pointer flex items-center gap-2"
-            >
-              <Calendar className="w-3.5 h-3.5 text-[#D2E7A4]" />
-              <span>Book Atelier Tour</span>
             </button>
           </div>
         </div>
@@ -282,13 +272,13 @@ export const ShowroomsPage = ({
             className="bg-white rounded-3xl border border-[#E8E4DC] overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 grid grid-cols-1 lg:grid-cols-12 gap-0 group"
           >
             {/* Image Column */}
-            <div className={`lg:col-span-6 relative overflow-hidden bg-[#182B23] min-h-[340px] lg:min-h-[460px] ${idx % 2 === 1 ? 'lg:order-2' : ''}`}>
+            <div className={`lg:col-span-6 relative overflow-hidden bg-[#182B23] min-h-85 lg:min-h-115 ${idx % 2 === 1 ? 'lg:order-2' : ''}`}>
               <img
                 src={showroom.image}
                 alt={showroom.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-95 group-hover:brightness-100"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+              <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent"></div>
               <div className="absolute top-6 left-6">
                 <span className="bg-[#101C17]/85 backdrop-blur-md text-[#D2E7A4] border border-[#2D4A3E] text-[11px] font-mono uppercase tracking-widest px-3 py-1 rounded-full">
                   {showroom.badge}
@@ -363,14 +353,6 @@ export const ShowroomsPage = ({
 
               {/* Action Buttons */}
               <div className="pt-6 border-t border-[#EFECE6] flex flex-wrap items-center gap-4">
-                <button
-                  onClick={() => handleOpenBooking(showroom.name)}
-                  className="bg-[#2D4A3E] hover:bg-[#1A2D25] text-white px-5 py-3 rounded-full text-xs font-semibold tracking-wide transition-all shadow-md hover:shadow-lg cursor-pointer flex items-center gap-2"
-                >
-                  <Calendar className="w-4 h-4 text-[#D2E7A4]" />
-                  <span>Book Private Tour</span>
-                </button>
-
                 <a
                   href={showroom.mapUrl}
                   target="_blank"

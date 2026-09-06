@@ -605,7 +605,7 @@ export const ActivityLogsPage = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg border border-[#E8E1D5] hover:bg-[#FAF8F5] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="p-1.5 rounded-lg border border-[#E8E1D5] hover:bg-[#FAF8F5] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -615,7 +615,7 @@ export const ActivityLogsPage = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg border border-[#E8E1D5] hover:bg-[#FAF8F5] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              className="p-1.5 rounded-lg border border-[#E8E1D5] hover:bg-[#FAF8F5] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
@@ -625,8 +625,8 @@ export const ActivityLogsPage = () => {
 
       {/* 7. Detailed Log Inspector Modal */}
       {selectedLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn">
-          <div className="bg-white w-full max-w-xl rounded-3xl p-6 sm:p-7 border border-[#E8E1D5] shadow-2xl space-y-5 text-left animate-scaleIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-fadeIn overflow-y-auto">
+          <div className="bg-white w-full max-w-xl max-h-[90vh] overflow-y-auto my-auto rounded-3xl p-6 sm:p-7 border border-[#E8E1D5] shadow-2xl space-y-5 text-left animate-scaleIn">
             <div className="flex items-center justify-between pb-3 border-b border-[#F0EAE1]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#1C3A2F] text-white flex items-center justify-center font-mono font-bold">

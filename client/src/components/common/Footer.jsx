@@ -16,47 +16,61 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk, onNavigateAbout,
         <div className="pb-12 border-b border-[#1E332A]">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 lg:gap-20 max-w-4xl text-xs">
             
-            {/* Col 1: Company */}
+            {/* Col 1: Explore & Portals */}
             <div className="space-y-4">
-              <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Company</h4>
+              <h4 className="font-bold uppercase tracking-widest text-[#D2E7A4] text-[11px]">Explore & Portals</h4>
               <ul className="space-y-2.5 text-[#A1B8AF]">
                 <li>
                   <a
-                    href="/partner-helpdesk#helpdesk"
+                    href="/showrooms"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateShowrooms) {
+                        onNavigateShowrooms();
+                      } else {
+                        window.history.pushState(null, '', '/showrooms');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Showrooms
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/about#story"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (onNavigateAbout) {
+                        onNavigateAbout('story');
+                      } else {
+                        window.history.pushState(null, '', '/about#story');
+                        window.dispatchEvent(new PopStateEvent('popstate'));
+                      }
+                    }}
+                    className="hover:text-white transition-colors block cursor-pointer"
+                  >
+                    Our Story
+                  </a>
+                </li>
+                <li>
+                  <a
+                    href="/partner-helpdesk"
                     onClick={(e) => {
                       e.preventDefault();
                       if (onNavigatePartnerHelpdesk) {
                         onNavigatePartnerHelpdesk('helpdesk');
                       } else {
-                        window.history.pushState(null, '', '/partner-helpdesk#helpdesk');
+                        window.history.pushState(null, '', '/partner-helpdesk');
                         window.dispatchEvent(new PopStateEvent('popstate'));
                       }
                     }}
                     className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-2 group"
                   >
-                    <span>Help Desk</span>
+                    <span>Helpdesk & Trade</span>
                     <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#D2E7A4] border border-[#274438] group-hover:border-[#E86034] transition-colors">
-                      24/7
-                    </span>
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/partner-helpdesk#partner"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (onNavigatePartnerHelpdesk) {
-                        onNavigatePartnerHelpdesk('partner');
-                      } else {
-                        window.history.pushState(null, '', '/partner-helpdesk#partner');
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                      }
-                    }}
-                    className="hover:text-white transition-colors cursor-pointer inline-flex items-center gap-2 group"
-                  >
-                    <span>Partner Program</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#182B23] text-[#E8C547] border border-[#274438] group-hover:border-[#E8C547] transition-colors">
-                      Trade
+                      Live
                     </span>
                   </a>
                 </li>
@@ -75,24 +89,7 @@ export const Footer = ({ onOpenAuth, onNavigatePartnerHelpdesk, onNavigateAbout,
                     }}
                     className="hover:text-white transition-colors block cursor-pointer"
                   >
-                    Categories
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="/showrooms"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      if (onNavigateShowrooms) {
-                        onNavigateShowrooms();
-                      } else {
-                        window.history.pushState(null, '', '/showrooms');
-                        window.dispatchEvent(new PopStateEvent('popstate'));
-                      }
-                    }}
-                    className="hover:text-white transition-colors block cursor-pointer"
-                  >
-                    Showroom Locator
+                    Catalogue & Categories
                   </a>
                 </li>
               </ul>

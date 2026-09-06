@@ -276,7 +276,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search purchase orders..."
-              className="w-full bg-[#FAF8F5] border border-[#E4DCD0] rounded-xl pl-9 pr-3.5 py-2 text-xs text-[#141A17] placeholder-[#8A9791] focus:outline-hidden focus:border-[#2D4A3E] focus:bg-white transition-all shadow-2xs"
+              className="w-full bg-[#FAF8F5] border border-[#E4DCD0] rounded-xl pl-9 pr-3.5 py-2 text-xs text-[#141A17] placeholder:text-[#8A9791] focus:outline-hidden focus:border-[#2D4A3E] focus:bg-white transition-all shadow-2xs"
             />
           </div>
 
@@ -485,7 +485,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
         <div className="flex items-center gap-1.5">
           <button 
             disabled={currentPage === 1}
-            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer transition-colors"
             title="Previous Page"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -497,7 +497,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
 
           <button 
             disabled={true}
-            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
+            className="p-1.5 rounded-lg border border-[#E4DCD0] bg-white hover:bg-[#FAF8F5] text-[#55635D] disabled:opacity-40 disabled:cursor-not-allowed enabled:cursor-pointer transition-colors"
             title="Next Page"
           >
             <ChevronRight className="w-4 h-4" />

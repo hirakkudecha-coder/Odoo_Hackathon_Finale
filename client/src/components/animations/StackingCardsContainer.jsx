@@ -221,11 +221,11 @@ export const StackingCardsContainer = () => {
 
                   {/* Right Column: Hero Furniture Photography with 3D Depth & Floating Badge */}
                   <div className="col-span-5 sm:col-span-5 lg:col-span-6 flex items-center justify-center relative py-0.5 sm:py-1">
-                    <div className="relative w-full max-w-xs sm:max-w-sm lg:max-w-md flex items-center justify-center min-h-[70px] sm:min-h-[105px] md:min-h-[135px] lg:min-h-[165px]">
+                    <div className="relative w-full max-w-sm sm:max-w-md lg:max-w-xl flex items-center justify-center min-h-30 sm:min-h-42.5 md:min-h-55 lg:min-h-67.5">
                       
                       {/* Subtle pedestal stage glow for Card 2 (white chair) to provide contrast and grounding */}
                       {card.id === 'card-2' && (
-                        <div className="absolute inset-0 m-auto w-18 h-18 sm:w-26 sm:h-26 md:w-36 md:h-36 lg:w-44 lg:h-44 rounded-full bg-radial from-[#E8DEC8]/60 via-[#F0E9D8]/30 to-transparent blur-md -z-10 pointer-events-none" />
+                        <div className="absolute inset-0 m-auto w-32 h-32 sm:w-46 sm:h-46 md:w-60 md:h-60 lg:w-72 lg:h-72 rounded-full bg-radial from-[#E8DEC8]/60 via-[#F0E9D8]/30 to-transparent blur-md -z-10 pointer-events-none" />
                       )}
 
                       <img
@@ -233,8 +233,8 @@ export const StackingCardsContainer = () => {
                         alt={card.imageAlt}
                         className={`${
                           card.id === 'card-2'
-                            ? 'h-16 xs:h-18 sm:h-24 md:h-30 lg:h-38 w-auto scale-105 sm:scale-110 md:scale-115'
-                            : 'w-full max-h-16 xs:max-h-18 sm:max-h-24 md:max-h-30 lg:max-h-38'
+                            ? 'h-28 xs:h-34 sm:h-46 md:h-58 lg:h-68 w-auto scale-105 sm:scale-110 md:scale-115'
+                            : 'w-full max-h-28 xs:max-h-34 sm:max-h-46 md:max-h-58 lg:max-h-68'
                         } object-contain drop-shadow-[0_8px_16px_rgba(0,0,0,0.12)] sm:drop-shadow-[0_12px_24px_rgba(0,0,0,0.15)] hover:scale-[1.03] transition-transform duration-500`}
                       />
 

@@ -4,6 +4,7 @@ import { InputField } from './InputField';
 import { PasswordField } from './PasswordField';
 import { PrimaryButton } from './PrimaryButton';
 import { FormMessage } from './FormMessage';
+import { RoleSelector } from './RoleSelector';
 
 export const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
   const [name, setName] = useState('');
@@ -150,7 +151,7 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
       )}
 
       {/* Register Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+      <form onSubmit={handleSubmit} className="space-y-3.5 pt-1">
         {/* Full Name */}
         <InputField
           id="register-name"
@@ -167,6 +168,12 @@ export const RegisterForm = ({ onSuccess, onSwitchToLogin }) => {
           error={fieldErrors.name}
           icon={User}
           disabled={loading}
+        />
+
+        {/* Role Selector */}
+        <RoleSelector
+          selectedRole={role}
+          onRoleChange={(selected) => setRole(selected)}
         />
 
         {/* Email Address */}

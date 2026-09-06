@@ -15,7 +15,7 @@ export const RoleSelector = ({ selectedRole = 'admin', onRoleChange }) => {
       </div>
 
       {/* Compact Segmented Switcher */}
-      <div className="grid grid-cols-3 p-1 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1">
+      <div className="grid grid-cols-2 sm:grid-cols-4 p-1 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1">
         {ROLE_DEFINITIONS.map((role) => {
           const Icon = role.icon;
           const isSelected = selectedRole === role.id;

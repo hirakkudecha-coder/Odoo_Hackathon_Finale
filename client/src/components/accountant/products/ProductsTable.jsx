@@ -22,6 +22,10 @@ import {
 import { ViewModeToggle } from '../../common/ViewModeToggle';
 import { DocumentPdfModal } from '../DocumentPdfModal';
 import { createMasterRegisterPdfData, downloadDirectPdf } from '../../../utils/pdfGenerator';
+import oliveChairImg from '../../../assets/images/olive_chair.png';
+import creamLoungeChair from '../../../assets/images/cream_lounge_chair.png';
+import blueSofaImg from '../../../assets/images/blue_sofa.png';
+import oakCredenzaImg from '../../../assets/images/oak_credenza.png';
 
 export const ProductsTable = ({ onCreateProduct }) => {
   const [viewMode, setViewMode] = useState('list');
@@ -84,7 +88,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
       name: 'Nordic Royal Blue Sofa (3-Seater)',
       type: 'Goods',
       category: 'Living Room Sofas',
-      image: royalBlueSofa,
+      image: blueSofaImg,
       costPrice: 42000,
       salesPrice: 72000,
       stock: 12,
@@ -98,7 +102,7 @@ export const ProductsTable = ({ onCreateProduct }) => {
       name: 'Walnut Solid Wood Dining Table',
       type: 'Goods',
       category: 'Dining Furniture',
-      image: diningTable,
+      image: oakCredenzaImg,
       costPrice: 32500,
       salesPrice: 58000,
       stock: 9,

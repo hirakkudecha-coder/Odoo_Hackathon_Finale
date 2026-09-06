@@ -128,6 +128,13 @@ const getCustomerInvoiceById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Customer Invoice not found' });
     }
 
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      const invCustId = invoice.customer?._id ? invoice.customer._id.toString() : invoice.customer?.toString();
+      if (invCustId !== req.user.contactId.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied to this customer invoice' });
+      }
+    }
+
     res.status(200).json({ success: true, customerInvoice: invoice });
   } catch (error) {
     next(error);
@@ -157,14 +164,15 @@ const updateCustomerInvoice = async (req, res, next) => {
 
     await invoice.save();
 
-    const populated = await CustomerInvoice.findById(invoice._id)
-      .populate('customer', 'name email mobile')
-      .populate('items.product', 'name salesPrice costPrice');
+    await invoice.populate([
+      { path: 'customer', select: 'name email mobile' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Customer Invoice updated successfully',
-      customerInvoice: populated
+      customerInvoice: invoice
     });
   } catch (error) {
     next(error);

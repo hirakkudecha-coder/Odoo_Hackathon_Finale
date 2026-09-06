@@ -123,7 +123,8 @@ export const ContactsTable = ({ onCreateContact }) => {
           if (json.contacts && Array.isArray(json.contacts) && json.contacts.length > 0) {
             const mapped = json.contacts.map((c, idx) => {
               const initials = c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-              const type = c.type === 'vendor' ? 'Vendor' : c.type === 'both' ? 'Both' : 'Customer';
+              const rawType = (c.type || 'Customer').toLowerCase();
+              const type = rawType === 'vendor' ? 'Vendor' : rawType === 'both' ? 'Both' : 'Customer';
               const isCustomer = type === 'Customer';
               return {
                 id: c._id || idx + 1,
@@ -133,8 +134,8 @@ export const ContactsTable = ({ onCreateContact }) => {
                 type: type,
                 typeBadge: isCustomer ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FEF7EC] text-[#D97706]',
                 email: c.email || '—',
-                phone: c.phone || '—',
-                city: c.city || 'National',
+                phone: c.mobile || c.phone || '—',
+                city: c.address?.city || c.city || 'National',
                 status: c.status === 'active' ? 'Active' : 'Inactive',
                 statusDot: c.status === 'active' ? 'bg-[#10B981]' : 'bg-[#D97706]',
               };

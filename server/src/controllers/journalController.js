@@ -32,14 +32,26 @@ const getJournals = async (req, res, next) => {
     if (status) filter.status = status;
     else filter.status = 'active';
 
-    const journals = await Journal.find(filter)
+    const page = req.query.page ? parseInt(req.query.page, 10) : null;
+    const limit = req.query.limit ? Math.min(parseInt(req.query.limit, 10), 100) : null;
+
+    const totalCount = await Journal.countDocuments(filter);
+    let query = Journal.find(filter)
       .populate('defaultDebitAccount', 'name code type')
       .populate('defaultCreditAccount', 'name code type')
       .sort({ name: 1 });
 
+    if (page && limit) {
+      query = query.skip((page - 1) * limit).limit(limit);
+    }
+
+    const journals = await query;
     res.status(200).json({
       success: true,
       count: journals.length,
+      totalCount,
+      page: page || 1,
+      totalPages: limit ? Math.ceil(totalCount / limit) : 1,
       journals
     });
   } catch (error) {

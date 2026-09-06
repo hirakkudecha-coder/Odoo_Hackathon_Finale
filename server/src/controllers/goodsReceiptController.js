@@ -1,5 +1,6 @@
 const GoodsReceipt = require('../models/GoodsReceipt');
 const PurchaseOrder = require('../models/PurchaseOrder');
+const Product = require('../models/Product');
 const escapeRegex = require('../utils/escapeRegex');
 
 // Create Goods Receipt (Admin only as per permission requirement)
@@ -193,15 +194,16 @@ const updateGoodsReceipt = async (req, res, next) => {
 
     await receipt.save();
 
-    const populated = await GoodsReceipt.findById(receipt._id)
-      .populate('purchaseOrder', 'orderNumber status totalAmount')
-      .populate('vendor', 'name email mobile')
-      .populate('items.product', 'name salesPrice costPrice');
+    await receipt.populate([
+      { path: 'purchaseOrder', select: 'orderNumber status totalAmount' },
+      { path: 'vendor', select: 'name email mobile' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Goods Receipt updated successfully',
-      goodsReceipt: populated
+      goodsReceipt: receipt
     });
   } catch (error) {
     next(error);
@@ -232,15 +234,27 @@ const confirmGoodsReceipt = async (req, res, next) => {
       await PurchaseOrder.findByIdAndUpdate(receipt.purchaseOrder, { status: 'received' });
     }
 
-    const populated = await GoodsReceipt.findById(receipt._id)
-      .populate('purchaseOrder', 'orderNumber status totalAmount')
-      .populate('vendor', 'name email mobile')
-      .populate('receivedBy', 'name email');
+    // Update physical product inventory stock
+    if (receipt.items && Array.isArray(receipt.items)) {
+      for (const item of receipt.items) {
+        if (item.product && item.quantity > 0) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { currentStock: item.quantity }
+          });
+        }
+      }
+    }
+
+    await receipt.populate([
+      { path: 'purchaseOrder', select: 'orderNumber status totalAmount' },
+      { path: 'vendor', select: 'name email mobile' },
+      { path: 'receivedBy', select: 'name email' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Goods Received confirmed successfully. Purchase order marked as received.',
-      goodsReceipt: populated
+      goodsReceipt: receipt
     });
   } catch (error) {
     next(error);

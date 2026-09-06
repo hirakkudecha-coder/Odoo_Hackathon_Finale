@@ -1,8 +1,10 @@
 import React from 'react';
-import { Search, Bell, Menu } from 'lucide-react';
+import { Search, Bell, Menu, ShieldCheck } from 'lucide-react';
 import designerPortrait from '../../assets/images/designer_portrait.png';
+import { SecuritySettingsModal } from '../common/SecuritySettingsModal';
 
 export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser, onLogout }) => {
+  const [securityModalOpen, setSecurityModalOpen] = React.useState(false);
   const storedUser = React.useMemo(() => {
     try {
       const saved = localStorage.getItem('user');
@@ -133,20 +135,38 @@ export const AccountantHeader = ({ onToggleSidebar, onNavigateHome, currentUser,
               </span>
             </div>
 
-            {onLogout && (
+            <div className="flex items-center gap-1.5 ml-2">
               <button
-                onClick={onLogout}
-                className="ml-2 text-[10.5px] font-bold text-[#DC2626] hover:underline cursor-pointer"
-                title="Sign Out"
+                type="button"
+                onClick={() => setSecurityModalOpen(true)}
+                className="p-1.5 rounded-lg text-[#2D4A3E] hover:bg-[#EAE4DC]/60 transition-colors cursor-pointer"
+                title="Security & 2FA Settings"
               >
-                Sign Out
+                <ShieldCheck className="w-4 h-4 text-[#C88A58]" />
               </button>
-            )}
+
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="text-[10.5px] font-bold text-[#DC2626] hover:underline cursor-pointer ml-1"
+                  title="Sign Out"
+                >
+                  Sign Out
+                </button>
+              )}
+            </div>
           </div>
 
         </div>
 
       </div>
+
+      {/* Security & 2FA Settings Modal */}
+      <SecuritySettingsModal
+        isOpen={securityModalOpen}
+        onClose={() => setSecurityModalOpen(false)}
+        currentUser={activeUser}
+      />
     </header>
   );
 };

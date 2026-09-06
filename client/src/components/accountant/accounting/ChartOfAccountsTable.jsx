@@ -121,7 +121,7 @@ export const ChartOfAccountsTable = ({ onCreateAccount }) => {
           const json = await res.json();
           if (json.accounts && Array.isArray(json.accounts) && json.accounts.length > 0) {
             const mapped = json.accounts.map((acc, idx) => {
-              const bal = Number(acc.currentBalance || 0);
+              const bal = Number(acc.balance !== undefined ? acc.balance : (acc.currentBalance || 0));
               const balStr = `₹ ${Math.abs(bal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
               const rawType = acc.type || 'asset';
               let typeLabel = 'Current Asset';

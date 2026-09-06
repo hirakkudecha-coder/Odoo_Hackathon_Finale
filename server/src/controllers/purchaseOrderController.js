@@ -26,7 +26,12 @@ const getPurchaseOrders = async (req, res, next) => {
     const { vendor, status, search } = req.query;
     const filter = {};
 
-    if (vendor) filter.vendor = vendor;
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      filter.vendor = req.user.contactId;
+    } else if (vendor) {
+      filter.vendor = vendor;
+    }
+
     if (status) filter.status = status;
     if (search) filter.orderNumber = { $regex: escapeRegex(search), $options: 'i' };
 
@@ -64,6 +69,13 @@ const getPurchaseOrderById = async (req, res, next) => {
 
     if (!po) {
       return res.status(404).json({ success: false, message: 'Purchase Order not found' });
+    }
+
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      const poVendId = po.vendor?._id ? po.vendor._id.toString() : po.vendor?.toString();
+      if (poVendId !== req.user.contactId.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied to this purchase order' });
+      }
     }
 
     res.status(200).json({ success: true, purchaseOrder: po });

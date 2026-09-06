@@ -26,7 +26,12 @@ const getSalesOrders = async (req, res, next) => {
     const { customer, status, search } = req.query;
     const filter = {};
 
-    if (customer) filter.customer = customer;
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      filter.customer = req.user.contactId;
+    } else if (customer) {
+      filter.customer = customer;
+    }
+
     if (status) filter.status = status;
     if (search) filter.orderNumber = { $regex: escapeRegex(search), $options: 'i' };
 
@@ -64,6 +69,13 @@ const getSalesOrderById = async (req, res, next) => {
 
     if (!so) {
       return res.status(404).json({ success: false, message: 'Sales Order not found' });
+    }
+
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      const soCustId = so.customer?._id ? so.customer._id.toString() : so.customer?.toString();
+      if (soCustId !== req.user.contactId.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied to this sales order' });
+      }
     }
 
     res.status(200).json({ success: true, salesOrder: so });

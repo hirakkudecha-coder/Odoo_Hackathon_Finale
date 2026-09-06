@@ -109,7 +109,19 @@ export const ProductsTable = ({ onCreateProduct }) => {
               const cp = `₹ ${Number(p.costPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
               const sp = `₹ ${Number(p.salesPrice || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
               const sku = p.code || `UF-PRD-${String(idx + 1).padStart(3, '0')}`;
-              const inStock = p.status === 'active';
+              const qty = p.currentStock !== undefined ? p.currentStock : (p.status === 'active' ? 15 : 0);
+              let statusLabel = 'In Stock';
+              let statusDot = 'bg-[#10B981]';
+              let statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+              if (qty === 0) {
+                statusLabel = 'Out of Stock';
+                statusDot = 'bg-[#EF4444]';
+                statusStyle = 'bg-[#FDECE7] text-[#C95426]';
+              } else if (qty < 5) {
+                statusLabel = 'Low Stock';
+                statusDot = 'bg-[#F59E0B]';
+                statusStyle = 'bg-[#FEF7EC] text-[#D97706]';
+              }
 
               return {
                 id: p._id || idx + 1,
@@ -119,10 +131,10 @@ export const ProductsTable = ({ onCreateProduct }) => {
                 category: p.category || 'General Furniture',
                 costPrice: cp,
                 salesPrice: sp,
-                stock: inStock ? '15 units' : '0 units',
-                status: inStock ? 'In Stock' : 'Out of Stock',
-                statusDot: inStock ? 'bg-[#10B981]' : 'bg-[#EF4444]',
-                statusStyle: inStock ? 'bg-[#E5F7ED] text-[#1E7445]' : 'bg-[#FDECE7] text-[#C95426]'
+                stock: `${qty} units`,
+                status: statusLabel,
+                statusDot,
+                statusStyle
               };
             });
             if (isMounted) setProducts(mapped);

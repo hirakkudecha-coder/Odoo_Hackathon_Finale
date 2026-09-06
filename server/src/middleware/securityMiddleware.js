@@ -22,6 +22,16 @@ const securityHeaders = (req, res, next) => {
   // Restrict access to sensitive browser features/APIs
   res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
+  // Content Security Policy (CSP)
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self'"
+  );
+
+  // Cross-Origin Isolation & Resource Sharing Policies
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+
   // HTTP Strict Transport Security (HSTS): 1 year + subdomains + preload
   // Sent on all HTTPS requests or when behind a TLS-terminating reverse proxy
   const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
@@ -29,6 +39,17 @@ const securityHeaders = (req, res, next) => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   }
 
+  next();
+};
+
+/**
+ * Disables browser and intermediate proxy caching for sensitive endpoints
+ */
+const noCacheSensitiveEndpoints = (req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Surrogate-Control', 'no-store');
   next();
 };
 
@@ -54,5 +75,6 @@ const enforceHttps = (req, res, next) => {
 
 module.exports = {
   securityHeaders,
+  noCacheSensitiveEndpoints,
   enforceHttps
 };

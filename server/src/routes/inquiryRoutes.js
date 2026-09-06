@@ -2,9 +2,10 @@ const express = require('express');
 const router = express.Router();
 const { createInquiry, getInquiries, updateInquiryStatus } = require('../controllers/designerInquiryController');
 const { authenticate, authorize } = require('../middleware/authMiddleware');
+const { publicFormLimiter } = require('../middleware/rateLimitMiddleware');
 
 // Public inquiry submission
-router.post('/designer', createInquiry);
+router.post('/designer', publicFormLimiter, createInquiry);
 
 // Protected staff inquiry management
 router.get('/designer', authenticate, authorize('admin', 'accountant'), getInquiries);

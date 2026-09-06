@@ -1,6 +1,7 @@
 const JournalEntry = require('../models/JournalEntry');
 const { postJournalEntry, cancelJournalEntry } = require('../services/accountingEngine');
 const escapeRegex = require('../utils/escapeRegex');
+const auditService = require('../services/auditService');
 
 // Create Draft Journal Entry
 const createJournalEntry = async (req, res, next) => {
@@ -127,15 +128,16 @@ const updateJournalEntry = async (req, res, next) => {
 
     await entry.save();
 
-    const populated = await JournalEntry.findById(entry._id)
-      .populate('journal', 'name code type')
-      .populate('partner', 'name type email')
-      .populate('items.account', 'name code type');
+    await entry.populate([
+      { path: 'journal', select: 'name code type' },
+      { path: 'partner', select: 'name type email' },
+      { path: 'items.account', select: 'name code type' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Journal entry updated successfully',
-      journalEntry: populated
+      journalEntry: entry
     });
   } catch (error) {
     next(error);
@@ -153,6 +155,21 @@ const postEntry = async (req, res, next) => {
       { path: 'postedBy', select: 'name email' }
     ]);
 
+    auditService.logEvent({
+      req,
+      action: 'JOURNAL_ENTRY_POSTED',
+      module: 'General Ledger',
+      description: `Posted balanced General Ledger entry '${postedEntry.entryNumber}' (Total: ₹${postedEntry.totalDebit.toLocaleString('en-IN')})`,
+      severity: 'info',
+      resource: 'JournalEntry',
+      resourceId: postedEntry._id,
+      details: {
+        entryNumber: postedEntry.entryNumber,
+        totalDebit: postedEntry.totalDebit,
+        totalCredit: postedEntry.totalCredit
+      }
+    });
+
     res.status(200).json({
       success: true,
       message: 'Journal entry posted successfully. Ledger updated.',
@@ -167,6 +184,17 @@ const postEntry = async (req, res, next) => {
 const cancelEntry = async (req, res, next) => {
   try {
     const cancelledEntry = await cancelJournalEntry(req.params.id, req.user?._id);
+
+    auditService.logEvent({
+      req,
+      action: 'JOURNAL_ENTRY_CANCELLED',
+      module: 'General Ledger',
+      description: `Cancelled General Ledger entry '${cancelledEntry.entryNumber}' and reversed ledger balance impact`,
+      severity: 'warning',
+      resource: 'JournalEntry',
+      resourceId: cancelledEntry._id
+    });
+
     res.status(200).json({
       success: true,
       message: 'Journal entry cancelled successfully. Ledger impact reversed.',

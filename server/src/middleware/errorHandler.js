@@ -33,6 +33,8 @@ const errorHandler = (err, req, res, next) => {
       statusCode = 400;
     } else if (err.message && err.message.toLowerCase().includes('not found')) {
       statusCode = 404;
+    } else if (err.message && (err.message.includes('CORS blocked') || err.message.includes('CSRF'))) {
+      statusCode = 403;
     } else {
       statusCode = 500;
     }

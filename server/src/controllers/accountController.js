@@ -38,10 +38,23 @@ const getAccounts = async (req, res, next) => {
       ];
     }
 
-    const accounts = await Account.find(filter).sort({ code: 1 });
+    const page = req.query.page ? parseInt(req.query.page, 10) : null;
+    const limit = req.query.limit ? Math.min(parseInt(req.query.limit, 10), 100) : null;
+
+    const totalCount = await Account.countDocuments(filter);
+    let query = Account.find(filter).sort({ code: 1 });
+
+    if (page && limit) {
+      query = query.skip((page - 1) * limit).limit(limit);
+    }
+
+    const accounts = await query;
     res.status(200).json({
       success: true,
       count: accounts.length,
+      totalCount,
+      page: page || 1,
+      totalPages: limit ? Math.ceil(totalCount / limit) : 1,
       accounts
     });
   } catch (error) {

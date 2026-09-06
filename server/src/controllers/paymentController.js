@@ -289,6 +289,13 @@ const getPaymentById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Payment not found' });
     }
 
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      const payPartnerId = payment.partner?._id ? payment.partner._id.toString() : payment.partner?.toString();
+      if (payPartnerId !== req.user.contactId.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied to this payment' });
+      }
+    }
+
     res.status(200).json({ success: true, payment });
   } catch (error) {
     next(error);

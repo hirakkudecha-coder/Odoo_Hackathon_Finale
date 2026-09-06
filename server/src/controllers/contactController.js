@@ -1,6 +1,7 @@
 const Contact = require('../models/Contact');
 const User = require('../models/User');
 const escapeRegex = require('../utils/escapeRegex');
+const { maskSensitiveData } = require('../utils/maskSensitiveData');
 
 // Create contact
 const createContact = async (req, res, next) => {
@@ -122,6 +123,15 @@ const getContactById = async (req, res, next) => {
     if (!contact) {
       return res.status(404).json({ success: false, message: 'Contact not found' });
     }
+
+    // If caller is a portal contact viewing a third-party contact, mask PII
+    if (req.user && req.user.role === 'contact' && String(req.user.contactId) !== String(contact._id)) {
+      return res.status(200).json({
+        success: true,
+        contact: maskSensitiveData(contact)
+      });
+    }
+
     res.status(200).json({ success: true, contact });
   } catch (error) {
     next(error);

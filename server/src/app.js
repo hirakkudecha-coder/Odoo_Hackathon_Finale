@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
-const { securityHeaders, enforceHttps } = require('./middleware/securityMiddleware');
+const { securityHeaders, enforceHttps, noCacheSensitiveEndpoints } = require('./middleware/securityMiddleware');
 
 // Route imports
 const healthRoutes = require('./routes/healthRoutes');
@@ -26,6 +26,7 @@ const inquiryRoutes = require('./routes/inquiryRoutes');
 const showroomRoutes = require('./routes/showroomRoutes');
 const partnerRoutes = require('./routes/partnerRoutes');
 const helpdeskRoutes = require('./routes/helpdeskRoutes');
+const auditLogRoutes = require('./routes/auditLogRoutes');
 
 const app = express();
 
@@ -56,17 +57,32 @@ const corsOptions = {
     if (ALLOWED_ORIGINS.includes(origin)) {
       return callback(null, true);
     }
-    return callback(new Error(`CORS blocked: Origin '${origin}' is not authorized.`));
+    const err = new Error(`CORS blocked: Origin '${origin}' is not authorized.`);
+    err.statusCode = 403;
+    return callback(err);
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-bypass-rate-limit', 'x-bypass-csrf']
 };
 
 app.use(cors(corsOptions));
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const { noSqlSanitizer } = require('./middleware/sanitizeMiddleware');
+const { globalLimiter } = require('./middleware/rateLimitMiddleware');
+const { csrfProtection } = require('./middleware/csrfMiddleware');
+
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
+
+// NoSQL Operator & Prototype Pollution Injection Sanitizer
+app.use(noSqlSanitizer);
+
+// Global API Rate Limiting Throttle (Route-specific limiters mounted in respective routers)
+app.use('/api', globalLimiter);
+
+// Anti-CSRF Cross-Origin State Mutation Defense
+app.use(csrfProtection);
 
 if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
@@ -85,7 +101,7 @@ app.get('/', (req, res) => {
 
 // API Routes
 app.use('/api/health', healthRoutes);
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', noCacheSensitiveEndpoints, authRoutes);
 app.use('/api/contacts', contactRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/accounts', accountRoutes);
@@ -100,11 +116,12 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/sales-orders', salesOrderRoutes);
 app.use('/api/sales-receipts', salesReceiptRoutes);
 app.use('/api/customer-invoices', customerInvoiceRoutes);
-app.use('/api/reports', reportRoutes);
+app.use('/api/reports', noCacheSensitiveEndpoints, reportRoutes);
 app.use('/api/inquiries', inquiryRoutes);
 app.use('/api/showrooms', showroomRoutes);
 app.use('/api/partners', partnerRoutes);
 app.use('/api/helpdesk', helpdeskRoutes);
+app.use('/api/audit-logs', noCacheSensitiveEndpoints, auditLogRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

@@ -34,6 +34,17 @@ const authenticate = async (req, res, next) => {
       });
     }
 
+    // Immediate token invalidation if password was changed after token issuance
+    if (user.passwordChangedAt && decoded.iat) {
+      const changedTimestamp = Math.floor(user.passwordChangedAt.getTime() / 1000);
+      if (changedTimestamp > decoded.iat) {
+        return res.status(401).json({
+          success: false,
+          message: 'Your password was recently changed. Please log in again with your new credentials.'
+        });
+      }
+    }
+
     req.user = user;
     next();
   } catch (error) {

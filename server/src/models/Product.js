@@ -38,6 +38,11 @@ const productSchema = new mongoose.Schema(
       default: 0,
       min: 0
     },
+    currentStock: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
     status: {
       type: String,
       enum: ['active', 'archived'],

@@ -24,10 +24,23 @@ const getAnalyticAccounts = async (req, res, next) => {
     if (status) filter.status = status;
     else filter.status = 'active';
 
-    const analyticAccounts = await AnalyticAccount.find(filter).sort({ name: 1 });
+    const page = req.query.page ? parseInt(req.query.page, 10) : null;
+    const limit = req.query.limit ? Math.min(parseInt(req.query.limit, 10), 100) : null;
+
+    const totalCount = await AnalyticAccount.countDocuments(filter);
+    let query = AnalyticAccount.find(filter).sort({ name: 1 });
+
+    if (page && limit) {
+      query = query.skip((page - 1) * limit).limit(limit);
+    }
+
+    const analyticAccounts = await query;
     res.status(200).json({
       success: true,
       count: analyticAccounts.length,
+      totalCount,
+      page: page || 1,
+      totalPages: limit ? Math.ceil(totalCount / limit) : 1,
       analyticAccounts
     });
   } catch (error) {

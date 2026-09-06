@@ -68,26 +68,82 @@ export const SuperAdminUsersPage = () => {
     exportTableToPDF('SUPER ADMIN USERS DIRECTORY', headers, rows);
   };
 
-  const handleCreateUser = (e) => {
+  // Fetch real users from MongoDB backend
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/auth/users', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.users && Array.isArray(data.users)) {
+            const mapped = data.users.map((u, idx) => ({
+              id: u._id || idx + 1,
+              name: u.name,
+              email: u.email,
+              org: 'Urban Furniture Atelier',
+              role: u.role === 'superadmin' ? 'Super Admin' : u.role === 'admin' ? 'Admin' : u.role === 'accountant' ? 'Accountant' : 'Contact',
+              status: 'Active',
+              twoFactorEnabled: Boolean(u.twoFactorEnabled),
+              joined: u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : '01 Jan 2026'
+            }));
+            setUsers(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch real users:', err.message);
+      }
+    };
+    fetchUsers();
+  }, []);
+
+  const handleCreateUser = async (e) => {
     e.preventDefault();
     if (!newUserName || !newUserEmail) return;
 
-    const newEntry = {
-      id: Date.now(),
-      name: newUserName.trim(),
-      email: newUserEmail.trim().toLowerCase(),
-      org: newUserOrg,
-      role: newUserRole,
-      status: 'Active',
-      joined: '05 Sep 2026',
-    };
+    try {
+      const token = localStorage.getItem('token');
+      const backendRole = newUserRole.toLowerCase().replace(/\s+/g, '');
+      const rolePayload = backendRole.includes('super') ? 'superadmin' : backendRole.includes('admin') ? 'admin' : backendRole.includes('account') ? 'accountant' : 'contact';
+      
+      const res = await fetch('/api/auth/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          name: newUserName.trim(),
+          email: newUserEmail.trim().toLowerCase(),
+          password: 'Password123!',
+          role: rolePayload
+        })
+      });
 
-    setUsers([newEntry, ...users]);
-    setIsAddModalOpen(false);
-    setNewUserName('');
-    setNewUserEmail('');
-    setToastMessage(`User "${newEntry.name}" invited successfully!`);
-    setTimeout(() => setToastMessage(''), 3000);
+      const data = await res.json().catch(() => ({}));
+
+      const newEntry = {
+        id: data.user?._id || Date.now(),
+        name: newUserName.trim(),
+        email: newUserEmail.trim().toLowerCase(),
+        org: newUserOrg,
+        role: newUserRole,
+        status: 'Active',
+        joined: new Date().toLocaleDateString('en-GB'),
+      };
+
+      setUsers(prev => [newEntry, ...prev.filter(u => u.email !== newEntry.email)]);
+      setIsAddModalOpen(false);
+      setNewUserName('');
+      setNewUserEmail('');
+      setToastMessage(`User "${newEntry.name}" registered and persisted to database!`);
+      setTimeout(() => setToastMessage(''), 3000);
+    } catch (err) {
+      console.warn('User creation error:', err);
+    }
   };
 
   return (
@@ -176,6 +232,7 @@ export const SuperAdminUsersPage = () => {
                 <th className="py-3.5 px-4 font-semibold">EMAIL ADDRESS</th>
                 <th className="py-3.5 px-4 font-semibold">ORGANIZATION</th>
                 <th className="py-3.5 px-4 font-semibold">ASSIGNED ROLE</th>
+                <th className="py-3.5 px-4 font-semibold">2FA SECURITY</th>
                 <th className="py-3.5 px-4 font-semibold">JOINED DATE</th>
                 <th className="py-3.5 px-4 font-semibold">STATUS</th>
                 <th className="py-3.5 px-4 font-semibold text-right">ACTIONS</th>
@@ -227,6 +284,18 @@ export const SuperAdminUsersPage = () => {
                         </span>
                       </td>
 
+                      {/* 2FA Security Badge */}
+                      <td className="py-3.5 px-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                          user.twoFactorEnabled
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            : 'bg-[#F4EFEA] text-[#7A8A83]'
+                        }`}>
+                          <Shield className="w-3 h-3" />
+                          <span>{user.twoFactorEnabled ? 'PROTECTED' : 'STANDARD'}</span>
+                        </span>
+                      </td>
+
                       {/* Joined Date */}
                       <td className="py-3.5 px-4 text-[#5A6963] font-numeric text-[11.5px]">
                         {user.joined}
@@ -261,7 +330,7 @@ export const SuperAdminUsersPage = () => {
                 })
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-8 text-center text-[#7A8881] text-xs">
+                  <td colSpan={8} className="py-8 text-center text-[#7A8881] text-xs">
                     No users found matching your search.
                   </td>
                 </tr>

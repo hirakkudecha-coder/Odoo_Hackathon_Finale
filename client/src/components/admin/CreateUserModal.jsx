@@ -68,11 +68,13 @@ export const CreateUserModal = ({ isOpen = true, onClose, onSuccess }) => {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/auth/register', {
+      const token = localStorage.getItem('token');
+      const endpoint = token ? '/api/auth/users' : '/api/auth/register';
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          ...(localStorage.getItem('token') ? { 'Authorization': `Bearer ${localStorage.getItem('token')}` } : {})
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
         },
         body: JSON.stringify({
           name: fullName.trim(),

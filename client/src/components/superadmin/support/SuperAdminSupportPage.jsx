@@ -11,17 +11,57 @@ import {
 
 export const SuperAdminSupportPage = () => {
   const [toastMessage, setToastMessage] = useState('');
-  const [tickets, setTickets] = useState([
-    { id: 'TKT-1092', org: 'Elegant Homes', user: 'Rajesh Sharma', subject: 'Custom Invoice PDF Template formatting request', priority: 'Medium', status: 'In Progress', time: '1 hour ago' },
-    { id: 'TKT-1091', org: 'Modern Spaces', user: 'Aarav Mehta', subject: 'Reconciliation query with ICICI direct payment gateway', priority: 'High', status: 'Open', time: '3 hours ago' },
-    { id: 'TKT-1090', org: 'Wood & More', user: 'Rohan Kapoor', subject: 'Add additional 5 accountant user seats to subscription', priority: 'Low', status: 'Resolved', time: '1 day ago' },
-    { id: 'TKT-1089', org: 'Urban Roots Co.', user: 'Ananya Desai', subject: 'Automated Tax / GST Report discrepancy clarification', priority: 'High', status: 'Resolved', time: '2 days ago' },
-  ]);
+  const [tickets, setTickets] = useState([]);
 
-  const handleResolve = (id) => {
-    setTickets(tickets.map(t => t.id === id ? { ...t, status: 'Resolved' } : t));
-    setToastMessage(`Ticket ${id} marked as resolved.`);
-    setTimeout(() => setToastMessage(''), 2500);
+  // Fetch real tickets from database
+  React.useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('/api/helpdesk/tickets', {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.tickets && Array.isArray(data.tickets)) {
+            const mapped = data.tickets.map(t => ({
+              id: t._id,
+              ticketNumber: t.ticketNumber,
+              org: t.organization || 'Urban Furniture Patron',
+              user: t.name || t.email,
+              subject: t.subject || t.message,
+              priority: t.priority || 'Medium',
+              status: t.status || 'Open',
+              time: t.createdAt ? new Date(t.createdAt).toLocaleDateString('en-GB') : 'Today'
+            }));
+            setTickets(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to fetch support tickets:', err.message);
+      }
+    };
+    fetchTickets();
+  }, []);
+
+  const handleResolve = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`/api/helpdesk/tickets/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status: 'Resolved' })
+      });
+
+      setTickets(tickets.map(t => t.id === id ? { ...t, status: 'Resolved' } : t));
+      setToastMessage(`Ticket marked as resolved.`);
+      setTimeout(() => setToastMessage(''), 2500);
+    } catch (err) {
+      console.warn('Status patch error:', err);
+    }
   };
 
   return (

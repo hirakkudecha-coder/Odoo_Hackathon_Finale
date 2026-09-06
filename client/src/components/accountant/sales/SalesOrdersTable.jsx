@@ -120,6 +120,72 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
     },
   ]);
 
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOrders = async () => {
+      setIsLoading(true);
+      try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch('/api/sales-orders', { headers });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.salesOrders && Array.isArray(json.salesOrders) && json.salesOrders.length > 0) {
+            const mapped = json.salesOrders.map((so, idx) => {
+              const custName = so.customer?.name || 'Authorized Client';
+              const initials = custName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+              const dateStr = so.orderDate ? new Date(so.orderDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Recent';
+              const amtStr = `₹ ${Number(so.totalAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+              const rawStatus = (so.status || 'draft').toLowerCase();
+
+              let statusLabel = 'Quotation';
+              let statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+              let statusDot = 'bg-[#3B82F6]';
+
+              if (rawStatus === 'confirmed') {
+                statusLabel = 'Confirmed';
+                statusStyle = 'bg-[#EBF3FE] text-[#2563EB]';
+                statusDot = 'bg-[#3B82F6]';
+              } else if (rawStatus === 'invoiced' || rawStatus === 'delivered') {
+                statusLabel = 'Invoiced';
+                statusStyle = 'bg-[#E5F7ED] text-[#1E7445]';
+                statusDot = 'bg-[#10B981]';
+              } else if (rawStatus === 'cancelled') {
+                statusLabel = 'Cancelled';
+                statusStyle = 'bg-[#FDE8E8] text-[#991B1B]';
+                statusDot = 'bg-[#DC2626]';
+              }
+
+              return {
+                id: so._id || idx + 1,
+                soNo: so.orderNumber || `SO-2026-${String(idx + 1).padStart(3, '0')}`,
+                date: dateStr,
+                customer: custName,
+                customerInitials: initials,
+                customerAvatarBg: 'bg-[#CCDCD2] text-[#1E3A2E]',
+                items: `${so.items?.length || 1} items`,
+                totalAmount: amtStr,
+                status: statusLabel,
+                statusStyle,
+                statusDot,
+                rawSo: so
+              };
+            });
+            if (isMounted) setOrders(mapped);
+          }
+        }
+      } catch (err) {
+        console.warn('Live sales orders fetch failed:', err.message);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    loadOrders();
+    return () => { isMounted = false; };
+  }, []);
+
   const filterTabs = ['All', 'Quotation', 'Confirmed', 'Invoiced', 'Cancelled'];
 
   // Filter & Sort orders
@@ -177,7 +243,7 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
     setActiveRowMenuId(null);
   };
 
-  const handleUpdateStatus = (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus) => {
     setOrders((prev) =>
       prev.map((o) =>
         o.id === id
@@ -201,6 +267,23 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
       )
     );
     setActiveRowMenuId(null);
+
+    // Persist to backend if real MongoDB document ID
+    if (typeof id === 'string' && id.length === 24) {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const targetStatus = newStatus === 'Invoiced' ? 'invoiced' : newStatus === 'Cancelled' ? 'cancelled' : 'confirmed';
+        await fetch(`/api/sales-orders/${id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ status: targetStatus })
+        });
+      } catch (err) {
+        console.warn('Failed to sync SO status to server:', err);
+      }
+    }
   };
 
   const handleConvertToInvoice = async (order) => {
@@ -215,11 +298,18 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
           method: 'POST',
           headers,
           body: JSON.stringify({
+            invoiceNumber: `INV-${Date.now().toString().slice(-6)}`,
             customer: order.rawSo.customer?._id || order.rawSo.customer,
             salesOrder: order.rawSo._id,
             invoiceDate: new Date(),
             dueDate: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000),
-            items: order.rawSo.items || []
+            items: (order.rawSo.items || []).map((it) => ({
+              product: it.product?._id || it.product,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              subtotal: it.subtotal || (it.quantity * it.unitPrice)
+            })),
+            totalAmount: order.rawSo.totalAmount
           })
         });
         const invData = await invRes.json();
@@ -227,6 +317,12 @@ export const SalesOrdersTable = ({ onCreateSO }) => {
           await fetch(`/api/customer-invoices/${invData.customerInvoice._id}/post`, {
             method: 'POST',
             headers
+          });
+          // Also sync sales order status to invoiced
+          await fetch(`/api/sales-orders/${order.rawSo._id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ status: 'invoiced' })
           });
         }
       }

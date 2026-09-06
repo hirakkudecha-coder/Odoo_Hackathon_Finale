@@ -125,6 +125,13 @@ const getVendorBillById = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Vendor Bill not found' });
     }
 
+    if (req.user && req.user.role === 'contact' && req.user.contactId) {
+      const billVendId = bill.vendor?._id ? bill.vendor._id.toString() : bill.vendor?.toString();
+      if (billVendId !== req.user.contactId.toString()) {
+        return res.status(403).json({ success: false, message: 'Access denied to this vendor bill' });
+      }
+    }
+
     res.status(200).json({ success: true, vendorBill: bill });
   } catch (error) {
     next(error);
@@ -154,14 +161,15 @@ const updateVendorBill = async (req, res, next) => {
 
     await bill.save();
 
-    const populated = await VendorBill.findById(bill._id)
-      .populate('vendor', 'name email mobile')
-      .populate('items.product', 'name salesPrice costPrice');
+    await bill.populate([
+      { path: 'vendor', select: 'name email mobile' },
+      { path: 'items.product', select: 'name salesPrice costPrice' }
+    ]);
 
     res.status(200).json({
       success: true,
       message: 'Vendor Bill updated successfully',
-      vendorBill: populated
+      vendorBill: bill
     });
   } catch (error) {
     next(error);

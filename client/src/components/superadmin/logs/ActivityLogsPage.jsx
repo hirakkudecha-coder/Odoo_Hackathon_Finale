@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   FileText, 
   Search, 
@@ -215,11 +215,54 @@ export const ActivityLogsPage = () => {
     }
   ];
 
-  const handleRefresh = () => {
+  const [logs, setLogs] = useState(rawLogs);
+
+  const fetchAuditLogs = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/audit-logs?limit=50', {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : '',
+          'Content-Type': 'application/json'
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.auditLogs && Array.isArray(data.auditLogs) && data.auditLogs.length > 0) {
+          const mapped = data.auditLogs.map(l => ({
+            id: l._id ? `LOG-${String(l._id).slice(-4).toUpperCase()}` : 'LOG-LIVE',
+            timestamp: new Date(l.timestamp).toISOString().replace('T', ' ').slice(0, 19),
+            relativeTime: 'Live Record',
+            actor: l.actorEmail ? l.actorEmail.split('@')[0] : 'System',
+            actorEmail: l.actorEmail || 'system@internal',
+            role: l.actorRole || 'system',
+            org: 'Urban Atelier HQ',
+            action: l.action,
+            description: l.description,
+            module: l.module,
+            severity: l.severity || 'info',
+            ip: l.ipAddress || '127.0.0.1',
+            location: 'Internal Secure Node',
+            details: l.details || {}
+          }));
+          setLogs([...mapped, ...rawLogs]);
+        }
+      }
+    } catch {
+      // Graceful fallback to initial seed list
+    }
+  };
+
+  useEffect(() => {
+    fetchAuditLogs();
+  }, []);
+
+  const handleRefresh = async () => {
     setIsRefreshing(true);
+    await fetchAuditLogs();
     setTimeout(() => {
       setIsRefreshing(false);
-    }, 600);
+    }, 400);
   };
 
   const handleExportPDF = () => {
@@ -239,10 +282,10 @@ export const ActivityLogsPage = () => {
   const categories = ['All', 'Security', 'Tenants', 'General Ledger', 'Budgets', 'Showrooms', 'Concierge'];
 
   const filteredLogs = useMemo(() => {
-    return rawLogs.filter((log) => {
+    return logs.filter((log) => {
       // Category filter
       if (activeCategory !== 'All') {
-        if (activeCategory === 'Security' && log.module !== 'Security' && log.module !== 'Authentication') return false;
+        if (activeCategory === 'Security' && log.module !== 'Security' && log.module !== 'Authentication' && log.module !== 'Auth') return false;
         if (activeCategory === 'Tenants' && log.module !== 'Tenants' && log.module !== 'Trade Partners') return false;
         if (activeCategory === 'General Ledger' && log.module !== 'General Ledger') return false;
         if (activeCategory === 'Budgets' && log.module !== 'Budgets') return false;
@@ -271,7 +314,7 @@ export const ActivityLogsPage = () => {
 
       return true;
     });
-  }, [searchQuery, activeCategory, severityFilter]);
+  }, [logs, searchQuery, activeCategory, severityFilter]);
 
   const totalPages = Math.ceil(filteredLogs.length / itemsPerPage) || 1;
   const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);

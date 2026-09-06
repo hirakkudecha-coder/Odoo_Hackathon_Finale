@@ -1,5 +1,6 @@
 const Budget = require('../models/Budget');
 const AnalyticAccount = require('../models/AnalyticAccount');
+const escapeRegex = require('../utils/escapeRegex');
 
 // Create budget
 const createBudget = async (req, res, next) => {
@@ -27,11 +28,12 @@ const createBudget = async (req, res, next) => {
 // Get all budgets
 const getBudgets = async (req, res, next) => {
   try {
-    const { period, status } = req.query;
+    const { period, status, search } = req.query;
     const filter = {};
 
     if (period) filter.period = period;
     if (status) filter.status = status;
+    if (search) filter.name = { $regex: escapeRegex(search), $options: 'i' };
 
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(parseInt(req.query.limit, 10) || 25, 100);

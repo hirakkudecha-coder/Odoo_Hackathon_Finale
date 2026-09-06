@@ -979,6 +979,32 @@ const seedData = async () => {
     }
     console.log('✓ Ledger accounts calibrated to exact double-entry balances.');
 
+    // Calibrate Product currentStock based on Goods Receipts and Sales Receipts
+    const allGoodsReceipts = await GoodsReceipt.find({ status: 'received' });
+    const allSalesReceipts = await SalesReceipt.find({ status: 'delivered' });
+    const productStockMap = {};
+
+    for (const gr of allGoodsReceipts) {
+      for (const item of gr.items) {
+        if (item.product) {
+          const pId = item.product.toString();
+          productStockMap[pId] = (productStockMap[pId] || 0) + (item.quantity || 0);
+        }
+      }
+    }
+    for (const sr of allSalesReceipts) {
+      for (const item of sr.items) {
+        if (item.product) {
+          const pId = item.product.toString();
+          productStockMap[pId] = (productStockMap[pId] || 0) - (item.quantity || 0);
+        }
+      }
+    }
+    for (const [pId, stock] of Object.entries(productStockMap)) {
+      await Product.findByIdAndUpdate(pId, { currentStock: Math.max(0, stock) });
+    }
+    console.log('✓ Product inventory stock calibrated to warehouse receipts.');
+
     // 12. Seed Public Storefront & Concierge Submissions
     console.log('\n[12/12] Seeding Public Storefront Inquiries, Tours, Tickets & Guild Partners...');
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, ShieldCheck, FileSpreadsheet, UserCheck, Sparkles, Crown } from 'lucide-react';
+import { Mail, ShieldCheck, FileSpreadsheet, UserCheck, Sparkles, Crown, KeyRound, ArrowLeft } from 'lucide-react';
 import { InputField } from './InputField';
 import { PasswordField } from './PasswordField';
 import { PrimaryButton } from './PrimaryButton';
@@ -12,7 +12,7 @@ const DEMO_ROLES = [
     name: 'Nikita Sharma',
     fullRole: 'Super Admin / Administrator',
     email: 'superadmin@urbanfurniture.com',
-    password: 'superadmin123',
+    password: 'SuperAdmin123!',
     icon: Crown,
     dashboard: 'Super Admin Multi-Tenant System',
   },
@@ -22,7 +22,7 @@ const DEMO_ROLES = [
     name: 'Rajesh Sharma',
     fullRole: 'Admin / Business Owner',
     email: 'admin@urbanfurniture.com',
-    password: 'admin123',
+    password: 'AdminPassword123!',
     icon: ShieldCheck,
     dashboard: 'Admin Business Dashboard',
   },
@@ -32,7 +32,7 @@ const DEMO_ROLES = [
     name: 'Aarav Mehta',
     fullRole: 'Invoicing User / Accountant',
     email: 'accountant@urbanfurniture.com',
-    password: 'accountant123',
+    password: 'AccountantPassword123!',
     icon: FileSpreadsheet,
     dashboard: 'Accountant & Invoicing Dashboard',
   },
@@ -42,7 +42,7 @@ const DEMO_ROLES = [
     name: 'Rohan Kapoor',
     fullRole: 'Contact / Customer',
     email: 'contact@urbanfurniture.com',
-    password: 'contact123',
+    password: 'ContactPassword123!',
     icon: UserCheck,
     dashboard: 'Customer Self-Service Portal',
   },
@@ -51,12 +51,18 @@ const DEMO_ROLES = [
 export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
   const [selectedRole, setSelectedRole] = useState('superadmin');
   const [email, setEmail] = useState('superadmin@urbanfurniture.com');
-  const [password, setPassword] = useState('superadmin123');
+  const [password, setPassword] = useState('SuperAdmin123!');
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+
+  // Two-Factor Authentication Step-Up State
+  const [is2FAPrompt, setIs2FAPrompt] = useState(false);
+  const [tempToken, setTempToken] = useState('');
+  const [twoFactorCode, setTwoFactorCode] = useState('');
+  const [useRecoveryCode, setUseRecoveryCode] = useState(false);
 
   const handleRoleSelect = (roleItem) => {
     setSelectedRole(roleItem.id);
@@ -64,6 +70,7 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
     setPassword(roleItem.password);
     setFieldErrors({});
     setErrorMessage('');
+    setIs2FAPrompt(false);
   };
 
   const validate = () => {
@@ -82,6 +89,7 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
     return Object.keys(errors).length === 0;
   };
 
+  // Primary Login Handler
   const handleLogin = async (e, isDemo = false) => {
     if (e) e.preventDefault();
     setErrorMessage('');
@@ -91,60 +99,20 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
 
     setLoading(true);
 
-    // 1. Check if user is registered in localStorage
-    try {
-      const registeredUsers = JSON.parse(localStorage.getItem('registered_users') || '[]');
-      const registeredMatch = registeredUsers.find(
-        (u) => u.email.toLowerCase() === email.trim().toLowerCase()
-      );
-
-      if (registeredMatch) {
-        setTimeout(() => {
-          const userObj = {
-            id: registeredMatch.id,
-            name: registeredMatch.name,
-            email: registeredMatch.email,
-            role: registeredMatch.role || 'admin',
-            fullRole: registeredMatch.fullRole || (registeredMatch.role === 'admin' ? 'Admin / Business Owner' : 'Invoicing User / Accountant'),
-          };
-
-          const userToken = `jwt_token_${userObj.role}_${Date.now()}`;
-          localStorage.setItem('token', userToken);
-          localStorage.setItem('user', JSON.stringify(userObj));
-
-          setSuccessMessage(`Welcome back, ${userObj.name}! Loading workspace...`);
-          setLoading(false);
-
-          setTimeout(() => {
-            if (onSuccess) {
-              onSuccess({ token: userToken, user: userObj });
-            }
-          }, 800);
-        }, 400);
-        return;
-      }
-    } catch (e) {
-      // Continue
-    }
-
-    const demoMatch = DEMO_ROLES.find(
-      (r) => r.email.toLowerCase() === email.trim().toLowerCase()
-    );
-
-    // 2. DEMO LOGIN: If using demo email or demo quick sign-in
-    if (isDemo || demoMatch) {
+    // 1. FAST-TRACK DEMO: Only if user explicitly clicked "Auto Sign In Demo ⚡"
+    if (isDemo) {
+      const demoMatch = DEMO_ROLES.find((r) => r.id === selectedRole) || DEMO_ROLES[0];
       setTimeout(() => {
         const demoUser = {
-          id: `demo-${demoMatch ? demoMatch.id : selectedRole}-user`,
-          name: demoMatch ? demoMatch.name : (email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase())),
-          email: email.trim(),
-          role: demoMatch ? demoMatch.id : selectedRole,
-          fullRole: demoMatch ? demoMatch.fullRole : (selectedRole === 'admin' ? 'Admin / Business Owner' : selectedRole === 'accountant' ? 'Invoicing User / Accountant' : 'Contact / Customer'),
+          id: `demo-${demoMatch.id}-user`,
+          name: demoMatch.name,
+          email: demoMatch.email,
+          role: demoMatch.id,
+          fullRole: demoMatch.fullRole,
           isDemo: true,
         };
 
         const demoToken = `demo_jwt_token_${demoUser.role}_${Date.now()}`;
-
         localStorage.setItem('token', demoToken);
         localStorage.setItem('user', JSON.stringify(demoUser));
 
@@ -156,39 +124,11 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
             onSuccess({ token: demoToken, user: demoUser });
           }
         }, 800);
-      }, 500);
+      }, 400);
       return;
     }
 
-    // 3. CUSTOM USER LOGIN: If custom email/password typed
-    if (email.trim() && password) {
-      setTimeout(() => {
-        const customName = email.split('@')[0].replace('.', ' ').replace(/\b\w/g, l => l.toUpperCase());
-        const customUser = {
-          id: `user-${Date.now()}`,
-          name: customName,
-          email: email.trim(),
-          role: selectedRole || 'admin',
-          fullRole: (selectedRole || 'admin') === 'admin' ? 'Admin / Business Owner' : 'Invoicing User / Accountant',
-        };
-
-        const customToken = `jwt_token_${customUser.role}_${Date.now()}`;
-        localStorage.setItem('token', customToken);
-        localStorage.setItem('user', JSON.stringify(customUser));
-
-        setSuccessMessage(`Welcome ${customUser.name}! Loading dashboard...`);
-        setLoading(false);
-
-        setTimeout(() => {
-          if (onSuccess) {
-            onSuccess({ token: customToken, user: customUser });
-          }
-        }, 800);
-      }, 500);
-      return;
-    }
-
-    // LIVE DATABASE LOGIN FALLBACK
+    // 2. LIVE DATABASE LOGIN (Real API authentication)
     try {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -202,6 +142,16 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
       });
 
       const data = await response.json().catch(() => ({}));
+
+      // Check if Step-Up 2FA is required
+      if (response.ok && data.require2FA && data.tempToken) {
+        setTempToken(data.tempToken);
+        setIs2FAPrompt(true);
+        setTwoFactorCode('');
+        setUseRecoveryCode(false);
+        setLoading(false);
+        return;
+      }
 
       if (!response.ok) {
         throw new Error(data.message || 'Invalid email or password. Please verify your credentials.');
@@ -218,15 +168,101 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
       }
 
       setSuccessMessage('Authentication verified. Welcome back!');
-      
+
       setTimeout(() => {
         if (onSuccess) {
           onSuccess({ token, user: user || { email } });
         }
-      }, 1000);
+      }, 700);
 
     } catch (err) {
-      setErrorMessage(err.message || 'Unable to connect to server. Use Demo Quick Sign In above for testing.');
+      // If server returned a business error (e.g. Account locked, invalid password), display it directly
+      if (err.message && !err.message.includes('Failed to fetch') && !err.message.includes('NetworkError')) {
+        setErrorMessage(err.message);
+        setLoading(false);
+        return;
+      }
+
+      // Offline fallback only on total network failure
+      const demoMatch = DEMO_ROLES.find(
+        (r) => r.email.toLowerCase() === email.trim().toLowerCase()
+      );
+      if (demoMatch) {
+        const demoUser = {
+          id: `demo-${demoMatch.id}-user`,
+          name: demoMatch.name,
+          email: demoMatch.email,
+          role: demoMatch.id,
+          fullRole: demoMatch.fullRole,
+          isDemo: true,
+        };
+
+        const demoToken = `demo_jwt_token_${demoUser.role}_${Date.now()}`;
+        localStorage.setItem('token', demoToken);
+        localStorage.setItem('user', JSON.stringify(demoUser));
+
+        setSuccessMessage(`Welcome ${demoUser.name} (Offline Mode)! Loading dashboard...`);
+        setLoading(false);
+
+        setTimeout(() => {
+          if (onSuccess) {
+            onSuccess({ token: demoToken, user: demoUser });
+          }
+        }, 800);
+        return;
+      }
+
+      setErrorMessage(err.message || 'Unable to connect to server. Please try again.');
+      setLoading(false);
+    }
+  };
+
+  // Step-Up 2FA Submission Handler
+  const handle2FASubmit = async (e) => {
+    if (e) e.preventDefault();
+    if (!twoFactorCode.trim()) {
+      setErrorMessage(useRecoveryCode ? 'Please enter your recovery backup code.' : 'Please enter your 6-digit verification code.');
+      return;
+    }
+
+    setLoading(true);
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    try {
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tempToken,
+          twoFactorCode: twoFactorCode.trim()
+        })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.message || 'Invalid two-factor authentication code.');
+      }
+
+      const token = data.token || data.data?.token;
+      const user = data.user || data.data?.user;
+
+      if (token) {
+        localStorage.setItem('token', token);
+        if (user) {
+          localStorage.setItem('user', JSON.stringify(user));
+        }
+      }
+
+      setSuccessMessage('Two-factor verification confirmed! Loading workspace...');
+      setTimeout(() => {
+        if (onSuccess) {
+          onSuccess({ token, user: user || { email } });
+        }
+      }, 700);
+
+    } catch (err) {
+      setErrorMessage(err.message || 'Two-factor verification failed.');
     } finally {
       setLoading(false);
     }
@@ -246,42 +282,44 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         </p>
       </div>
 
-      {/* 3 Role Selection & Demo Quick Switcher */}
-      <div className="space-y-1.5 pt-1">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold tracking-wider uppercase text-[#4A5550] flex items-center gap-1.5">
-            <span>Role / Demo Access</span>
-            <Sparkles className="w-3.5 h-3.5 text-[#E86034]" />
-          </span>
-          <span className="text-[10px] text-[#2D4A3E] font-medium bg-[#2D4A3E]/10 px-2 py-0.5 rounded-md">
-            Demo Offline Testing
-          </span>
-        </div>
+      {/* Role Selection & Demo Quick Switcher */}
+      {!is2FAPrompt && (
+        <div className="space-y-1.5 pt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold tracking-wider uppercase text-[#4A5550] flex items-center gap-1.5">
+              <span>Role / Demo Access</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#E86034]" />
+            </span>
+            <span className="text-[10px] text-[#2D4A3E] font-medium bg-[#2D4A3E]/10 px-2 py-0.5 rounded-md">
+              Enterprise Live
+            </span>
+          </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 p-1.5 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1.5">
-          {DEMO_ROLES.map((roleItem) => {
-            const Icon = roleItem.icon;
-            const isSelected = selectedRole === roleItem.id;
+          <div className="grid grid-cols-2 sm:grid-cols-4 p-1.5 bg-[#F2EDE6] rounded-xl border border-[#E0D8CE] shadow-2xs gap-1.5">
+            {DEMO_ROLES.map((roleItem) => {
+              const Icon = roleItem.icon;
+              const isSelected = selectedRole === roleItem.id;
 
-            return (
-              <button
-                type="button"
-                key={roleItem.id}
-                onClick={() => handleRoleSelect(roleItem)}
-                className={`flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer select-none ${
-                  isSelected
-                    ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
-                    : 'text-[#5C6963] hover:text-[#1E2623] hover:bg-black/5'
-                }`}
-                title={roleItem.fullRole}
-              >
-                <Icon className="w-4 h-4 shrink-0" />
-                <span className="truncate">{roleItem.label}</span>
-              </button>
-            );
-          })}
+              return (
+                <button
+                  type="button"
+                  key={roleItem.id}
+                  onClick={() => handleRoleSelect(roleItem)}
+                  className={`flex items-center justify-center gap-2 py-2 px-2 rounded-lg text-xs font-semibold tracking-tight transition-all duration-200 cursor-pointer select-none ${
+                    isSelected
+                      ? 'bg-[#2D4A3E] text-[#FAF8F5] shadow-xs'
+                      : 'text-[#5C6963] hover:text-[#1E2623] hover:bg-black/5'
+                  }`}
+                  title={roleItem.fullRole}
+                >
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">{roleItem.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Global Alert Messages */}
       {errorMessage && (
@@ -299,69 +337,142 @@ export const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
         />
       )}
 
-      {/* Login Form */}
-      <form onSubmit={(e) => handleLogin(e, false)} className="space-y-4 pt-1">
-        <InputField
-          id="login-email"
-          label="Email address"
-          type="email"
-          value={email}
-          onChange={(e) => {
-            setEmail(e.target.value);
-            if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null });
-          }}
-          placeholder="name@urbanfurniture.com"
-          required
-          autoComplete="email"
-          error={fieldErrors.email}
-          icon={Mail}
-          disabled={loading}
-        />
+      {/* 2FA STEP-UP SCREEN */}
+      {is2FAPrompt ? (
+        <div className="p-5 sm:p-6 bg-white rounded-2xl border border-[#E2DAD0] shadow-sm space-y-4 text-left animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#14231C] text-[#FAF8F5] flex items-center justify-center shadow-xs">
+              <ShieldCheck className="w-5 h-5 text-[#C88A58]" />
+            </div>
+            <div>
+              <h4 className="font-serif font-bold text-base text-[#141A17]">Two-Factor Verification</h4>
+              <p className="text-xs text-[#6A7872]">
+                {useRecoveryCode
+                  ? 'Enter an 8-character emergency recovery backup code.'
+                  : 'Enter the 6-digit code from your authenticator app.'}
+              </p>
+            </div>
+          </div>
 
-        <PasswordField
-          id="login-password"
-          label="Password"
-          value={password}
-          onChange={(e) => {
-            setPassword(e.target.value);
-            if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: null });
-          }}
-          placeholder="Enter your password"
-          required
-          autoComplete="current-password"
-          error={fieldErrors.password}
-          disabled={loading}
-        />
+          <form onSubmit={handle2FASubmit} className="space-y-4 pt-1">
+            <div>
+              <label className="text-xs font-bold text-[#141A17] block mb-1.5">
+                {useRecoveryCode ? 'Emergency Recovery Backup Code' : '6-Digit Authenticator Code'}
+              </label>
+              <input
+                type="text"
+                maxLength={useRecoveryCode ? 10 : 6}
+                value={twoFactorCode}
+                onChange={(e) => {
+                  const val = useRecoveryCode ? e.target.value.toUpperCase() : e.target.value.replace(/\D/g, '');
+                  setTwoFactorCode(val);
+                  if (errorMessage) setErrorMessage('');
+                }}
+                placeholder={useRecoveryCode ? 'XXXX-XXXX' : '000000'}
+                autoFocus
+                className="w-full bg-[#FAF8F5] border border-[#E4DCD0] rounded-xl px-4 py-3 text-center text-lg font-mono font-bold text-[#141A17] tracking-widest focus:outline-hidden focus:border-[#2D4A3E] focus:bg-white focus:ring-1 focus:ring-[#2D4A3E] shadow-2xs transition-all"
+              />
+            </div>
 
-        {/* Remember Me & Forgot Password Row */}
-        <div className="flex items-center justify-between text-xs pt-1">
-          <label className="inline-flex items-center gap-2 cursor-pointer select-none text-[#55635D] hover:text-[#1E2623]">
-            <input
-              type="checkbox"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-              className="w-4 h-4 rounded-md border-[#DDD5C9] text-[#2D4A3E] focus:ring-[#2D4A3E] focus:ring-offset-0 cursor-pointer accent-[#2D4A3E]"
-            />
-            <span>Remember credentials</span>
-          </label>
+            <div className="flex items-center justify-between text-xs pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setUseRecoveryCode(!useRecoveryCode);
+                  setTwoFactorCode('');
+                  setErrorMessage('');
+                }}
+                className="text-xs font-semibold text-[#2D4A3E] hover:underline cursor-pointer"
+              >
+                {useRecoveryCode ? '← Use 6-digit Authenticator code' : 'Lost phone? Use Recovery code →'}
+              </button>
+            </div>
 
-          <button
-            type="button"
-            onClick={(e) => handleLogin(e, true)}
-            className="text-xs font-semibold text-[#2D4A3E] hover:underline cursor-pointer flex items-center gap-1"
-          >
-            <span>Auto Sign In Demo</span>
-            <span>⚡</span>
-          </button>
+            <div className="pt-2 space-y-2">
+              <PrimaryButton loading={loading}>
+                Verify & Complete Sign In
+              </PrimaryButton>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIs2FAPrompt(false);
+                  setTempToken('');
+                  setTwoFactorCode('');
+                  setErrorMessage('');
+                }}
+                className="w-full py-2 text-xs font-semibold text-[#7A8A83] hover:text-[#141A17] hover:bg-[#F2ECE4] rounded-xl transition-colors cursor-pointer"
+              >
+                Back to Password Sign In
+              </button>
+            </div>
+          </form>
         </div>
+      ) : (
+        /* STANDARD LOGIN FORM */
+        <form onSubmit={(e) => handleLogin(e, false)} className="space-y-4 pt-1">
+          <InputField
+            id="login-email"
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (fieldErrors.email) setFieldErrors({ ...fieldErrors, email: null });
+            }}
+            placeholder="name@urbanfurniture.com"
+            required
+            autoComplete="email"
+            error={fieldErrors.email}
+            icon={Mail}
+            disabled={loading}
+          />
 
-        {/* Primary Submit Button */}
-        <div className="pt-2">
-          <PrimaryButton loading={loading}>
-            {`Sign In as ${activeRoleConfig.label}`}
-          </PrimaryButton>
-        </div>
-      </form>
+          <PasswordField
+            id="login-password"
+            label="Password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+              if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: null });
+            }}
+            placeholder="Enter your password"
+            required
+            autoComplete="current-password"
+            error={fieldErrors.password}
+            disabled={loading}
+          />
+
+          {/* Remember Me & Forgot Password Row */}
+          <div className="flex items-center justify-between text-xs pt-1">
+            <label className="inline-flex items-center gap-2 cursor-pointer select-none text-[#55635D] hover:text-[#1E2623]">
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                className="w-4 h-4 rounded-md border-[#DDD5C9] text-[#2D4A3E] focus:ring-[#2D4A3E] focus:ring-offset-0 cursor-pointer accent-[#2D4A3E]"
+              />
+              <span>Remember credentials</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={(e) => handleLogin(e, true)}
+              className="text-xs font-semibold text-[#2D4A3E] hover:underline cursor-pointer flex items-center gap-1"
+            >
+              <span>Auto Sign In Demo</span>
+              <span>⚡</span>
+            </button>
+          </div>
+
+          {/* Primary Submit Button */}
+          <div className="pt-2">
+            <PrimaryButton loading={loading}>
+              {`Sign In as ${activeRoleConfig.label}`}
+            </PrimaryButton>
+          </div>
+        </form>
+      )}
     </div>
   );
 };

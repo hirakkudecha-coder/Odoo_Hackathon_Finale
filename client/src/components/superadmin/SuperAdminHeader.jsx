@@ -13,6 +13,7 @@ import {
   Command,
   Building2
 } from 'lucide-react';
+import { SecuritySettingsModal } from '../common/SecuritySettingsModal';
 
 export const SuperAdminHeader = ({ 
   onNavigateHome, 
@@ -26,6 +27,7 @@ export const SuperAdminHeader = ({
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [securityModalOpen, setSecurityModalOpen] = useState(false);
   const dropdownRef = useRef(null);
   const notifRef = useRef(null);
 
@@ -179,6 +181,17 @@ export const SuperAdminHeader = ({
                 <button
                   onClick={() => {
                     setDropdownOpen(false);
+                    setSecurityModalOpen(true);
+                  }}
+                  className="w-full px-4 py-2 text-xs font-semibold text-[#2D4A3E] hover:bg-[#FAF8F5] flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4 text-[#C88A58]" />
+                  <span>Security & 2FA Settings</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setDropdownOpen(false);
                     if (onNavigateHome) onNavigateHome();
                   }}
                   className="w-full px-4 py-2 text-xs font-semibold text-[#4B5953] hover:bg-[#FAF8F5] flex items-center gap-2 transition-colors cursor-pointer"
@@ -205,6 +218,13 @@ export const SuperAdminHeader = ({
         </div>
 
       </div>
+
+      {/* Security & 2FA Settings Modal */}
+      <SecuritySettingsModal
+        isOpen={securityModalOpen}
+        onClose={() => setSecurityModalOpen(false)}
+        currentUser={currentUser}
+      />
     </header>
   );
 };

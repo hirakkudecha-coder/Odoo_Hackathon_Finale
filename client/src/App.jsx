@@ -24,6 +24,8 @@ import { AtelierAboutPage } from './components/common/AtelierAboutPage';
 import { ShowroomsPage } from './components/common/ShowroomsPage';
 import { SuperAdminDashboard } from './components/superadmin/SuperAdminDashboard';
 import { ContactPortal } from './components/portal/ContactPortal';
+import { useInactivityTimeout } from './hooks/useInactivityTimeout';
+import { InactivityWarningModal } from './components/common/InactivityWarningModal';
 
 export const App = () => {
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
@@ -193,12 +195,34 @@ export const App = () => {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = (reason) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setCurrentUser(null);
-    handleNavigateHome();
+    if (reason === 'inactivity') {
+      window.history.pushState(null, '', '/login?reason=inactivity');
+      setCurrentPath('/login');
+    } else {
+      handleNavigateHome();
+    }
   };
+
+  const { showWarning, remainingSeconds, resetActivity } = useInactivityTimeout({
+    isAuthenticated: !!currentUser,
+    onTimeout: () => handleLogout('inactivity')
+  });
+
+  const renderWithInactivityModal = (content) => (
+    <>
+      {content}
+      <InactivityWarningModal
+        isOpen={showWarning}
+        remainingSeconds={remainingSeconds}
+        onStayLoggedIn={resetActivity}
+        onLogout={() => handleLogout()}
+      />
+    </>
+  );
 
   const handleOpenCreateUser = () => {
     setCreateUserModalOpen(true);
@@ -226,7 +250,37 @@ export const App = () => {
       );
     }
 
-    return (
+    if (currentUser.role !== 'superadmin') {
+      if (currentUser.role === 'accountant') {
+        return renderWithInactivityModal(
+          <AccountantDashboard
+            onNavigateHome={handleNavigateHome}
+            onNavigateAdminDashboard={handleNavigateDashboard}
+            currentUser={currentUser}
+            onLogout={handleLogout}
+          />
+        );
+      }
+      if (currentUser.role === 'contact') {
+        return renderWithInactivityModal(
+          <ContactPortal
+            currentUser={currentUser}
+            onLogout={handleLogout}
+            onNavigateHome={handleNavigateHome}
+          />
+        );
+      }
+      return renderWithInactivityModal(
+        <AdminDashboard
+          onNavigateHome={handleNavigateHome}
+          onOpenCreateUser={handleOpenCreateUser}
+          currentUser={currentUser}
+          onLogout={handleLogout}
+        />
+      );
+    }
+
+    return renderWithInactivityModal(
       <SuperAdminDashboard
         onNavigateHome={handleNavigateHome}
         onNavigateAdmin={handleNavigateDashboard}
@@ -254,7 +308,7 @@ export const App = () => {
       );
     }
 
-    return (
+    return renderWithInactivityModal(
       <ContactPortal
         currentUser={currentUser}
         onLogout={handleLogout}
@@ -279,7 +333,7 @@ export const App = () => {
       );
     }
 
-    return (
+    return renderWithInactivityModal(
       <AccountantDashboard
         onNavigateHome={handleNavigateHome}
         onNavigateAdminDashboard={handleNavigateDashboard}
@@ -305,7 +359,7 @@ export const App = () => {
       );
     }
 
-    return (
+    return renderWithInactivityModal(
       <>
         <AdminDashboard
           onNavigateHome={handleNavigateHome}
@@ -497,6 +551,14 @@ export const App = () => {
       <CreateUserModal
         isOpen={createUserModalOpen}
         onClose={handleCloseCreateUser}
+      />
+
+      {/* Workstation Session Inactivity Protection Modal */}
+      <InactivityWarningModal
+        isOpen={showWarning}
+        remainingSeconds={remainingSeconds}
+        onStayLoggedIn={resetActivity}
+        onLogout={() => handleLogout()}
       />
 
     </div>

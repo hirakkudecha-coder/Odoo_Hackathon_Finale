@@ -323,7 +323,7 @@ const getStockValuationReport = async () => {
     const pId = p._id.toString();
     const inward = inwardMap[pId] || 0;
     const outward = outwardMap[pId] || 0;
-    const onHand = Math.max(0, inward - outward);
+    const onHand = typeof p.currentStock === 'number' ? p.currentStock : Math.max(0, inward - outward);
     const valuation = Math.round(onHand * (p.costPrice || 0) * 100) / 100;
     const salesValue = Math.round(onHand * (p.salesPrice || 0) * 100) / 100;
 

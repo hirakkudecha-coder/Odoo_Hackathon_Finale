@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu, Wifi, WifiOff } from 'lucide-react';
+import { Search, Bell, Calendar, ChevronDown, User, ExternalLink, Menu, Wifi, WifiOff, ShieldCheck } from 'lucide-react';
 import designerPortrait from '../../assets/images/designer_portrait.png';
+import { SecuritySettingsModal } from '../common/SecuritySettingsModal';
 
 export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, currentUser, onLogout }) => {
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [securityModalOpen, setSecurityModalOpen] = useState(false);
   const [heartbeat, setHeartbeat] = useState({ status: 'checking', dbConnected: false, uptime: '' });
 
   // Read stored user as fallback
@@ -166,6 +168,17 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
                 <button
                   onClick={() => {
                     setProfileDropdownOpen(false);
+                    setSecurityModalOpen(true);
+                  }}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#2D4A3E] hover:bg-[#FAF8F5] transition-colors cursor-pointer text-left font-medium"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#C88A58]" />
+                  <span>Security & 2FA Settings</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setProfileDropdownOpen(false);
                     if (onNavigateHome) onNavigateHome();
                   }}
                   className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-[#4A5550] hover:bg-[#FAF8F5] hover:text-[#141A17] transition-colors cursor-pointer text-left font-medium"
@@ -209,6 +222,13 @@ export const AdminHeader = ({ onNavigateHome, onToggleSidebar, sidebarOpen, curr
         </div>
 
       </div>
+
+      {/* Security & 2FA Settings Modal */}
+      <SecuritySettingsModal
+        isOpen={securityModalOpen}
+        onClose={() => setSecurityModalOpen(false)}
+        currentUser={activeUser}
+      />
 
     </header>
   );

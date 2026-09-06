@@ -166,7 +166,8 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
                 totalAmount: amtStr,
                 status: statusLabel,
                 statusStyle,
-                statusDot
+                statusDot,
+                rawPo: po
               };
             });
             if (isMounted) setOrders(mapped);
@@ -236,7 +237,7 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
     setActiveRowMenuId(null);
   };
 
-  const handleUpdateStatus = (id, newStatus) => {
+  const handleUpdateStatus = async (id, newStatus) => {
     setOrders((prev) =>
       prev.map((o) =>
         o.id === id
@@ -260,6 +261,23 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
       )
     );
     setActiveRowMenuId(null);
+
+    // Persist to backend if real MongoDB document ID
+    if (typeof id === 'string' && id.length === 24) {
+      try {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers.Authorization = `Bearer ${token}`;
+        const targetStatus = newStatus === 'Received' ? 'received' : newStatus === 'Cancelled' ? 'cancelled' : 'confirmed';
+        await fetch(`/api/purchase-orders/${id}`, {
+          method: 'PUT',
+          headers,
+          body: JSON.stringify({ status: targetStatus })
+        });
+      } catch (err) {
+        console.warn('Failed to sync PO status to server:', err);
+      }
+    }
   };
 
   const handleConvertToBill = async (order) => {
@@ -274,11 +292,18 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
           method: 'POST',
           headers,
           body: JSON.stringify({
+            billNumber: `BILL-${Date.now().toString().slice(-6)}`,
             vendor: order.rawPo.vendor?._id || order.rawPo.vendor,
             purchaseOrder: order.rawPo._id,
             billDate: new Date(),
             dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-            items: order.rawPo.items || []
+            items: (order.rawPo.items || []).map((it) => ({
+              product: it.product?._id || it.product,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              subtotal: it.subtotal || (it.quantity * it.unitPrice)
+            })),
+            totalAmount: order.rawPo.totalAmount
           })
         });
         const billData = await billRes.json();
@@ -286,6 +311,12 @@ export const PurchaseOrdersTable = ({ onCreatePO }) => {
           await fetch(`/api/vendor-bills/${billData.vendorBill._id}/post`, {
             method: 'POST',
             headers
+          });
+          // Also sync purchase order status to billed
+          await fetch(`/api/purchase-orders/${order.rawPo._id}`, {
+            method: 'PUT',
+            headers,
+            body: JSON.stringify({ status: 'billed' })
           });
         }
       }
